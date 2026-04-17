@@ -22,6 +22,30 @@ from src.config import settings
 Base = declarative_base()
 
 
+def _snake_case(name: str) -> str:
+    """SourceType -> source_type"""
+    out = []
+    for i, ch in enumerate(name):
+        if ch.isupper() and i > 0 and not name[i - 1].isupper():
+            out.append("_")
+        out.append(ch.lower())
+    return "".join(out)
+
+
+def _enum_values(enum_cls):
+    """Tell SQLAlchemy to use enum .value (lowercase) instead of .name (uppercase)
+    when serializing to Postgres, and bind to the snake_case Postgres enum type
+    name (e.g. SourceType -> source_type). Without values_callable, inserts send
+    the uppercase Python identifier (e.g. "GDELT") which doesn't match the
+    lowercase Postgres enum values (e.g. "gdelt").
+    """
+    return Enum(
+        enum_cls,
+        values_callable=lambda x: [e.value for e in x],
+        name=_snake_case(enum_cls.__name__),
+    )
+
+
 class SourceType(str, enum.Enum):
     GACETA_OFICIAL = "gaceta_oficial"
     TU_GACETA = "tu_gaceta"
@@ -64,9 +88,9 @@ class GazetteEntry(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     gazette_number = Column(String(50), nullable=True, index=True)
-    gazette_type = Column(Enum(GazetteType), default=GazetteType.ORDINARIA)
+    gazette_type = Column(_enum_values(GazetteType), default=GazetteType.ORDINARIA)
     published_date = Column(Date, nullable=False, index=True)
-    source = Column(Enum(SourceType), nullable=False)
+    source = Column(_enum_values(SourceType), nullable=False)
     source_url = Column(String(500), nullable=False)
 
     title = Column(Text, nullable=True)
@@ -80,7 +104,7 @@ class GazetteEntry(Base):
     ocr_confidence = Column(Integer, nullable=True)
 
     analysis_json = Column(JSON, nullable=True)
-    status = Column(Enum(GazetteStatus), default=GazetteStatus.SCRAPED)
+    status = Column(_enum_values(GazetteStatus), default=GazetteStatus.SCRAPED)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -99,7 +123,7 @@ class AssemblyNewsEntry(Base):
     commission = Column(String(200), nullable=True)
 
     analysis_json = Column(JSON, nullable=True)
-    status = Column(Enum(GazetteStatus), default=GazetteStatus.SCRAPED)
+    status = Column(_enum_values(GazetteStatus), default=GazetteStatus.SCRAPED)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -113,10 +137,10 @@ class ExternalArticleEntry(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    source = Column(Enum(SourceType), nullable=False, index=True)
+    source = Column(_enum_values(SourceType), nullable=False, index=True)
     source_url = Column(String(1000), nullable=False)
     source_name = Column(String(200), nullable=True)
-    credibility = Column(Enum(CredibilityTier), default=CredibilityTier.TIER2)
+    credibility = Column(_enum_values(CredibilityTier), default=CredibilityTier.TIER2)
 
     headline = Column(Text, nullable=False)
     published_date = Column(Date, nullable=False, index=True)
@@ -127,7 +151,7 @@ class ExternalArticleEntry(Base):
     extra_metadata = Column(JSON, nullable=True)
 
     analysis_json = Column(JSON, nullable=True)
-    status = Column(Enum(GazetteStatus), default=GazetteStatus.SCRAPED)
+    status = Column(_enum_values(GazetteStatus), default=GazetteStatus.SCRAPED)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -139,7 +163,7 @@ class ScrapeLog(Base):
     __tablename__ = "scrape_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    source = Column(Enum(SourceType), nullable=False)
+    source = Column(_enum_values(SourceType), nullable=False)
     scrape_date = Column(Date, nullable=False)
     success = Column(Boolean, nullable=False)
     entries_found = Column(Integer, default=0)
