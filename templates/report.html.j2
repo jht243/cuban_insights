@@ -142,7 +142,8 @@
     .status-announced .status-dot { background: #2563eb; }
     .status-monitoring .status-dot { background: var(--sr-gray-text); }
     @keyframes dotPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    .entry-header h3 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--sr-dark-text); line-height: 1.3; margin-bottom: 8px; }
+    .entry-header h3 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--sr-dark-text); line-height: 1.3; margin-bottom: 4px; }
+    .original-headline { font-size: 0.78rem; color: var(--sr-gray-text); font-style: italic; margin-bottom: 8px; line-height: 1.35; }
     .entry-meta { font-size: 0.85rem; color: var(--sr-gray-text); display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
     .entry-meta a { color: var(--sr-blue); text-decoration: none; font-weight: 600; }
     .entry-meta a:hover { text-decoration: underline; }
@@ -319,7 +320,10 @@
             {% if entry.is_new %}<span class="badge-new">New</span>{% endif %}
             <span class="status-pill status-{{ entry.status_class }}"><span class="status-dot"></span> {{ entry.status_label }}</span>
           </div>
-          <h3>{{ entry.headline }}</h3>
+          <h3>{{ entry.headline_short or entry.headline }}</h3>
+          {% if entry.headline_short and entry.headline_short != entry.headline %}
+          <div class="original-headline" lang="es" title="Original source headline">{{ entry.headline }}</div>
+          {% endif %}
           <div class="entry-meta">
             <span>{{ entry.date_display }}</span>
             <span>|</span>
