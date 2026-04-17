@@ -95,11 +95,17 @@ def subscribe():
             logger.info("Buttondown subscriber added: %s", email)
             return jsonify({"ok": True})
 
-        if resp.status_code == 409:
-            return jsonify({"ok": True, "note": "Already subscribed"})
-
         body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
         code = body.get("code", "")
+
+        # Buttondown returns HTTP 400 with code=email_already_exists for
+        # duplicate emails (not 409). Treat that as a successful
+        # subscribe so the user UX is "you're in" either way.
+        if resp.status_code == 409 or code == "email_already_exists":
+            return jsonify({"ok": True, "note": "Already subscribed"})
+
+        if code == "email_invalid":
+            return jsonify({"ok": False, "error": "Please enter a valid email address"}), 400
 
         if code == "subscriber_blocked":
             logger.warning("Buttondown firewall blocked %s, retrying with bypass", email)
@@ -112,14 +118,16 @@ def subscribe():
                 },
                 timeout=15,
             )
+            body2 = resp2.json() if resp2.headers.get("content-type", "").startswith("application/json") else {}
+            code2 = body2.get("code", "")
             if resp2.status_code in (200, 201):
                 logger.info("Buttondown subscriber added (bypass): %s", email)
                 return jsonify({"ok": True})
-            if resp2.status_code == 409:
+            if resp2.status_code == 409 or code2 == "email_already_exists":
                 return jsonify({"ok": True, "note": "Already subscribed"})
             logger.error("Buttondown bypass also failed %d: %s", resp2.status_code, resp2.text)
 
-        logger.error("Buttondown API error %d: %s", resp.status_code, resp.text)
+        logger.error("Buttondown API error %d (code=%s): %s", resp.status_code, code, resp.text)
         return jsonify({"ok": False, "error": "Subscription failed, please try again"}), 502
 
     except Exception as e:
