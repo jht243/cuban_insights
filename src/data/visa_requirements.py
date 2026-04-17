@@ -5,7 +5,14 @@ passport nationality, plus current US travel-advisory level.
 Authoritative sources (verify before publishing changes):
   https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html
   https://www.gov.uk/foreign-travel-advice/venezuela
-  https://embajadadevenezuela.org (consular network)
+  https://travel.gc.ca/destinations/venezuela
+  https://www.eeas.europa.eu/venezuela_en
+
+NOTE: The US row's `advisory_level` and `advisory_summary` are also
+overridden at request time by the latest TravelAdvisoryScraper row in
+the database (see server.tool_visa_requirements). Keep this dict as
+the static fallback in case the scraper hasn't run yet or returns
+no result.
 
 Update whenever you confirm a policy change. The tool's UI always
 links the user back to the relevant embassy / state-department page.
@@ -14,19 +21,31 @@ links the user back to the relevant embassy / state-department page.
 from __future__ import annotations
 
 
+# As of March 19, 2026 the US Department of State downgraded Venezuela
+# from Level 4 ("Do Not Travel") to Level 3 ("Reconsider Travel"),
+# removing the Wrongful Detention / Unrest / Other risk indicators
+# while keeping Level 4 designations on specific border states. This
+# is the static baseline; the live page also reads from the
+# TravelAdvisoryScraper output and will reflect any further changes
+# automatically.
 VISA_REQUIREMENTS: list[dict] = [
     {
         "country": "United States",
         "code": "US",
         "visa_required": True,
-        "visa_type": "Tourist (TR-V) or Business (TR-N) visa required in advance",
+        "visa_type": "Tourist (TR-V) or Business (TR-N) visa required in advance — visas are NOT available on arrival",
         "visa_validity": "Tourist: up to 1 year multiple-entry; Business: up to 1 year",
         "tourist_stay": "Up to 90 days per entry",
-        "embassy_url": "https://embajadadevenezuela.org/en/visa-information/",
-        "advisory_level": 4,
-        "advisory_summary": "Do Not Travel — wrongful detention, arbitrary enforcement of laws, crime, civil unrest, poor health infrastructure, kidnapping, and the lack of consular assistance for US citizens.",
+        # The Venezuelan consular network's main domain (embajadadevenezuela.org)
+        # is no longer resolvable in DNS. Until a stable consular URL exists,
+        # point users at the State Department's Venezuela country page, which
+        # itself links to current entry-requirement info and routes consular
+        # services through the U.S. Embassy in Bogotá.
+        "embassy_url": "https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages/Venezuela.html",
+        "advisory_level": 3,
+        "advisory_summary": "Reconsider Travel — risk of crime, kidnapping, terrorism, and poor health infrastructure. Do Not Travel (Level 4) still applies to the Colombia border region, Amazonas, Apure, Aragua (outside Maracay), rural Bolívar, Guárico, and Táchira states.",
         "advisory_url": "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html",
-        "investor_note": "Travel by US citizens is strongly discouraged by the State Department. The US has no embassy in Caracas; consular services are limited to citizens already in country. Plan all in-country meetings via local counsel and consider third-country jurisdictions for negotiations.",
+        "investor_note": "In January 2026 the State Department began a phased resumption of US embassy operations in Venezuela, but routine consular services remain suspended and most services are still provided through the US Embassy in Bogotá. Plan in-country meetings via local counsel and avoid the seven Level-4 regions.",
     },
     {
         "country": "United Kingdom",
@@ -139,10 +158,13 @@ VISA_REQUIREMENTS: list[dict] = [
         "visa_type": "Varies by nationality",
         "visa_validity": "Confirm with the nearest Venezuelan embassy",
         "tourist_stay": "Varies",
-        "embassy_url": "https://embajadadevenezuela.org/",
+        # Venezuela's foreign-affairs ministry (Cancillería) site is the
+        # canonical pointer to the consular network; it works while
+        # embajadadevenezuela.org no longer resolves.
+        "embassy_url": "http://mppre.gob.ve/embajadas-y-consulados/",
         "advisory_level": None,
         "advisory_summary": "Check your home country's foreign affairs ministry for the current advisory level.",
-        "advisory_url": "https://embajadadevenezuela.org/",
+        "advisory_url": "http://mppre.gob.ve/embajadas-y-consulados/",
         "investor_note": "Always confirm visa status, validity, and the current published advisory level with both the Venezuelan diplomatic mission in your country and your home country's foreign affairs ministry before booking travel.",
     },
 ]

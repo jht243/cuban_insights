@@ -31,6 +31,11 @@
   .gate button { background: var(--white); color: var(--sr-blue-dark); border: none; padding: 12px 20px; font-weight: 700; cursor: pointer; border-radius: 3px; }
 
   .sector-context { background: var(--sr-gray-bg); border-left: 3px solid var(--sr-blue); padding: 12px 14px; font-size: 13px; color: var(--sr-dark-text); margin: 14px 0; }
+
+  table.bench-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 24px; }
+  table.bench-table th, table.bench-table td { padding: 8px 10px; border-bottom: 1px solid var(--sr-gray-light); text-align: left; vertical-align: top; }
+  table.bench-table th { background: var(--sr-gray-bg); color: var(--sr-blue-dark); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.bench-table td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 </style>
 {% endblock %}
 
@@ -51,10 +56,11 @@
       Venezuela Investment ROI Calculator
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px; max-width: 820px;">
-      Estimate the IRR, NPV, and multi-year cash flow of a hypothetical
-      Venezuelan investment across oil &amp; gas, mining, real estate, banking,
-      agriculture, telecom, and tourism — with sector-specific risk premiums
-      built in.
+      Estimate the IRR, NPV, and multi-year unlevered after-tax cash flow of
+      a hypothetical Venezuelan investment across oil &amp; gas, mining, real
+      estate, banking, agriculture, telecom, and tourism — with sector-
+      specific EBITDA margins and Venezuela-specific risk premiums anchored
+      to traded sovereign spreads and 2024–2025 EM sector benchmarks.
     </p>
   </header>
 
@@ -63,16 +69,23 @@
       <h2>Inputs</h2>
       <div class="field">
         <label for="sector">Sector</label>
+        <!--
+          Defaults below are anchored to 2024-2025 EM-comparable benchmarks
+          (see "Where the sector defaults come from" section). data-rev =
+          USD nominal revenue growth, data-margin = EBITDA margin,
+          data-rp = Venezuela-specific country/sector risk premium added on
+          top of the user's base USD WACC.
+        -->
         <select id="sector">
-          <option value="oil_gas" data-rev="0.18" data-margin="0.30" data-rp="0.12">Oil &amp; Gas (high regulatory exposure)</option>
-          <option value="mining" data-rev="0.16" data-margin="0.28" data-rp="0.11">Mining (gold, iron, bauxite)</option>
-          <option value="real_estate" data-rev="0.10" data-margin="0.40" data-rp="0.08">Real Estate (Caracas commercial)</option>
-          <option value="banking" data-rev="0.14" data-margin="0.20" data-rp="0.10">Banking &amp; Financial Services</option>
-          <option value="agriculture" data-rev="0.12" data-margin="0.18" data-rp="0.07">Agriculture</option>
-          <option value="telecom" data-rev="0.13" data-margin="0.25" data-rp="0.09">Telecom &amp; Digital</option>
-          <option value="tourism" data-rev="0.11" data-margin="0.22" data-rp="0.06">Tourism &amp; Hospitality</option>
+          <option value="oil_gas"     data-rev="0.08" data-margin="0.40" data-rp="0.18">Oil &amp; Gas (upstream, sanctions-exposed)</option>
+          <option value="mining"      data-rev="0.10" data-margin="0.38" data-rp="0.16">Mining (gold, iron, bauxite)</option>
+          <option value="real_estate" data-rev="0.06" data-margin="0.55" data-rp="0.12">Real Estate (Caracas commercial)</option>
+          <option value="banking"     data-rev="0.12" data-margin="0.35" data-rp="0.17">Banking &amp; Financial Services</option>
+          <option value="agriculture" data-rev="0.07" data-margin="0.18" data-rp="0.10">Agriculture (domestic)</option>
+          <option value="telecom"     data-rev="0.09" data-margin="0.38" data-rp="0.13">Telecom &amp; Digital</option>
+          <option value="tourism"     data-rev="0.12" data-margin="0.28" data-rp="0.11">Tourism &amp; Hospitality</option>
         </select>
-        <div class="hint" id="sector-hint">Each sector ships with a baseline revenue growth rate, operating margin, and Venezuela-specific risk premium added to your discount rate.</div>
+        <div class="hint" id="sector-hint">Each sector ships with a baseline USD revenue growth rate, EBITDA margin, and Venezuela-specific risk premium added to your discount rate. Override any of them below.</div>
       </div>
       <div class="field">
         <label for="capex">Initial capital deployed (USD)</label>
@@ -89,12 +102,22 @@
       <div class="field">
         <label for="growth">Annual revenue growth (override)</label>
         <input type="number" id="growth" value="" placeholder="auto from sector" step="0.01">
-        <div class="hint">Decimal. e.g. 0.12 = 12%/yr. Leave blank to use sector default.</div>
+        <div class="hint">Decimal. e.g. 0.10 = 10%/yr. Leave blank to use sector default.</div>
       </div>
       <div class="field">
-        <label for="margin">Operating margin (override)</label>
+        <label for="margin">EBITDA margin (override)</label>
         <input type="number" id="margin" value="" placeholder="auto from sector" step="0.01">
-        <div class="hint">Decimal. e.g. 0.30 = 30%.</div>
+        <div class="hint">Decimal. e.g. 0.38 = 38% EBITDA. Distinct from operating (EBIT) margin — D&amp;A is treated implicitly via maintenance capex.</div>
+      </div>
+      <div class="field">
+        <label for="tax">Effective tax rate</label>
+        <input type="number" id="tax" value="0.34" min="0" max="0.6" step="0.01">
+        <div class="hint">Default 34% — Venezuela's standard ISLR rate for non-hydrocarbons. Oil &amp; gas effective burden can run higher under the sector's separate regime.</div>
+      </div>
+      <div class="field">
+        <label for="maintcapex">Maintenance capex (% of revenue)</label>
+        <input type="number" id="maintcapex" value="0.05" min="0" max="0.5" step="0.005">
+        <div class="hint">Default 5%. Keeps existing assets productive — reduce for asset-light services, raise for capex-heavy upstream / mining.</div>
       </div>
       <div class="field">
         <label for="discount">Base discount rate (USD WACC)</label>
@@ -115,14 +138,15 @@
         <div class="res-card" id="card-mom"><div class="lbl">Money-on-money</div><div class="val" id="r-mom">—</div></div>
       </div>
       <div class="sector-context" id="risk-context">
-        Risk-adjusted discount rate: <strong id="r-rate">—</strong>.
+        Risk-adjusted discount rate: <strong id="r-rate">—</strong>
+        (= base WACC + sector premium).
         Sector-specific Venezuela premium reflects sanctions exposure, FX
         convertibility risk, and regulatory volatility. See the
         <a href="/sectors/oil-gas" id="sector-link" style="color: var(--sr-blue);">sector landing page</a>
         for the underlying analysis.
       </div>
       <table class="cf-table" id="cf-table">
-        <thead><tr><th>Year</th><th>Revenue</th><th>EBITDA</th><th>FCF</th><th>Disc. CF</th></tr></thead>
+        <thead><tr><th>Year</th><th>Revenue</th><th>EBITDA</th><th>Tax</th><th>Maint. capex</th><th>FCF</th><th>Disc. CF</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -139,10 +163,30 @@
   </div>
 
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin: 32px 0 8px;">How this calculator works</h2>
-  <p>The model projects a deterministic revenue/EBITDA/FCF schedule using the sector defaults you can override, applies an exit multiple to terminal-year EBITDA, then discounts every cash flow at your USD WACC plus a sector-specific Venezuela risk premium. The result is an order-of-magnitude estimate suitable for first-round filtering — not a substitute for a fully diligenced model with country-of-origin tax, FX repatriation friction, and project-finance structuring.</p>
+  <p>The model projects a deterministic revenue / EBITDA schedule using the sector defaults you can override, applies the chosen tax rate to EBITDA to approximate operating cash taxes, deducts maintenance capex as a percent of revenue, then applies an exit multiple to terminal-year EBITDA. Every cash flow is discounted at your USD WACC plus a sector-specific Venezuela risk premium. The result is an order-of-magnitude estimate suitable for first-round filtering — not a substitute for a fully diligenced model with project-finance structuring, FX repatriation friction, working-capital movements, and country-of-origin tax.</p>
+
+  <p style="font-size:13px; color: var(--sr-gray-text);">
+    FCF formula used: <code>FCF&nbsp;=&nbsp;EBITDA&nbsp;×&nbsp;(1&nbsp;−&nbsp;tax)&nbsp;−&nbsp;maintenance&nbsp;capex</code>.
+    Terminal year adds <code>exit&nbsp;multiple&nbsp;×&nbsp;terminal&nbsp;EBITDA</code> on top.
+  </p>
 
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin: 24px 0 8px;">Where the sector defaults come from</h2>
-  <p>Defaults reflect publicly observed Venezuelan investment outcomes over the last decade plus contemporary EM-comp benchmarks. Risk premiums are anchored to traded Venezuelan sovereign-debt spreads (where available) and adjusted up or down by sector based on sanctions exposure, foreign-investor dispute history, and convertibility friction. See the <a href="/invest-in-venezuela">pillar guide</a> for the full methodology.</p>
+  <p>Defaults reflect 2024–2025 EM-comparable benchmarks, adjusted to a recovery / partial-normalisation scenario for Venezuela. Risk premiums are anchored to traded Venezuelan sovereign-debt spreads — Venezuela's restructured external bonds remain among the highest-yielding sovereign instruments globally — and adjusted up or down by sector based on sanctions exposure, foreign-investor dispute history, and convertibility friction. See the <a href="/invest-in-venezuela">pillar guide</a> for the full methodology.</p>
+
+  <table class="bench-table">
+    <thead>
+      <tr><th>Sector</th><th class="num">EBITDA margin</th><th class="num">Rev. growth</th><th class="num">VE risk premium</th><th>Reference comp set</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Oil &amp; Gas (upstream)</td><td class="num">40%</td><td class="num">8%</td><td class="num">18%</td><td>Latin American IOCs / NOCs at Brent $65–75; lifting cost &lt; $25/bbl. Sanctions risk dominates the premium.</td></tr>
+      <tr><td>Mining (gold-led)</td><td class="num">38%</td><td class="num">10%</td><td class="num">16%</td><td>Major gold producers' all-in EBITDA margins at gold $2,400–2,700/oz (Newmont, Barrick, AngloGold). Reduced for VE artisanal mix.</td></tr>
+      <tr><td>Real Estate (commercial)</td><td class="num">55%</td><td class="num">6%</td><td class="num">12%</td><td>EM commercial NOI margins of 60–70%, reduced ~10pts for vacancy and Caracas operating overhead. Growth = inflation-linked rent escalators.</td></tr>
+      <tr><td>Banking &amp; Financial Services</td><td class="num">35%</td><td class="num">12%</td><td class="num">17%</td><td>Pre-tax operating margin (net interest + fees as "revenue"). Comps: EM banks with NIM 4–6%. Sanctions-exposed correspondent banking is the binding risk.</td></tr>
+      <tr><td>Agriculture</td><td class="num">18%</td><td class="num">7%</td><td class="num">10%</td><td>Domestic-market crop &amp; protein producers; commodity-cycle exposed. Lowest premium because least sanctions-exposed.</td></tr>
+      <tr><td>Telecom &amp; Digital</td><td class="num">38%</td><td class="num">9%</td><td class="num">13%</td><td>EM mobile operators (América Móvil, MTN, Telefónica LatAm) typically run 35–45% EBITDA margins.</td></tr>
+      <tr><td>Tourism &amp; Hospitality</td><td class="num">28%</td><td class="num">12%</td><td class="num">11%</td><td>Branded EM hotels typically run 25–35% EBITDA margins. Higher growth reflects recovery upside off a low base.</td></tr>
+    </tbody>
+  </table>
 
   <p style="font-size:12px; color:var(--sr-gray-text); margin: 32px 0;">
     See related: <a href="/invest-in-venezuela">how to invest in Venezuela</a> ·
@@ -192,6 +236,11 @@
         if (!isFinite(growth)) growth = defaultGrowth;
         var margin = parseFloat(document.getElementById('margin').value);
         if (!isFinite(margin)) margin = defaultMargin;
+        var tax = parseFloat(document.getElementById('tax').value);
+        if (!isFinite(tax) || tax < 0) tax = 0;
+        if (tax > 0.6) tax = 0.6;
+        var maintCapexPct = parseFloat(document.getElementById('maintcapex').value);
+        if (!isFinite(maintCapexPct) || maintCapexPct < 0) maintCapexPct = 0;
         var discount = parseFloat(document.getElementById('discount').value || '0.1');
         var exitMult = parseFloat(document.getElementById('exit').value || '4');
 
@@ -199,20 +248,41 @@
         document.getElementById('r-rate').textContent = pct(rate);
 
         var flows = [-capex];
-        var rows = ['<tr><td>0</td><td></td><td></td><td>' + fmt(-capex) + '</td><td>' + fmt(-capex) + '</td></tr>'];
+        var rows = ['<tr><td>0</td><td></td><td></td><td></td><td></td><td>' + fmt(-capex) + '</td><td>' + fmt(-capex) + '</td></tr>'];
 
         var rev = rev0, totalNpv = -capex;
         var lastEbitda = 0;
         for (var y = 1; y <= years; y++) {
           if (y > 1) rev = rev * (1 + growth);
           var ebitda = rev * margin;
-          var fcf = ebitda;
-          if (y === years) fcf = ebitda + exitMult * ebitda;
+          // Approximate operating cash taxes as tax * EBITDA. This is a
+          // simplification (a full model would tax EBIT, not EBITDA), but
+          // for an order-of-magnitude screening tool the EBITDA proxy
+          // keeps the model self-consistent without forcing a separate
+          // D&A schedule.
+          var taxCash = Math.max(0, ebitda) * tax;
+          var maintCapex = rev * maintCapexPct;
+          var fcf = ebitda - taxCash - maintCapex;
+          var exitVal = 0;
+          if (y === years) {
+            exitVal = exitMult * ebitda;
+            fcf = fcf + exitVal;
+          }
           flows.push(fcf);
           var disc = fcf / Math.pow(1 + rate, y);
           totalNpv += disc;
           lastEbitda = ebitda;
-          rows.push('<tr><td>' + y + '</td><td>' + fmt(rev) + '</td><td>' + fmt(ebitda) + '</td><td>' + fmt(fcf) + '</td><td>' + fmt(disc) + '</td></tr>');
+          rows.push(
+            '<tr>' +
+              '<td>' + y + '</td>' +
+              '<td>' + fmt(rev) + '</td>' +
+              '<td>' + fmt(ebitda) + '</td>' +
+              '<td>' + fmt(-taxCash) + '</td>' +
+              '<td>' + fmt(-maintCapex) + '</td>' +
+              '<td>' + fmt(fcf) + (exitVal > 0 ? ' <span style="font-size:10px;color:var(--sr-gray-text);">(incl. ' + fmt(exitVal) + ' exit)</span>' : '') + '</td>' +
+              '<td>' + fmt(disc) + '</td>' +
+            '</tr>'
+          );
         }
 
         var totalReturned = flows.slice(1).reduce(function(a, b) { return a + b; }, 0);
@@ -229,7 +299,7 @@
 
         document.querySelector('#cf-table tbody').innerHTML = rows.join('');
       }
-      ['sector','capex','rev0','years','growth','margin','discount','exit'].forEach(function(id) {
+      ['sector','capex','rev0','years','growth','margin','tax','maintcapex','discount','exit'].forEach(function(id) {
         document.getElementById(id).addEventListener('input', compute);
         document.getElementById(id).addEventListener('change', compute);
       });

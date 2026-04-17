@@ -389,10 +389,57 @@ def tool_visa_requirements():
     """Venezuela visa & travel-advisory checker by passport country."""
     try:
         from src.data.visa_requirements import list_visa_requirements
+        from src.models import (
+            ExternalArticleEntry, SessionLocal, SourceType, init_db,
+        )
         from src.page_renderer import _env
         from datetime import date as _date
+        import copy as _copy
 
-        visas = list_visa_requirements()
+        # Start from the static curated list, then override the US row's
+        # advisory level/summary with the most recent successful
+        # TravelAdvisoryScraper result. This keeps the page in sync with
+        # the live State Department advisory without manual edits.
+        visas = [_copy.copy(v) for v in list_visa_requirements()]
+
+        try:
+            init_db()
+            db = SessionLocal()
+            try:
+                latest = (
+                    db.query(ExternalArticleEntry)
+                    .filter(ExternalArticleEntry.source == SourceType.TRAVEL_ADVISORY)
+                    .order_by(ExternalArticleEntry.published_date.desc())
+                    .first()
+                )
+            finally:
+                db.close()
+        except Exception as exc:
+            logger.warning("travel advisory live fetch failed, using static fallback: %s", exc)
+            latest = None
+
+        if latest is not None:
+            meta = latest.extra_metadata or {}
+            level = meta.get("level")
+            level_text = (meta.get("level_text") or "").strip()
+            level_label_map = {
+                1: "Exercise Normal Precautions",
+                2: "Exercise Increased Caution",
+                3: "Reconsider Travel",
+                4: "Do Not Travel",
+            }
+            if isinstance(level, int) and 1 <= level <= 4:
+                label = level_text or level_label_map.get(level, "")
+                advisory_summary = (
+                    f"{label} — current US State Department designation "
+                    f"(updated {latest.published_date.isoformat()}). "
+                    "See the full advisory for region-specific Level 4 "
+                    "designations and detailed risk indicators."
+                )
+                for v in visas:
+                    if v.get("code") == "US":
+                        v["advisory_level"] = level
+                        v["advisory_summary"] = advisory_summary
 
         seo, jsonld = _tool_seo_jsonld(
             slug="venezuela-visa-requirements",
@@ -407,7 +454,7 @@ def tool_visa_requirements():
             faq=[
                 {
                     "q": "Do US citizens need a visa to travel to Venezuela?",
-                    "a": "Yes. US citizens require a tourist (TR-V) or business (TR-N) visa issued in advance by the Venezuelan diplomatic mission. The US State Department also rates Venezuela at travel advisory Level 4 — Do Not Travel.",
+                    "a": "Yes. US citizens require a tourist (TR-V) or business (TR-N) visa issued in advance by the Venezuelan diplomatic mission — visas are not available on arrival. As of March 19, 2026 the US State Department rates Venezuela at travel advisory Level 3 (Reconsider Travel), with Level 4 (Do Not Travel) still applying to the Colombia border region and several specific states.",
                 },
                 {
                     "q": "Do UK and Canadian citizens need a visa to travel to Venezuela?",

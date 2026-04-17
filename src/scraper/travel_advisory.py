@@ -51,13 +51,28 @@ class TravelAdvisoryScraper(BaseScraper):
                     duration_seconds=int(time.time() - start),
                 )
 
+            # advisory["last_updated"] may be a date or None; we need a date
+            # for the published_date column. extra_metadata has it stringified.
+            from datetime import datetime as _dt
+            last_updated_str = advisory.get("last_updated")
+            try:
+                last_updated_date = (
+                    _dt.fromisoformat(last_updated_str).date()
+                    if last_updated_str else target_date
+                )
+            except (TypeError, ValueError):
+                last_updated_date = target_date
+
             article = ScrapedArticle(
                 headline=(
                     f"US Travel Advisory: Venezuela — Level {advisory['level']} "
                     f"({advisory['level_text']})"
                 ),
-                published_date=advisory.get("last_updated", target_date),
-                source_url=ADVISORY_URL,
+                published_date=last_updated_date,
+                # source_url has to be unique per advisory level so an updated
+                # advisory actually inserts a new row instead of being deduped
+                # against the previous one.
+                source_url=f"{ADVISORY_URL}#level-{advisory['level']}-{last_updated_date.isoformat()}",
                 body_text=advisory.get("summary", ""),
                 source_name="US State Department",
                 source_credibility="official",
@@ -147,9 +162,13 @@ class TravelAdvisoryScraper(BaseScraper):
         if not level_text:
             level_text = LEVEL_LABELS.get(level, "Unknown")
 
+        # Stringify the date for JSONB storage — datetime.date objects are
+        # not JSON-serialisable, which previously caused every persist to
+        # fail silently and left the travel_advisory table empty even
+        # though scrape_logs reported success.
         return {
             "level": level,
             "level_text": level_text,
-            "last_updated": last_updated,
+            "last_updated": last_updated.isoformat() if last_updated else None,
             "summary": summary,
         }
