@@ -23,7 +23,13 @@ def _supabase_base_url() -> Optional[str]:
 
 
 def supabase_storage_enabled() -> bool:
+    """Write-side: needs both URL + service key (used by cron)."""
     return bool(_supabase_base_url() and settings.supabase_service_key)
+
+
+def supabase_storage_read_enabled() -> bool:
+    """Read-side: only needs URL (public bucket; used by web)."""
+    return bool(_supabase_base_url())
 
 
 def public_report_url() -> Optional[str]:

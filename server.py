@@ -14,7 +14,11 @@ import httpx
 from flask import Flask, send_from_directory, abort, request, jsonify, Response
 
 from src.config import settings
-from src.storage_remote import fetch_report_html, supabase_storage_enabled
+from src.storage_remote import (
+    fetch_report_html,
+    supabase_storage_enabled,
+    supabase_storage_read_enabled,
+)
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
@@ -30,7 +34,7 @@ _REPORT_CACHE_TTL_SECONDS = 60
 
 def _get_report_html() -> str | None:
     """Return rendered report HTML from Supabase Storage (cached) or local disk."""
-    if supabase_storage_enabled():
+    if supabase_storage_read_enabled():
         now = time.time()
         if _REPORT_CACHE["html"] and now - _REPORT_CACHE["fetched_at"] < _REPORT_CACHE_TTL_SECONDS:
             return _REPORT_CACHE["html"]
@@ -129,7 +133,8 @@ def health():
     return {
         "status": "ok",
         "report_exists_local": report.exists(),
-        "supabase_storage_enabled": supabase_storage_enabled(),
+        "supabase_storage_read_enabled": supabase_storage_read_enabled(),
+        "supabase_storage_write_enabled": supabase_storage_enabled(),
         "report_cached": _REPORT_CACHE["html"] is not None,
     }, 200
 
