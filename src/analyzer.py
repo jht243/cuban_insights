@@ -22,9 +22,21 @@ from src.models import (
     AssemblyNewsEntry,
     GazetteEntry,
     GazetteStatus,
+    SourceType,
 )
 
 logger = logging.getLogger(__name__)
+
+LLM_CALL_BUDGET_PER_RUN = 30
+GDELT_TONE_THRESHOLD = 3.0
+RELEVANCE_KEYWORDS = (
+    "sanction", "sanctions", "ofac", "treasury", "executive order",
+    "license", "oil", "pdvsa", "chevron", "mining", "real estate",
+    "property", "expropriat", "nationaliz", "bcv", "bond", "debt",
+    "amnesty", "election", "maduro", "guaido", "machado",
+    "investor", "investment", "fdi", "imf", "world bank",
+    "bilateral", "ambassador", "diplomatic", "consulate",
+)
 
 SYSTEM_PROMPT = """You are a senior investment analyst specializing in Venezuela.
 You work for an intelligence service that helps international investors navigate
@@ -112,7 +124,31 @@ def run_analysis() -> dict:
             len(assembly_news),
         )
 
-        for article in ext_articles:
+        rule_based, llm_candidates = _partition_articles(ext_articles)
+        logger.info(
+            "Partitioned: %d rule-based (no LLM), %d LLM candidates (cap=%d)",
+            len(rule_based),
+            len(llm_candidates),
+            LLM_CALL_BUDGET_PER_RUN,
+        )
+
+        for article in rule_based:
+            try:
+                article.analysis_json = _rule_based_analysis(article)
+                article.status = GazetteStatus.ANALYZED
+                summary["analyzed"] += 1
+            except Exception as e:
+                logger.error("Rule-based analysis failed for article %d: %s", article.id, e)
+                summary["errors"] += 1
+        db.commit()
+        logger.info("Rule-based pass: %d entries marked analyzed (no LLM cost)", len(rule_based))
+
+        llm_budget = LLM_CALL_BUDGET_PER_RUN
+        for article in llm_candidates:
+            if llm_budget <= 0:
+                logger.info("LLM budget exhausted; remaining %d articles skipped", len(llm_candidates) - summary["analyzed"])
+                summary["skipped"] += 1
+                continue
             try:
                 analysis = _analyze_article(
                     client,
@@ -127,10 +163,12 @@ def run_analysis() -> dict:
                 article.status = GazetteStatus.ANALYZED
                 db.commit()
                 summary["analyzed"] += 1
+                llm_budget -= 1
                 logger.info(
-                    "Analyzed [%d/%d]: %s (score=%s)",
+                    "LLM analyzed [%d/%d, budget %d left]: %s (score=%s)",
                     summary["analyzed"],
-                    len(ext_articles),
+                    len(llm_candidates),
+                    llm_budget,
                     article.headline[:60],
                     analysis.get("relevance_score", "?"),
                 )
@@ -173,6 +211,103 @@ def run_analysis() -> dict:
 
     logger.info("Analysis complete: %s", summary)
     return summary
+
+
+def _partition_articles(articles: list) -> tuple[list, list]:
+    """Split articles into (rule_based, llm_candidates).
+
+    Rule-based: handled with cheap templates (no LLM call). Currently OFAC SDN.
+    LLM candidates: must clear a keyword/tone pre-screen and are sorted so the
+    most likely high-impact items get the LLM budget first.
+    """
+    rule_based = []
+    llm_candidates = []
+
+    for a in articles:
+        if a.source == SourceType.OFAC_SDN:
+            rule_based.append(a)
+            continue
+
+        if not _passes_prefilter(a):
+            rule_based.append(a)
+            continue
+
+        llm_candidates.append(a)
+
+    llm_candidates.sort(key=_llm_priority, reverse=True)
+    return rule_based, llm_candidates
+
+
+def _passes_prefilter(article) -> bool:
+    """Cheap heuristic: must look investor-relevant before we pay for an LLM call."""
+    text = f"{article.headline or ''} {article.body_text or ''}".lower()
+    if not any(kw in text for kw in RELEVANCE_KEYWORDS):
+        return False
+
+    if article.source == SourceType.GDELT:
+        tone = article.tone_score
+        if tone is not None and abs(tone) < GDELT_TONE_THRESHOLD:
+            return False
+
+    return True
+
+
+def _llm_priority(article) -> tuple:
+    """Higher tuple = analyzed first when budget is tight."""
+    source_rank = {
+        SourceType.FEDERAL_REGISTER: 4,
+        SourceType.TRAVEL_ADVISORY: 3,
+        SourceType.GDELT: 2,
+    }.get(article.source, 1)
+    tone_magnitude = abs(article.tone_score) if article.tone_score is not None else 0
+    return (source_rank, tone_magnitude)
+
+
+def _rule_based_analysis(article) -> dict:
+    """Templated analysis for high-volume, low-variance sources.
+
+    Avoids paying GPT-4o per row when the structure is identical (e.g. OFAC SDN
+    additions/removals — 410 entries that all decode to "person/entity sanctioned
+    under Venezuela program"). Templated entries land in the DB so they're
+    queryable, but get a low relevance score so they don't flood the report.
+    """
+    if article.source == SourceType.OFAC_SDN:
+        meta = article.extra_metadata or {}
+        name = meta.get("name") or "Unknown entity"
+        program = meta.get("program") or "Venezuela program"
+        entity_type = (meta.get("type") or "Entity").lower()
+        is_addition = "addition" in (article.article_type or "").lower()
+        action = "added to" if is_addition else "removed from"
+        return {
+            "relevance_score": 4,
+            "sectors": ["sanctions"],
+            "sentiment": "negative" if is_addition else "positive",
+            "status": "in_effect",
+            "status_label": "OFAC SDN — In Effect",
+            "category_label": "Sanctions",
+            "headline_short": f"OFAC {'adds' if is_addition else 'removes'} {name[:50]}",
+            "takeaway": (
+                f"<strong>{name}</strong> ({entity_type}) {action} the OFAC SDN List "
+                f"under {program}. US persons are prohibited from dealings with this entity."
+            ),
+            "is_breaking": False,
+            "source_trust": "official",
+            "_rule_based": True,
+        }
+
+    return {
+        "relevance_score": 2,
+        "sectors": [],
+        "sentiment": "mixed",
+        "status": "monitoring",
+        "status_label": "Monitoring",
+        "category_label": "Background",
+        "headline_short": (article.headline or "")[:80],
+        "takeaway": "Routine entry — flagged below relevance threshold by pre-screen.",
+        "is_breaking": False,
+        "source_trust": "tier2",
+        "_rule_based": True,
+    }
 
 
 def _analyze_article(
