@@ -26,6 +26,8 @@ services:
         value: briefing@venezuelanbusiness.net
       - key: NEWSLETTER_API_KEY
         sync: false
+      - key: GOOGLE_INDEXING_SA_JSON
+        sync: false
       - key: LOG_LEVEL
         value: INFO
     healthCheckPath: /health
@@ -55,6 +57,8 @@ services:
       - key: NEWSLETTER_API_KEY
         sync: false
       - key: BUTTONDOWN_API_KEY
+        sync: false
+      - key: GOOGLE_INDEXING_SA_JSON
         sync: false
       - key: LOG_LEVEL
         value: INFO

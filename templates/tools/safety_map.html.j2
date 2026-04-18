@@ -1,8 +1,10 @@
 {% extends "_base.html.j2" %}
 
 {% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0 24px; font-size: 13px; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 16px 0 16px; font-size: 13px; }
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
   .dot.s1 { background: #c0392b; }
@@ -10,6 +12,32 @@
   .dot.s3 { background: #f1c40f; }
   .dot.s4 { background: #27ae60; }
   .dot.s5 { background: #1e8449; }
+  #safety-map { height: 480px; width: 100%; border: 1px solid var(--sr-gray-light); border-radius: 3px; margin: 0 0 12px; background: #eef2f5; }
+  @media (max-width: 720px) { #safety-map { height: 360px; } }
+  .map-note { font-size: 12px; color: var(--sr-gray-text); margin: 0 0 20px; }
+  .nbh-marker {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    color: #fff; font-weight: 700; font-size: 13px;
+    border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+    font-family: var(--font-sans, 'Open Sans', sans-serif);
+  }
+  .nbh-marker.s1 { background: #c0392b; }
+  .nbh-marker.s2 { background: #e67e22; }
+  .nbh-marker.s3 { background: #f1c40f; color: #4a3300; }
+  .nbh-marker.s4 { background: #27ae60; }
+  .nbh-marker.s5 { background: #1e8449; }
+  .leaflet-popup-content { font-family: var(--font-sans, 'Open Sans', sans-serif); font-size: 13px; line-height: 1.45; margin: 10px 12px; max-width: 260px; }
+  .leaflet-popup-content h4 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 16px; margin: 0 0 4px; }
+  .leaflet-popup-content .pop-muni { font-size: 11px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .leaflet-popup-content .pop-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: 700; font-size: 11px; color: #fff; margin-right: 6px; vertical-align: middle; }
+  .leaflet-popup-content .pop-pill.s1 { background: #c0392b; }
+  .leaflet-popup-content .pop-pill.s2 { background: #e67e22; }
+  .leaflet-popup-content .pop-pill.s3 { background: #f1c40f; color: #4a3300; }
+  .leaflet-popup-content .pop-pill.s4 { background: #27ae60; }
+  .leaflet-popup-content .pop-pill.s5 { background: #1e8449; }
+  .leaflet-popup-content .pop-jump { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--sr-blue-dark); font-weight: 600; }
+  .nbh-card.is-target { box-shadow: 0 0 0 2px var(--sr-blue-dark); transition: box-shadow 0.2s ease; }
   .filter { display:flex; gap:8px; margin: 12px 0 20px; }
   .filter input, .filter select { padding: 10px 14px; border: 1px solid var(--sr-gray-light); border-radius:3px; font-size: 14px; }
   .filter input { flex:1; }
@@ -70,6 +98,12 @@
     <div class="legend-item"><span class="dot s1"></span> 1 — Do not enter</div>
   </div>
 
+  <div id="safety-map" role="img" aria-label="Map of Caracas with neighborhoods colored by safety score"></div>
+  <p class="map-note">
+    Marker positions are approximate, illustrative anchors for each named area
+    — not precise neighborhood boundaries. Click a marker for details.
+  </p>
+
   <div class="filter">
     <input type="text" id="nbh-q" placeholder="Search neighborhood, municipality, category…">
     <select id="nbh-min">
@@ -81,7 +115,7 @@
 
   <div class="nbh-grid" id="nbh-grid">
     {% for n in neighborhoods %}
-    <article class="nbh-card s{{ n.safety_score }}" data-text="{{ (n.name + ' ' + n.municipality + ' ' + n.category)|lower }}" data-score="{{ n.safety_score }}">
+    <article id="nbh-{{ loop.index0 }}" class="nbh-card s{{ n.safety_score }}" data-idx="{{ loop.index0 }}" data-text="{{ (n.name + ' ' + n.municipality + ' ' + n.category)|lower }}" data-score="{{ n.safety_score }}">
       <div class="nbh-head">
         <div>
           <h3>{{ n.name }}</h3>
@@ -111,11 +145,84 @@
     <a href="/invest-in-venezuela">how to invest in Venezuela</a>.
   </p>
 
+  <script id="nbh-data" type="application/json">{{ neighborhoods | tojson }}</script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
   <script>
     (function() {
       var cards = document.querySelectorAll('#nbh-grid .nbh-card');
       var q = document.getElementById('nbh-q');
       var min = document.getElementById('nbh-min');
+
+      var data = [];
+      try { data = JSON.parse(document.getElementById('nbh-data').textContent || '[]'); }
+      catch (e) { data = []; }
+
+      var map = null;
+      var markers = [];
+
+      function escapeHtml(s) {
+        return String(s == null ? '' : s)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function popupHtml(n, idx) {
+        return '<h4>' + escapeHtml(n.name) + '</h4>' +
+          '<div class="pop-muni">' + escapeHtml(n.municipality) + '</div>' +
+          '<div><span class="pop-pill s' + n.safety_score + '">' + n.safety_score + '/5</span>' +
+          '<span>' + escapeHtml(n.category) + '</span></div>' +
+          '<p style="margin:6px 0 4px;">' + escapeHtml(n.summary) + '</p>' +
+          '<div><strong>Business use:</strong> ' + escapeHtml(n.business_use) + '</div>' +
+          '<div style="margin-top:4px;color:#7a1f1a;"><strong>Avoid:</strong> ' + escapeHtml(n.what_to_avoid) + '</div>' +
+          '<a class="pop-jump" href="#nbh-' + idx + '" data-jump="' + idx + '">View full details ↓</a>';
+      }
+
+      function initMap() {
+        if (typeof L === 'undefined' || !data.length) return;
+        var center = [10.491, -66.879];
+        map = L.map('safety-map', { scrollWheelZoom: false }).setView(center, 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var bounds = [];
+        data.forEach(function(n, idx) {
+          if (typeof n.lat !== 'number' || typeof n.lng !== 'number') return;
+          var icon = L.divIcon({
+            className: '',
+            html: '<div class="nbh-marker s' + n.safety_score + '">' + n.safety_score + '</div>',
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+            popupAnchor: [0, -14]
+          });
+          var m = L.marker([n.lat, n.lng], { icon: icon, title: n.name + ' — ' + n.safety_score + '/5' });
+          m.bindPopup(popupHtml(n, idx));
+          m.addTo(map);
+          markers.push({ marker: m, score: n.safety_score, text: (n.name + ' ' + n.municipality + ' ' + n.category).toLowerCase(), idx: idx });
+          bounds.push([n.lat, n.lng]);
+        });
+        if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
+
+        map.on('popupopen', function(e) {
+          var el = e.popup.getElement();
+          if (!el) return;
+          var jump = el.querySelector('a[data-jump]');
+          if (!jump) return;
+          jump.addEventListener('click', function(ev) {
+            ev.preventDefault();
+            var idx = jump.getAttribute('data-jump');
+            var card = document.getElementById('nbh-' + idx);
+            if (!card) return;
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('is-target');
+            setTimeout(function() { card.classList.remove('is-target'); }, 2000);
+          });
+        });
+      }
+
       function apply() {
         var qv = (q.value || '').toLowerCase().trim();
         var minScore = parseInt(min.value || '0', 10);
@@ -124,9 +231,25 @@
           var matchS = parseInt(c.dataset.score, 10) >= minScore;
           c.style.display = (matchQ && matchS) ? '' : 'none';
         });
+        if (!map) return;
+        markers.forEach(function(item) {
+          var matchQ = !qv || item.text.indexOf(qv) !== -1;
+          var matchS = item.score >= minScore;
+          if (matchQ && matchS) {
+            if (!map.hasLayer(item.marker)) item.marker.addTo(map);
+          } else {
+            if (map.hasLayer(item.marker)) map.removeLayer(item.marker);
+          }
+        });
       }
       q.addEventListener('input', apply);
       min.addEventListener('change', apply);
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMap);
+      } else {
+        initMap();
+      }
     })();
   </script>
 

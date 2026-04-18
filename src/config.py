@@ -89,6 +89,25 @@ class Settings(BaseSettings):
     blog_gen_lookback_days: int = 14
     blog_gen_max_words: int = 900
 
+    # ── Distribution: Google Indexing API ──────────────────────────────
+    # Service-account JSON pasted as a single env var (the entire JSON
+    # blob, including the curly braces and the embedded \n in
+    # private_key). The runner uses this to ping the Indexing API on
+    # every newly-published BlogPost URL and on the homepage when the
+    # daily report regenerates. Leave blank to disable.
+    google_indexing_sa_json: str = ""
+    # Alternate: path to the JSON file on disk (used by Render "secret
+    # files" mounts). Only consulted when google_indexing_sa_json is empty.
+    google_indexing_sa_file: str = ""
+    # Only ping URLs newer than this many days. Avoids burning quota on
+    # the entire historical backlog the first time the feature ships;
+    # Google's regular crawl already knows about old content.
+    google_indexing_lookback_days: int = 7
+    # Hard cap per pipeline run — Indexing API quota is 200 URLs/day per
+    # GCP project. This is a runtime safety belt; the cron fires twice a
+    # day so this is well within the daily quota.
+    google_indexing_max_per_run: int = 50
+
 
 settings = Settings()
 

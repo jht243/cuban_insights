@@ -127,6 +127,22 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
     else:
         console.print("\n[dim]Phase 4: Newsletter — SKIPPED[/dim]")
 
+    # Phase 5: Distribution (Google Indexing API today; Bluesky / Mastodon /
+    # Telegram / LinkedIn / Threads / Medium will be added incrementally).
+    # Always non-fatal — distribution failures must never break the daily
+    # pipeline because the underlying content is already published.
+    console.print("\n[bold cyan]Phase 5:[/bold cyan] Distributing to discovery channels...")
+    try:
+        from src.distribution.runner import run_all as run_distribution_all
+        dist_result = run_distribution_all()
+        results["distribution"] = dist_result
+        for channel, summary in dist_result.items():
+            console.print(f"  [green]✓[/green] {channel}: {summary}")
+    except Exception as e:
+        logger.error("Distribution failed: %s", e, exc_info=True)
+        results["distribution"] = {"error": str(e)}
+        console.print(f"  [yellow]![/yellow] Distribution failed (non-fatal): {e}")
+
     _print_summary(results, start)
 
 

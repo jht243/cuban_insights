@@ -237,6 +237,41 @@ class LandingPage(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+class DistributionLog(Base):
+    """
+    Tracks every outbound distribution event (Google Indexing ping,
+    Bluesky post, Mastodon post, Telegram broadcast, etc.). One row per
+    (url, channel) attempt. Used both for idempotency (don't re-ping the
+    same URL on the same channel within a cooldown window) and for
+    operational diagnostics.
+
+    Channels we plan to write into this table:
+      - google_indexing      Google's Indexing API URL_UPDATED notification
+      - bluesky              atproto post
+      - mastodon             status post
+      - telegram             channel broadcast
+      - linkedin             company-page post
+      - threads              Meta Threads post
+      - medium               Medium import / canonical post
+    """
+
+    __tablename__ = "distribution_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    channel = Column(String(40), nullable=False, index=True)
+    url = Column(String(1000), nullable=False, index=True)
+
+    entity_type = Column(String(40), nullable=True)  # blog_post | landing_page | static
+    entity_id = Column(Integer, nullable=True)
+
+    success = Column(Boolean, nullable=False, default=False, index=True)
+    response_code = Column(Integer, nullable=True)
+    response_snippet = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
 class ScrapeLog(Base):
     """Tracks every scrape attempt for diagnostics and retry logic."""
 
