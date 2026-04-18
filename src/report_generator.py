@@ -568,15 +568,32 @@ def _build_ticker(db) -> list[dict]:
     if bcv and bcv.extra_metadata:
         usd_rate = bcv.extra_metadata.get("usd")
         if usd_rate:
+            parallel = bcv.extra_metadata.get("parallel_usd")
+            premium = bcv.extra_metadata.get("parallel_premium_pct")
+            change = None
+            if parallel and premium is not None:
+                change = f"+{premium:.1f}% parallel"
+            source_used = bcv.extra_metadata.get("source_used") or "BCV"
+            source_label = "BCV (live)" if source_used == "bcv" else f"BCV via {source_used}"
             items.append({
                 "label": "BCV Official",
-                "value": f"{usd_rate}",
+                "value": f"{float(usd_rate):.2f}",
                 "unit": "Bs.D/$",
-                "change": None,
+                "change": change,
                 "change_dir": "up",
                 "value_color": None,
-                "source": "BCV (live)",
+                "source": source_label,
             })
+            if parallel:
+                items.append({
+                    "label": "USD Parallel",
+                    "value": f"{float(parallel):.2f}",
+                    "unit": "Bs.D/$",
+                    "change": None,
+                    "change_dir": "up",
+                    "value_color": "#fbbf24",
+                    "source": "Monitor (avg)",
+                })
 
     advisory = (
         db.query(ExternalArticleEntry)
