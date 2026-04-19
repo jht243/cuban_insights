@@ -559,9 +559,49 @@ def _deduplicate_entries(entries: list[dict]) -> list[dict]:
     return deduped
 
 
+# How far back the "This Week's News" sidebar reaches. Match the
+# label on the panel — we tell readers it's the past week, so the
+# data must actually be from the past week. If a slow news week
+# leaves us with <2 items inside the window, _build_news_sidebar
+# transparently extends to 14d so the panel never renders nearly
+# empty next to a populated calendar.
+NEWS_SIDEBAR_PRIMARY_DAYS = 7
+NEWS_SIDEBAR_FALLBACK_DAYS = 14
+NEWS_SIDEBAR_MIN_ITEMS_BEFORE_FALLBACK = 2
+
+
 def _build_news_sidebar(entries: list[dict]) -> list[dict]:
-    """Top entries for the This Week's News sidebar."""
-    top = sorted(entries, key=lambda e: (e.get("is_breaking", False), e["relevance"]), reverse=True)
+    """Top items for the This Week's News sidebar.
+
+    Filters to the last 7 days (Option B from the duplicate-fix
+    discussion — keep the heading honest). Falls back to a 14-day
+    window only if fewer than NEWS_SIDEBAR_MIN_ITEMS_BEFORE_FALLBACK
+    items survive the 7-day filter, so a quiet news week doesn't
+    leave the panel looking broken next to a fully-populated calendar.
+    Within the chosen window, ranks by (is_breaking, relevance) and
+    caps at 8.
+    """
+    today = date.today()
+
+    def _within(days: int) -> list[dict]:
+        cutoff = today - timedelta(days=days)
+        return [e for e in entries if e["published_date"] >= cutoff]
+
+    pool = _within(NEWS_SIDEBAR_PRIMARY_DAYS)
+    if len(pool) < NEWS_SIDEBAR_MIN_ITEMS_BEFORE_FALLBACK:
+        widened = _within(NEWS_SIDEBAR_FALLBACK_DAYS)
+        logger.info(
+            "News sidebar: only %d item(s) in last %dd, widening to %dd (%d items)",
+            len(pool), NEWS_SIDEBAR_PRIMARY_DAYS,
+            NEWS_SIDEBAR_FALLBACK_DAYS, len(widened),
+        )
+        pool = widened
+
+    top = sorted(
+        pool,
+        key=lambda e: (e.get("is_breaking", False), e["relevance"]),
+        reverse=True,
+    )
     sidebar = []
     for e in top[:8]:
         plain = e.get("takeaway_plain") or re.sub(r"<[^>]+>", "", str(e["takeaway"]))
