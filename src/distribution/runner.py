@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 from typing import Iterable
 
 from src.config import settings
-from src.distribution import google_indexing, indexnow
+from src.distribution import bluesky, google_indexing, indexnow
 from src.models import BlogPost, DistributionLog, SessionLocal, init_db
 
 
@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 CHANNEL_GOOGLE_INDEXING = "google_indexing"
 CHANNEL_INDEXNOW = "indexnow"
+CHANNEL_BLUESKY = "bluesky"
 
 # Don't re-ping the same URL on the same channel within this window.
 # Google's docs say frequent re-notifications for unchanged URLs are
@@ -250,10 +251,113 @@ def run_indexnow() -> dict:
         db.close()
 
 
+def run_bluesky() -> dict:
+    """Post recent BlogPost briefings to Bluesky.
+
+    Unlike search-engine pings, social posting is one-and-done — once a
+    URL is posted to Bluesky we never repost it (the cooldown for this
+    channel is effectively forever, enforced by checking DistributionLog
+    for ANY successful past post on this URL, not just within 23h).
+
+    Only briefings created within bluesky_lookback_days are eligible, so
+    the historical backlog never gets posted (would look like spam).
+    """
+    if not bluesky.is_enabled():
+        return {"status": "skipped", "reason": "no credentials"}
+
+    init_db()
+    db = SessionLocal()
+    try:
+        # For social channels, "already posted" is permanent — not a
+        # 23h cooldown. We check for any successful past attempt.
+        already_posted_rows = (
+            db.query(DistributionLog.url)
+            .filter(DistributionLog.channel == CHANNEL_BLUESKY)
+            .filter(DistributionLog.success.is_(True))
+            .all()
+        )
+        already_posted = {r[0] for r in already_posted_rows}
+
+        cutoff = datetime.utcnow() - timedelta(days=settings.bluesky_lookback_days)
+        new_posts = (
+            db.query(BlogPost)
+            .filter(BlogPost.created_at >= cutoff)
+            .order_by(BlogPost.created_at.asc())  # oldest-first so backlog drains in order
+            .all()
+        )
+
+        candidates: list[BlogPost] = []
+        for post in new_posts:
+            url = _blog_url(post)
+            if url in already_posted:
+                continue
+            candidates.append(post)
+            if len(candidates) >= settings.bluesky_max_per_run:
+                break
+
+        if not candidates:
+            return {"status": "ok", "posted": 0, "reason": "nothing new"}
+
+        client = bluesky.get_client()
+        if client is None:
+            return {"status": "skipped", "reason": "client init failed"}
+
+        posted = 0
+        failed = 0
+        first_post_url: str | None = None
+        for post in candidates:
+            url = _blog_url(post)
+            keywords = post.keywords_json or []
+            if isinstance(keywords, str):
+                keywords = [k.strip() for k in keywords.split(",") if k.strip()]
+
+            text = bluesky.compose_post(
+                title=post.title or "",
+                summary=post.summary or post.subtitle or "",
+                url=url,
+                keywords=keywords,
+            )
+            result = client.post(text=text, link_url=url)
+            _record(
+                db,
+                channel=CHANNEL_BLUESKY,
+                url=url,
+                success=result.success,
+                response_code=result.status_code,
+                response_snippet=(result.post_url or result.response_snippet)[:500],
+                entity_type="blog_post",
+                entity_id=post.id,
+            )
+            if result.success:
+                posted += 1
+                if not first_post_url:
+                    first_post_url = result.post_url
+            else:
+                failed += 1
+
+        db.commit()
+        return {
+            "status": "ok",
+            "posted": posted,
+            "failed": failed,
+            "first_post_url": first_post_url,
+        }
+    except Exception as exc:
+        logger.exception("bluesky runner failed: %s", exc)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return {"status": "error", "error": str(exc)}
+    finally:
+        db.close()
+
+
 def run_all() -> dict:
     """Run every enabled distribution channel. Returns per-channel summary."""
     return {
         CHANNEL_GOOGLE_INDEXING: run_google_indexing(),
         CHANNEL_INDEXNOW: run_indexnow(),
-        # Future: bluesky, mastodon, telegram, linkedin, threads, medium
+        CHANNEL_BLUESKY: run_bluesky(),
+        # Future: mastodon, telegram, linkedin, threads, medium
     }

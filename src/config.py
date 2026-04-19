@@ -108,6 +108,20 @@ class Settings(BaseSettings):
     # day so this is well within the daily quota.
     google_indexing_max_per_run: int = 50
 
+    # ── Distribution: Bluesky (atproto) ────────────────────────────────
+    # Bluesky handle (e.g. "caracasresearch.bsky.social") and an app
+    # password (NOT the main account password) generated under Settings →
+    # Privacy and Security → App Passwords. Leave either blank to disable.
+    bluesky_handle: str = ""
+    bluesky_app_password: str = ""
+    # Only post briefings created within this many days. Avoids spamming
+    # the historical backlog when the feature first ships, and keeps the
+    # feed feeling like fresh news rather than a re-run.
+    bluesky_lookback_days: int = 2
+    # Hard cap per cron run. Twice-daily cron × 5 = 10 posts/day max.
+    # Realistic new-briefing volume is ~3-6/run so this is a safety belt.
+    bluesky_max_per_run: int = 5
+
 
 settings = Settings()
 

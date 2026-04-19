@@ -28,6 +28,10 @@ services:
         sync: false
       - key: GOOGLE_INDEXING_SA_JSON
         sync: false
+      - key: BLUESKY_HANDLE
+        sync: false
+      - key: BLUESKY_APP_PASSWORD
+        sync: false
       - key: LOG_LEVEL
         value: INFO
     healthCheckPath: /health
@@ -59,6 +63,10 @@ services:
       - key: BUTTONDOWN_API_KEY
         sync: false
       - key: GOOGLE_INDEXING_SA_JSON
+        sync: false
+      - key: BLUESKY_HANDLE
+        sync: false
+      - key: BLUESKY_APP_PASSWORD
         sync: false
       - key: LOG_LEVEL
         value: INFO
