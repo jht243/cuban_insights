@@ -665,6 +665,33 @@ def publish_daily_tearsheet() -> dict:
     }
 
 
+# In-process cache of the most recent rendered PDF + its data dict.
+# A single cron run goes Phase 3b → Phase 5 (which has 3 distribution
+# channels each wanting the same PDF). Without this cache, each channel
+# re-runs collect_tearsheet_data() (DB queries) + render_daily_tearsheet_pdf()
+# (ReportLab work) → ~3× the wall-clock for no benefit. Keyed by date so
+# any cross-day re-fire transparently invalidates.
+_TEARSHEET_CACHE: dict = {"date": None, "data": None, "pdf": None}
+
+
+def get_or_build_tearsheet(force_refresh: bool = False) -> tuple[dict, bytes]:
+    """Return (data, pdf_bytes) for today's tearsheet, building once and
+    reusing within the same cron run. Use `force_refresh=True` to bypass
+    the cache (e.g. local re-renders during template iteration)."""
+    today = datetime.utcnow().date()
+    if (
+        not force_refresh
+        and _TEARSHEET_CACHE["date"] == today
+        and _TEARSHEET_CACHE["pdf"] is not None
+    ):
+        return _TEARSHEET_CACHE["data"], _TEARSHEET_CACHE["pdf"]
+
+    data = collect_tearsheet_data()
+    pdf = render_daily_tearsheet_pdf(data)
+    _TEARSHEET_CACHE.update({"date": today, "data": data, "pdf": pdf})
+    return data, pdf
+
+
 def should_publish_today() -> bool:
     """Decide whether THIS cron run should publish a fresh tearsheet.
 

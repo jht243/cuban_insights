@@ -132,6 +132,56 @@ class Settings(BaseSettings):
     # publishes one per run so 5 is plenty of headroom.
     internet_archive_max_per_run: int = 5
 
+    # ── Distribution: Zenodo (CERN-operated open repository) ───────────
+    # Zenodo gives every uploaded record a permanent DOI and is indexed by
+    # Google Search + Google Dataset Search + OpenAIRE. Generate a token
+    # at https://zenodo.org/account/settings/applications/tokens/new/
+    # with scopes `deposit:write` and `deposit:actions`. Leave blank to
+    # disable the channel.
+    zenodo_access_token: str = ""
+    # Set to "1" to publish to https://sandbox.zenodo.org instead of
+    # production. Useful for first-run smoke tests; sandbox DOIs are not
+    # real and records are wiped periodically.
+    zenodo_use_sandbox: bool = False
+    # Optional Zenodo "community" slug (e.g. "venezuela-research"). If
+    # set, every deposit requests inclusion in that community — the
+    # community owners then approve/reject. Leave blank to skip community
+    # association.
+    zenodo_community: str = ""
+    # Hard cap per cron run — twice-daily cron × 1 tearsheet = 2 max,
+    # this is a runtime safety belt.
+    zenodo_max_per_run: int = 3
+
+    # ── Distribution: OSF Preprints (Open Science Framework) ───────────
+    # OSF Preprints IS indexed by Google Scholar (the main reason we use
+    # it over plain Zenodo). Generate a Personal Access Token at
+    # https://osf.io/settings/tokens/ with scope `osf.full_write`.
+    # Leave blank to disable.
+    osf_access_token: str = ""
+    # The OSF "node" (project) GUID under which all daily tearsheets are
+    # stored. Create one project manually at osf.io and paste its 5-char
+    # GUID here (the part of the URL after osf.io/). Each daily PDF is
+    # uploaded to this node and then registered as a child preprint.
+    osf_project_node_id: str = ""
+    # The OSF Preprints provider GUID. "osf" is the generic OSF provider
+    # which accepts almost anything. Other options:
+    #   "socarxiv"  → Social Sciences (good fit for investment research)
+    #   "metaarxiv" → Metascience
+    # Leave at "osf" unless you've contacted a specific provider's
+    # moderators about ongoing daily submissions.
+    osf_preprint_provider: str = "osf"
+    # OSF requires a "subjects" taxonomy ID (BePress taxonomy). The
+    # default below is "Social and Behavioral Sciences" → "Economics".
+    # Override only if you change the preprint provider, since each
+    # provider has its own subject whitelist.
+    osf_subject_id: str = "584240da54be81056cecaab4"  # Economics
+    # SPDX license ID for the deposit. CC-BY-4.0 is permissive +
+    # attribution, matching the IA "free to share with attribution"
+    # rights statement.
+    osf_license_name: str = "CC-By Attribution 4.0 International"
+    # Hard cap per cron run.
+    osf_max_per_run: int = 3
+
     # ── Distribution: Bluesky (atproto) ────────────────────────────────
     # Bluesky handle (e.g. "caracasresearch.bsky.social") and an app
     # password (NOT the main account password) generated under Settings →

@@ -18,7 +18,14 @@ from datetime import datetime, timedelta
 from typing import Iterable
 
 from src.config import settings
-from src.distribution import bluesky, google_indexing, indexnow, internet_archive
+from src.distribution import (
+    bluesky,
+    google_indexing,
+    indexnow,
+    internet_archive,
+    osf,
+    zenodo,
+)
 from src.models import BlogPost, DistributionLog, SessionLocal, init_db
 
 
@@ -29,6 +36,8 @@ CHANNEL_GOOGLE_INDEXING = "google_indexing"
 CHANNEL_INDEXNOW = "indexnow"
 CHANNEL_BLUESKY = "bluesky"
 CHANNEL_INTERNET_ARCHIVE = "internet_archive"
+CHANNEL_ZENODO = "zenodo"
+CHANNEL_OSF = "osf"
 
 # Don't re-ping the same URL on the same channel within this window.
 # Google's docs say frequent re-notifications for unchanged URLs are
@@ -399,24 +408,19 @@ def run_internet_archive() -> dict:
 
     # Time-gate: same rule as Phase 3b — IA only uploads on the
     # evening cron, so we don't push a half-stale morning PDF.
-    from src.distribution.tearsheet import should_publish_today
+    from src.distribution.tearsheet import (
+        get_or_build_tearsheet,
+        should_publish_today,
+    )
     if not should_publish_today():
         return {"status": "skipped", "reason": "not the evening cron"}
 
     init_db()
     db = SessionLocal()
     try:
-        # Same 23h cooldown as the other "ping" channels so a re-fire
-        # of the cron doesn't double-upload to IA. The cooldown key is
-        # the IA details URL, which is unique per day.
         already = _recent_pinged_urls(db, CHANNEL_INTERNET_ARCHIVE, _REPING_COOLDOWN)
 
-        from src.distribution.tearsheet import (
-            collect_tearsheet_data,
-            render_daily_tearsheet_pdf,
-        )
-
-        data = collect_tearsheet_data()
+        data, pdf_bytes = get_or_build_tearsheet()
         today = data["generated_at"].date()
         identifier = internet_archive.identifier_for_date(today)
         details_url = f"https://archive.org/details/{identifier}"
@@ -424,7 +428,6 @@ def run_internet_archive() -> dict:
         if details_url in already:
             return {"status": "ok", "uploaded": 0, "reason": "already uploaded today"}
 
-        pdf_bytes = render_daily_tearsheet_pdf(data)
         result = internet_archive.upload_tearsheet(pdf_bytes, today)
 
         _record(
@@ -458,6 +461,142 @@ def run_internet_archive() -> dict:
         db.close()
 
 
+def run_zenodo() -> dict:
+    """Upload today's daily Investor Tearsheet PDF to Zenodo.
+
+    Each successful run mints a NEW DOI (Zenodo records are immutable
+    once published; new versions get new DOIs). The 23h cooldown +
+    DistributionLog dedup keys on the per-day record URL ensure a
+    same-day cron re-fire is a no-op.
+
+    Time-gated identically to IA: evening cron only, so we only mint
+    one DOI per day reflecting the full day's intelligence."""
+    if not zenodo.is_enabled():
+        return {"status": "skipped", "reason": "no credentials"}
+
+    from src.distribution.tearsheet import (
+        get_or_build_tearsheet,
+        should_publish_today,
+    )
+    if not should_publish_today():
+        return {"status": "skipped", "reason": "not the evening cron"}
+
+    init_db()
+    db = SessionLocal()
+    try:
+        data, pdf_bytes = get_or_build_tearsheet()
+        today = data["generated_at"].date()
+
+        # Cooldown key = the date-stamped /tearsheet/<date>.pdf URL on
+        # our own site. Stable per-day so the cooldown actually dedups
+        # (Zenodo DOIs are not knowable until after publish).
+        cooldown_key = f"{settings.site_url.rstrip('/')}/tearsheet/{today.isoformat()}.pdf"
+        already = _recent_pinged_urls(db, CHANNEL_ZENODO, _REPING_COOLDOWN)
+        if cooldown_key in already:
+            return {"status": "ok", "uploaded": 0, "reason": "already uploaded today"}
+
+        result = zenodo.upload_tearsheet(pdf_bytes, today)
+
+        _record(
+            db,
+            channel=CHANNEL_ZENODO,
+            url=cooldown_key,
+            success=result.success,
+            response_code=result.response_code,
+            response_snippet=result.response_snippet,
+            entity_type="tearsheet",
+            entity_id=None,
+        )
+        db.commit()
+
+        return {
+            "status": "ok" if result.success else "error",
+            "uploaded": 1 if result.success else 0,
+            "deposition_id": result.deposition_id,
+            "doi": result.doi,
+            "record_url": result.record_url,
+            "download_url": result.download_url,
+            "response_code": result.response_code,
+        }
+    except Exception as exc:
+        logger.exception("zenodo runner failed: %s", exc)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return {"status": "error", "error": str(exc)}
+    finally:
+        db.close()
+
+
+def run_osf() -> dict:
+    """Upload today's daily Investor Tearsheet PDF to OSF as a preprint.
+
+    OSF Preprints IS indexed by Google Scholar (this is the channel's
+    raison d'être versus Zenodo + Internet Archive). Same time-gate +
+    23h cooldown semantics as the other tearsheet channels.
+
+    Note: OSF preprints are not strictly idempotent per-day — each
+    successful publish creates a new preprint record. We rely on the
+    cooldown to prevent same-day duplicates."""
+    if not osf.is_enabled():
+        return {
+            "status": "skipped",
+            "reason": "no credentials (token or project node id missing)",
+        }
+
+    from src.distribution.tearsheet import (
+        get_or_build_tearsheet,
+        should_publish_today,
+    )
+    if not should_publish_today():
+        return {"status": "skipped", "reason": "not the evening cron"}
+
+    init_db()
+    db = SessionLocal()
+    try:
+        data, pdf_bytes = get_or_build_tearsheet()
+        today = data["generated_at"].date()
+
+        cooldown_key = f"{settings.site_url.rstrip('/')}/tearsheet/{today.isoformat()}.pdf#osf"
+        already = _recent_pinged_urls(db, CHANNEL_OSF, _REPING_COOLDOWN)
+        if cooldown_key in already:
+            return {"status": "ok", "uploaded": 0, "reason": "already uploaded today"}
+
+        result = osf.upload_tearsheet(pdf_bytes, today)
+
+        _record(
+            db,
+            channel=CHANNEL_OSF,
+            url=cooldown_key,
+            success=result.success,
+            response_code=result.response_code,
+            response_snippet=result.response_snippet,
+            entity_type="tearsheet",
+            entity_id=None,
+        )
+        db.commit()
+
+        return {
+            "status": "ok" if result.success else "error",
+            "uploaded": 1 if result.success else 0,
+            "preprint_id": result.preprint_id,
+            "file_guid": result.file_guid,
+            "record_url": result.record_url,
+            "download_url": result.download_url,
+            "response_code": result.response_code,
+        }
+    except Exception as exc:
+        logger.exception("osf runner failed: %s", exc)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return {"status": "error", "error": str(exc)}
+    finally:
+        db.close()
+
+
 def run_all() -> dict:
     """Run every enabled distribution channel. Returns per-channel summary."""
     return {
@@ -465,5 +604,7 @@ def run_all() -> dict:
         CHANNEL_INDEXNOW: run_indexnow(),
         CHANNEL_BLUESKY: run_bluesky(),
         CHANNEL_INTERNET_ARCHIVE: run_internet_archive(),
+        CHANNEL_ZENODO: run_zenodo(),
+        CHANNEL_OSF: run_osf(),
         # Future: mastodon, telegram, linkedin, threads, medium
     }
