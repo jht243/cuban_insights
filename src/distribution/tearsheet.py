@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import re
 from datetime import date, datetime, timedelta
 from typing import Optional
@@ -662,6 +663,34 @@ def publish_daily_tearsheet() -> dict:
         "dated_url": dated_url,
         "latest_url": latest_url,
     }
+
+
+def should_publish_today() -> bool:
+    """Decide whether THIS cron run should publish a fresh tearsheet.
+
+    The site has two crons per day — 10 AM and 5 PM Medellín time
+    (15:00 UTC and 22:00 UTC). We want the daily tearsheet to publish
+    once per day, on the evening run, so the artifact users download
+    reflects the day's full pipeline including the latest 5 PM
+    sanctions/news scrape. The morning cron skips it.
+
+    Detection is purely by UTC hour, which is stable across DST
+    because Render runs the cron in UTC. The evening window is
+    intentionally wide (21:00–02:00 UTC) so a multi-minute pipeline
+    delay or a manually-triggered re-run still counts as "evening".
+
+    Two escape hatches for manual / dev use:
+      TEARSHEET_FORCE=1  → always publish (e.g. local backfill)
+      TEARSHEET_SKIP=1   → never publish (e.g. testing other phases)
+    """
+    if os.environ.get("TEARSHEET_FORCE", "").strip():
+        return True
+    if os.environ.get("TEARSHEET_SKIP", "").strip():
+        return False
+    hour_utc = datetime.utcnow().hour
+    # Evening cron fires at 22:00 UTC; treat 21:00–02:00 UTC as
+    # "evening" to cover pipeline duration + small clock skew.
+    return hour_utc >= 21 or hour_utc <= 2
 
 
 def latest_tearsheet_public_url() -> Optional[str]:

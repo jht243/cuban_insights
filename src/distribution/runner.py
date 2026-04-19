@@ -397,6 +397,12 @@ def run_internet_archive() -> dict:
     if not internet_archive.is_enabled():
         return {"status": "skipped", "reason": "no credentials"}
 
+    # Time-gate: same rule as Phase 3b — IA only uploads on the
+    # evening cron, so we don't push a half-stale morning PDF.
+    from src.distribution.tearsheet import should_publish_today
+    if not should_publish_today():
+        return {"status": "skipped", "reason": "not the evening cron"}
+
     init_db()
     db = SessionLocal()
     try:
