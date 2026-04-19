@@ -360,6 +360,9 @@
     .hotel-display .h-addr { font-weight: 500; color: var(--ink-soft); font-size: 8.5pt; margin-top: 1px; }
     .hotel-display .h-phone { font-weight: 700; color: var(--red); margin-top: 1px; }
     .hotel-other { margin-top: 4px; display: grid; gap: 3px; }
+    /* The HTML `hidden` attribute would otherwise be overridden by the
+       `display: grid/block` rules above. Force it to win. */
+    .hotel-other[hidden], .hotel-display[hidden] { display: none !important; }
     .hotel-other-row { display: flex; gap: 6px; align-items: baseline; }
     .hotel-other-label {
       font-size: 7.5pt;

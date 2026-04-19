@@ -290,6 +290,38 @@ class DistributionLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
 
 
+class ClimateSnapshot(Base):
+    """One row per calendar quarter. Stores the computed Investment
+    Climate Tracker scorecard for that quarter plus the raw evidence
+    used to derive it. Recomputed weekly by the climate runner; the row
+    for the current quarter is upserted in place (keyed on quarter_label).
+    Older rows are immutable and serve as the QoQ baseline for the next
+    quarter.
+
+    The report generator reads the most recent two rows: the latest is
+    rendered as the current scorecard, and the one before it provides
+    the deltas that produce the trend arrows on each bar.
+    """
+
+    __tablename__ = "climate_snapshots"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    quarter_label = Column(String(16), nullable=False, unique=True, index=True)
+    quarter_start = Column(Date, nullable=False, index=True)
+
+    composite_score = Column(Float, nullable=True)
+    period_label = Column(String(64), nullable=True)
+    methodology = Column(Text, nullable=True)
+
+    bars_json = Column(JSON, nullable=False)
+    evidence_json = Column(JSON, nullable=True)
+
+    computed_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class ScrapeLog(Base):
     """Tracks every scrape attempt for diagnostics and retry logic."""
 

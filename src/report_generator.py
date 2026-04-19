@@ -1024,21 +1024,53 @@ def _calendar_link_label(item) -> str:
 
 
 def _build_climate() -> dict:
-    """Investment climate tracker data — will be LLM-generated in future."""
+    """Investment climate tracker payload for the report template.
+
+    Reads the latest ClimateSnapshot row written by the weekly climate
+    refresh job (src.climate.runner). Falls back to a static literal if
+    the snapshots table is empty (cold start, before the first weekly
+    cron has run). The literal mirrors the schema the template expects,
+    so the page never breaks while the framework is bootstrapping.
+    """
+    try:
+        from src.models import SessionLocal, ClimateSnapshot
+        db = SessionLocal()
+        try:
+            snap = (
+                db.query(ClimateSnapshot)
+                .order_by(ClimateSnapshot.quarter_start.desc())
+                .first()
+            )
+            if snap and snap.bars_json:
+                return {
+                    "period": snap.period_label or snap.quarter_label,
+                    "bars": snap.bars_json,
+                    "methodology": snap.methodology or "",
+                }
+        finally:
+            db.close()
+    except Exception as exc:  # noqa: BLE001 - never break the report
+        import logging
+        logging.getLogger(__name__).warning(
+            "Climate snapshot read failed, using literal fallback: %s", exc
+        )
+
     return {
-        "period": "Q2 2026 vs. Q1 2026",
+        "period": "Q2 2026 vs. Q1 2026 (baseline)",
         "bars": [
-            {"label": "Sanctions Trajectory", "score": 7, "trend_dir": "up", "trend_value": "+3", "bar_color": "green", "why": "OFAC eased bank sanctions; expanded GLs 49 & 50A in Feb; GL 5T issued Mar 2. Travel advisory downgraded to Level 3."},
-            {"label": "Diplomatic Progress", "score": 6, "trend_dir": "up", "trend_value": "+3", "bar_color": "green", "why": "Chargé d'affaires appointed to Washington; first formal diplomatic channel since 2019."},
-            {"label": "Legal Framework", "score": 4, "trend_dir": "up", "trend_value": "+1", "bar_color": "yellow", "why": "Hydrocarbons Law reform signed, codifying empresa mixta model. Mining law tightens state control."},
-            {"label": "Political Stability", "score": 3, "trend_dir": "up", "trend_value": "+1", "bar_color": "red", "why": "Amnesty Law benefited 8,000+; signals normalization. But no elections scheduled yet."},
-            {"label": "Property Rights", "score": 3, "trend_dir": "flat", "trend_value": "0", "bar_color": "red", "why": "Mining law reasserts absolute state ownership. No new protections for real estate or commercial assets."},
-            {"label": "Macro Stability", "score": 2, "trend_dir": "down", "trend_value": "−1", "bar_color": "red", "why": "Inflation accelerating: 649% annualized (Mar). Parallel premium widened to 31.7%. Coface E rating."},
+            {"label": "Sanctions Trajectory", "score": 7, "trend_dir": "flat", "trend_value": "", "bar_color": "green", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Diplomatic Progress", "score": 6, "trend_dir": "flat", "trend_value": "", "bar_color": "green", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Legal Framework", "score": 4, "trend_dir": "flat", "trend_value": "", "bar_color": "yellow", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Political Stability", "score": 3, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Property Rights", "score": 3, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Macro Stability", "score": 2, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
         ],
         "methodology": (
-            "Sub-scores derived from BCV exchange/inflation data (live scrape), Coface E rating, OFAC GL activity via Federal Register API, "
-            "US State Dept travel advisory level (live scrape), GDELT global news sentiment, OFAC SDN list monitoring, "
-            "UNCTAD FDI stock ($30.5B), Amnesty Law implementation data, and legislative pipeline analysis. QoQ comparison based on Q4 2025 baseline."
+            "Cold-start fallback. The live scorecard is computed weekly by "
+            "src.climate.runner.run_weekly_climate_refresh from BCV FX, "
+            "OFAC SDN/Federal Register activity, US travel advisory, GDELT "
+            "tone, and Gaceta/Asamblea keyword counts, with QoQ deltas "
+            "against the previous quarter's stored snapshot."
         ),
     }
 
