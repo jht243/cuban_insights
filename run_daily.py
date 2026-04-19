@@ -111,6 +111,27 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
             _print_summary(results, start)
             sys.exit(1)
 
+    # Phase 3b: Daily Tearsheet (PDF). Always non-fatal — if PDF generation
+    # or upload fails the rest of the pipeline must continue.
+    console.print("\n[bold cyan]Phase 3b:[/bold cyan] Generating daily tearsheet PDF...")
+    try:
+        from src.distribution.tearsheet import publish_daily_tearsheet
+        tearsheet_result = publish_daily_tearsheet()
+        results["tearsheet"] = tearsheet_result
+        if tearsheet_result.get("status") == "ok":
+            console.print(
+                f"  [green]✓[/green] Tearsheet: {tearsheet_result.get('size_bytes')} bytes "
+                f"→ {tearsheet_result.get('latest_url')}"
+            )
+        elif tearsheet_result.get("status") == "skipped":
+            console.print(f"  [yellow]·[/yellow] Tearsheet skipped: {tearsheet_result.get('reason')}")
+        else:
+            console.print(f"  [yellow]![/yellow] Tearsheet error: {tearsheet_result}")
+    except Exception as e:
+        logger.error("Tearsheet generation failed: %s", e, exc_info=True)
+        results["tearsheet"] = {"error": str(e)}
+        console.print(f"  [yellow]![/yellow] Tearsheet generation failed (non-fatal): {e}")
+
     # Phase 4: Newsletter
     if not skip_email:
         console.print("\n[bold cyan]Phase 4:[/bold cyan] Sending newsletter...")

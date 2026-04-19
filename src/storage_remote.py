@@ -70,6 +70,59 @@ def upload_report_html(html: str) -> Optional[str]:
     return public
 
 
+def upload_object(
+    object_key: str,
+    body: bytes,
+    *,
+    content_type: str = "application/octet-stream",
+    cache_control: str = "max-age=3600",
+    bucket: Optional[str] = None,
+) -> Optional[str]:
+    """
+    Generic Supabase Storage upload — used by the tearsheet PDF pipeline
+    and any future binary asset that needs a stable public URL.
+
+    Returns the public URL on success, None if storage is not configured.
+    Raises on hard failures.
+    """
+    if not supabase_storage_enabled():
+        logger.info("Supabase Storage not configured; skipping upload of %s", object_key)
+        return None
+
+    base = _supabase_base_url()
+    target_bucket = bucket or settings.supabase_report_bucket
+    upload_url = f"{base}/storage/v1/object/{target_bucket}/{object_key}"
+
+    headers = {
+        "Authorization": f"Bearer {settings.supabase_service_key}",
+        "Content-Type": content_type,
+        "x-upsert": "true",
+        "cache-control": cache_control,
+    }
+
+    resp = httpx.post(upload_url, content=body, headers=headers, timeout=60)
+    if resp.status_code >= 400:
+        logger.error(
+            "Supabase Storage upload failed %d for %s: %s",
+            resp.status_code, object_key, resp.text[:300],
+        )
+        resp.raise_for_status()
+
+    public = f"{base}/storage/v1/object/public/{target_bucket}/{object_key}"
+    logger.info("Uploaded %s to Supabase Storage: %s (%d bytes)",
+                object_key, public, len(body))
+    return public
+
+
+def public_object_url(object_key: str, bucket: Optional[str] = None) -> Optional[str]:
+    """Build the public-bucket URL for an object key (does not check existence)."""
+    base = _supabase_base_url()
+    if not base:
+        return None
+    target_bucket = bucket or settings.supabase_report_bucket
+    return f"{base}/storage/v1/object/public/{target_bucket}/{object_key}"
+
+
 def fetch_report_html() -> Optional[str]:
     """
     Fetch the latest report.html from Supabase Storage.

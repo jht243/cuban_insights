@@ -13,7 +13,7 @@ import time
 from pathlib import Path
 
 import httpx
-from flask import Flask, send_from_directory, abort, request, jsonify, Response
+from flask import Flask, send_from_directory, abort, request, jsonify, Response, redirect
 from werkzeug.exceptions import HTTPException
 
 from src.config import settings
@@ -2083,6 +2083,43 @@ def sitemap_xml():
         parts.append("</url>")
     parts.append("</urlset>")
     return Response("".join(parts), mimetype="application/xml")
+
+
+@app.route("/tearsheet/latest.pdf")
+def tearsheet_latest():
+    """
+    Stable URL for today's Daily Venezuela Investor Tearsheet PDF.
+    302-redirects to the Supabase Storage public URL where the cron
+    just-in-time uploads it. Cached briefly so a single Supabase
+    request fans out across many website visits.
+    """
+    from src.distribution.tearsheet import latest_tearsheet_public_url
+
+    url = latest_tearsheet_public_url()
+    if not url:
+        abort(404)
+    resp = redirect(url, code=302)
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
+@app.route("/tearsheet/<date_str>.pdf")
+def tearsheet_dated(date_str: str):
+    """Date-stamped permalink for a specific day's tearsheet (YYYY-MM-DD)."""
+    from datetime import date as _date
+
+    from src.distribution.tearsheet import tearsheet_url_for_date
+
+    try:
+        d = _date.fromisoformat(date_str)
+    except ValueError:
+        abort(404)
+    url = tearsheet_url_for_date(d)
+    if not url:
+        abort(404)
+    resp = redirect(url, code=302)
+    resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resp
 
 
 @app.route("/<key>.txt")
