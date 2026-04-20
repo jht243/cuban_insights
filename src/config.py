@@ -36,8 +36,15 @@ class Settings(BaseSettings):
     # page; the scraper will be retired or replaced in the migration.
     tsj_url: str = "http://www.tsp.gob.cu"
     # El Toque informal-rate tracker — the most-watched FX number on the
-    # island. Used by the FX scraper that will replace bcv.py.
+    # island. Surfaced via the authenticated dev API at tasas.eltoque.com
+    # (HTML scraping of eltoque.com itself is prohibited by their ToS).
+    # The HTML URL below is kept for the public-facing "where this data
+    # came from" link; the scraper never hits it.
     eltoque_rates_url: str = "https://eltoque.com/tasas-de-cambio-de-moneda-en-cuba-hoy"
+    # API key issued by elTOQUE after a one-time application — see
+    # docs/eltoque_api_application.md. If blank, ElToqueScraper soft-skips
+    # with a warning rather than crashing the daily pipeline.
+    eltoque_api_key: str = ""
     # Banco Central de Cuba — official CUP/USD reference rate.
     bcc_rates_url: str = "https://www.bc.gob.cu"
     # Ministerio de Relaciones Exteriores. Note the domain is

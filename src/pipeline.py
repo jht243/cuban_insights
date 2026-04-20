@@ -37,6 +37,7 @@ from src.scraper.federal_register import FederalRegisterScraper
 from src.scraper.ofac_sdn import OFACSdnScraper
 from src.scraper.gdelt import GDELTScraper
 from src.scraper.bcc import BCCScraper
+from src.scraper.eltoque import ElToqueScraper
 from src.scraper.travel_advisory import TravelAdvisoryScraper
 from src.scraper.state_dept_crl import StateDeptCRLScraper
 from src.scraper.state_dept_cpal import StateDeptCPALScraper
@@ -102,6 +103,7 @@ def run_daily_scrape(target_date: Optional[date] = None) -> dict:
         StateDeptCPALScraper(),
         # FX + global news monitoring.
         BCCScraper(),
+        ElToqueScraper(),
         GDELTScraper(),
     ]
 
@@ -338,6 +340,8 @@ def _resolve_source_type(source_name: str) -> SourceType:
         "gdelt": SourceType.GDELT,
         "banco central de cuba": SourceType.BCC_RATES,
         "banco central": SourceType.BCC_RATES,
+        "eltoque": SourceType.ELTOQUE_RATE,
+        "el toque": SourceType.ELTOQUE_RATE,
         "cuba restricted list": SourceType.STATE_DEPT_CRL,
         "cuba prohibited accommodations": SourceType.STATE_DEPT_CPAL,
         "state department": SourceType.TRAVEL_ADVISORY,

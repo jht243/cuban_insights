@@ -109,10 +109,14 @@ StateDeptCRLScraper      StateDeptCPALScraper        BCCScraper      GDELTScrape
 
 The Venezuela-era `TuGacetaScraper`, `OfficialGazetteScraper`, `AssemblyNewsScraper`, and `BCVScraper` are no longer imported by the pipeline. The legacy modules remain on disk because `run_backfill.py` still imports the gazette + assembly scrapers and `server.py`'s `/tools/bolivar-usd-exchange-rate` route still imports `BCVScraper`; both consumers get rewritten in Phase 5.
 
-#### 2e. Gated on external action — El Toque (BLOCKED ON USER)
+#### 2e. El Toque (DONE)
 
-- [ ] **Action item for the user, not a code task:** apply for the El Toque API key via the form embedded in `https://dev.eltoque.com/eltoque-abre-acceso-a-su-api-de-las-tasas-de-cambio`. Step-by-step walkthrough with paste-ready Spanish answers and field-by-field cheat-sheet lives in `docs/eltoque_api_application.md`. Free beta tier, 5,000 req/month (we need ~60). API key arrives by email after manual review (1–4 week turnaround historically). Scraping `eltoque.com` directly is explicitly prohibited by the publisher.
-- [ ] Once the key is in `.env` as `ELTOQUE_API_KEY` (and on Render as a service env var), build `src/scraper/eltoque.py` against `https://tasas.eltoque.com/`. Maps to `SourceType.ELTOQUE_RATE`. Mandatory attribution to elTOQUE on any page that displays the number (already covered by `report.html.j2` footer; FX tool page gets the visible credit + outbound link in Phase 5).
+- [x] **Manual user action:** API key obtained via the form embedded at `https://dev.eltoque.com/eltoque-abre-acceso-a-su-api-de-las-tasas-de-cambio`. Walkthrough preserved at `docs/eltoque_api_application.md` for re-issuance / second account. Free beta tier, 5,000 req/month (we need ~60). Stored in `.env` as `ELTOQUE_API_KEY` (case-insensitive in pydantic-settings).
+- [x] `src/scraper/eltoque.py` built against `GET https://tasas.eltoque.com/v1/trmi`. Returns one `ScrapedArticle` per scrape with USD/MLC/USDT_TRC20/BTC/TRX/ECU rates in `extra_metadata.rates` plus the headline USD/MLC/USDT flattened to top-level for one-key downstream lookups. Maps to `SourceType.ELTOQUE_RATE`. Mandatory attribution embedded as `extra_metadata.attribution` and in the article body (already covered by `report.html.j2` footer; FX tool page gets visible credit + outbound link in Phase 5).
+- [x] Soft-skip behaviour: missing/empty `ELTOQUE_API_KEY` returns `success=False` with diagnostic error rather than crashing the pipeline. Same pattern as `MinrexScraper`.
+- [x] Wired into `src/pipeline.py` scrapers list and `_resolve_source_type` (matches "eltoque" / "el toque").
+- [x] Added to `render.yaml` for both web and daily-cron services as `sync: false`.
+- [x] Live smoke-tested 2026-04-20: USD=525.00, MLC=400.00, USDT_TRC20=620.00.
 
 ### Plan changes vs. the original Phase 2 spec
 
