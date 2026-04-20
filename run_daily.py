@@ -96,9 +96,10 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
     else:
         console.print("\n[dim]Phase 2b: Blog generation — SKIPPED (report-only)[/dim]")
 
-    # Phase 2c: Weekly climate refresh (Mondays only as a safety net;
-    # the dedicated weekly cron service is the primary trigger). This is
-    # cheap and idempotent — if it has already run today the upsert just
+    # Phase 2c: Weekly climate refresh (Mondays only). The daily cron is
+    # the primary (and only) trigger — there is no dedicated weekly cron
+    # service for Cuban Insights. This is cheap and idempotent — if it
+    # has already run today the upsert just
     # rewrites the same numbers. Always non-fatal.
     if not report_only:
         from datetime import date as _date
@@ -114,7 +115,7 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
                 results["climate"] = {"error": str(e)}
                 console.print(f"  [yellow]![/yellow] Climate refresh failed (non-fatal): {e}")
         else:
-            console.print("\n[dim]Phase 2c: Climate refresh — SKIPPED (runs on Mondays via daily safety net + dedicated weekly cron)[/dim]")
+            console.print("\n[dim]Phase 2c: Climate refresh — SKIPPED (runs only on Mondays via this daily cron)[/dim]")
 
     # Phase 3: Generate Report
     console.print("\n[bold cyan]Phase 3:[/bold cyan] Generating report...")
