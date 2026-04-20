@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
-    database_url: str = "sqlite:///./venezuela_journal.db"
+    database_url: str = "sqlite:///./cuban_insights.db"
     storage_dir: Path = Path("./storage")
     output_dir: Path = Path("./output")
 
@@ -21,11 +21,34 @@ class Settings(BaseSettings):
     tesseract_cmd: str = "tesseract"
     tesseract_lang: str = "spa"
 
-    # Source URLs
-    gazette_official_url: str = "http://www.gacetaoficial.gob.ve"
-    gazette_tugaceta_url: str = "https://tugacetaoficial.com"
-    assembly_url: str = "https://www.asambleanacional.gob.ve"
-    tsj_url: str = "https://www.tsj.gob.ve/gaceta-oficial"
+    # Source URLs — Cuba sources. The scraper modules still implement the
+    # Venezuela-era logic; they will be rewritten in a follow-up phase to
+    # consume these endpoints. See MIGRATION.md.
+    gazette_official_url: str = "https://www.gacetaoficial.gob.cu"
+    # Mirror placeholder — there is no direct Cuba equivalent of TuGaceta
+    # yet. Kept for backwards-compatibility with the existing scraper
+    # configuration surface; the scraper itself will be repointed at a
+    # CU mirror or dropped.
+    gazette_tugaceta_url: str = "https://www.gacetaoficial.gob.cu"
+    assembly_url: str = "https://www.parlamentocubano.gob.cu"
+    # Cuba does not publish a Tribunal Supremo gazette analogous to
+    # Venezuela's TSJ. Repointed at the Tribunal Supremo Popular landing
+    # page; the scraper will be retired or replaced in the migration.
+    tsj_url: str = "http://www.tsp.gob.cu"
+    # El Toque informal-rate tracker — the most-watched FX number on the
+    # island. Used by the FX scraper that will replace bcv.py.
+    eltoque_rates_url: str = "https://eltoque.com/tasas-de-cambio-de-moneda-en-cuba-hoy"
+    # Banco Central de Cuba — official CUP/USD reference rate.
+    bcc_rates_url: str = "https://www.bc.gob.cu"
+    # Ministerio de Relaciones Exteriores. Note the domain is
+    # `cubaminrex.cu` — NOT `minrex.gob.cu` (which does not exist).
+    # The official RSS lives at /rss.xml; if RSS is unreachable the
+    # scraper falls back to the declaraciones HTML listing.
+    minrex_url: str = "https://www.cubaminrex.cu"
+    # Oficina Nacional de Estadística e Información — Cuba's official
+    # macroeconomic statistics office. The "publicaciones-economico"
+    # listing is the most reliable surface for new releases.
+    onei_url: str = "https://www.onei.gob.cu"
 
     # LLM Analysis
     openai_api_key: str = ""
@@ -57,7 +80,7 @@ class Settings(BaseSettings):
 
     # Newsletter
     newsletter_provider: str = "console"
-    newsletter_from_email: str = "briefing@venezuelanbusiness.net"
+    newsletter_from_email: str = "briefing@cubaninsights.com"
     newsletter_api_key: str = ""
     subscriber_list_path: str = "subscribers.json"
 
@@ -75,10 +98,10 @@ class Settings(BaseSettings):
     # SEO / canonical URL — base URL of the deployed site. Used for
     # canonical <link>, sitemap entries, JSON-LD identifiers, and OG
     # share URLs. Override via SITE_URL env var when a custom domain
-    # is added (Tier 4).
-    site_url: str = "https://caracasresearch.com"
-    site_name: str = "Caracas Research"
-    site_owner_org: str = "Caracas Research"
+    # is added.
+    site_url: str = "https://cubaninsights.com"
+    site_name: str = "Cuban Insights"
+    site_owner_org: str = "Cuban Insights"
     site_locale: str = "en_US"
 
     # Long-form blog post generator. Each post is roughly 700-900 words and
@@ -143,7 +166,7 @@ class Settings(BaseSettings):
     # production. Useful for first-run smoke tests; sandbox DOIs are not
     # real and records are wiped periodically.
     zenodo_use_sandbox: bool = False
-    # Optional Zenodo "community" slug (e.g. "venezuela-research"). If
+    # Optional Zenodo "community" slug (e.g. "cuba-research"). If
     # set, every deposit requests inclusion in that community — the
     # community owners then approve/reject. Leave blank to skip community
     # association.
@@ -183,7 +206,7 @@ class Settings(BaseSettings):
     osf_max_per_run: int = 3
 
     # ── Distribution: Bluesky (atproto) ────────────────────────────────
-    # Bluesky handle (e.g. "caracasresearch.bsky.social") and an app
+    # Bluesky handle (e.g. "cubaninsights.bsky.social") and an app
     # password (NOT the main account password) generated under Settings →
     # Privacy and Security → App Passwords. Leave either blank to disable.
     bluesky_handle: str = ""

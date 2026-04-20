@@ -86,6 +86,7 @@ SOURCE_DISPLAY_MAP = {
     SourceType.FEDERAL_REGISTER: "Federal Register",
     SourceType.OFAC_SDN: "OFAC SDN List",
     SourceType.GDELT: None,
+    SourceType.BCC_RATES: "BCC",
     SourceType.BCV_RATES: "BCV",
     SourceType.TRAVEL_ADVISORY: "State Dept",
     SourceType.ASAMBLEA_NACIONAL: "Asamblea Nacional",
@@ -624,7 +625,7 @@ def _build_ticker(db) -> list[dict]:
 
     bcv = (
         db.query(ExternalArticleEntry)
-        .filter(ExternalArticleEntry.source == SourceType.BCV_RATES)
+        .filter(ExternalArticleEntry.source == SourceType.BCC_RATES)
         .order_by(ExternalArticleEntry.published_date.desc())
         .first()
     )

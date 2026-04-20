@@ -1,9 +1,18 @@
 """
-Monitor OFAC SDN (Specially Designated Nationals) list for Venezuelan entities.
+Monitor OFAC SDN (Specially Designated Nationals) list for Cuba-program
+entries.
 
-Downloads the consolidated XML list from OFAC's Sanctions List Service and
-filters for Venezuela-program entries. Diffs against the previous snapshot
-to detect additions and removals.
+Downloads the consolidated CSV list from OFAC's Sanctions List Service and
+filters for entries flagged under the CUBA program (the umbrella code OFAC
+uses for entities/individuals designated under the Cuban Assets Control
+Regulations and related authorities). Diffs against the previous snapshot
+to detect additions and removals so we can surface them in the daily brief.
+
+Note that OFAC SDN is only one of several Cuba-relevant U.S. lists. The
+State Department maintains the Cuba Restricted List (CRL) and the Cuba
+Prohibited Accommodations List (CPAL) separately, with most CRL entries
+NOT appearing on the SDN. Those are scraped by dedicated modules — see
+docs/scraper_research.md.
 
 Data source: https://ofac.treasury.gov/sanctions-list-service
 No API key required — public CSV/XML downloads.
@@ -32,15 +41,15 @@ CONS_CSV_URL = (
     "https://www.treasury.gov/ofac/downloads/consolidated/"
     "cons_prim.csv"
 )
-VENEZUELA_PROGRAMS = {"VENEZUELA", "VENEZUELA-EO13884", "VENEZUELA-EO13692", "VENEZUELA-EO13850"}
+CUBA_PROGRAMS = {"CUBA"}
 
 SNAPSHOT_DIR = settings.storage_dir / "ofac_snapshots"
 
 
 class OFACSdnScraper(BaseScraper):
     """
-    Downloads the OFAC SDN CSV, filters for Venezuela-program entries,
-    and diffs against the last snapshot to surface additions/removals.
+    Downloads the OFAC SDN CSV, filters for Cuba-program entries, and
+    diffs against the last snapshot to surface additions/removals.
     """
 
     def get_source_id(self) -> str:
@@ -107,7 +116,7 @@ class OFACSdnScraper(BaseScraper):
             )
 
     def _download_and_filter(self) -> dict[str, dict]:
-        """Download SDN CSV and return Venezuela-program entries keyed by UID."""
+        """Download SDN CSV and return Cuba-program entries keyed by UID."""
         logger.info("Downloading OFAC SDN CSV...")
         resp = self._fetch(SDN_CSV_URL)
         text = resp.text
@@ -124,8 +133,14 @@ class OFACSdnScraper(BaseScraper):
             entity_type = row[2].strip()
             program = row[3].strip()
 
-            program_upper = program.upper().strip()
-            if any(vp in program_upper for vp in VENEZUELA_PROGRAMS):
+            # OFAC encodes a single SDN entry's programs as a semicolon-
+            # separated string (e.g. "CUBA; SDNTK"), so we tokenize before
+            # matching to avoid false positives from substrings like "CUBAN"
+            # appearing inside an unrelated program code.
+            program_codes = {
+                p.strip().upper() for p in program.split(";") if p.strip()
+            }
+            if program_codes & CUBA_PROGRAMS:
                 entries[uid] = {
                     "uid": uid,
                     "name": name,
@@ -134,14 +149,19 @@ class OFACSdnScraper(BaseScraper):
                     "remarks": row[11].strip() if len(row) > 11 else "",
                 }
 
-        logger.info("Filtered %d Venezuela-program SDN entries", len(entries))
+        logger.info("Filtered %d Cuba-program SDN entries", len(entries))
         return entries
 
     def _load_previous_snapshot(self) -> dict[str, dict]:
-        """Load the most recent snapshot JSON."""
+        """Load the most recent snapshot JSON.
+
+        Snapshots are namespaced by country (``sdn_cu_*``) so a future
+        deployment that scrapes multiple OFAC programs in parallel won't
+        cross-contaminate diffs.
+        """
         import json
 
-        snapshots = sorted(SNAPSHOT_DIR.glob("sdn_ve_*.json"), reverse=True)
+        snapshots = sorted(SNAPSHOT_DIR.glob("sdn_cu_*.json"), reverse=True)
         if not snapshots:
             return {}
 
@@ -154,7 +174,7 @@ class OFACSdnScraper(BaseScraper):
     def _save_snapshot(self, entries: dict[str, dict], snap_date: date) -> None:
         import json
 
-        path = SNAPSHOT_DIR / f"sdn_ve_{snap_date.isoformat()}.json"
+        path = SNAPSHOT_DIR / f"sdn_cu_{snap_date.isoformat()}.json"
         path.write_text(json.dumps(entries, indent=2, ensure_ascii=False))
         logger.info("Saved OFAC snapshot: %s (%d entries)", path, len(entries))
 

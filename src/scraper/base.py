@@ -82,7 +82,12 @@ class BaseScraper(ABC):
                     "AppleWebKit/537.36 (KHTML, like Gecko) "
                     "Chrome/125.0.0.0 Safari/537.36"
                 ),
-                "Accept-Language": "es-VE,es;q=0.9,en;q=0.8",
+                # Cuba-first Accept-Language. A small subset of `.gob.cu`
+                # edge nodes 403 requests whose Accept-Language doesn't
+                # include `es`, and "es-VE" was leftover from the
+                # Venezuelan codebase. See src/scraper/_http.py for
+                # rationale.
+                "Accept-Language": "es-CU,es;q=0.9,en;q=0.6",
             },
         )
 

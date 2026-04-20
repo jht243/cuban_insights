@@ -1,5 +1,5 @@
 """
-Client for the GDELT DOC 2.0 API — global news monitoring for Venezuela.
+Client for the GDELT DOC 2.0 API — global news monitoring for Cuba.
 
 GDELT monitors news in 100+ languages, updates every 15 minutes, and
 provides article metadata with tone/sentiment scores. No API key required.
@@ -22,12 +22,12 @@ logger = logging.getLogger(__name__)
 GDELT_DOC_API = "https://api.gdeltproject.org/api/v2/doc/doc"
 
 INVESTMENT_QUERY = (
-    "Venezuela investment OR sanctions OR oil OR economy "
+    "Cuba sanctions OR investment OR remittances OR tourism OR economy "
     "sourcelang:english"
 )
 
 SPANISH_QUERY = (
-    "Venezuela inversión OR sanciones OR petróleo OR economía "
+    "Cuba sanciones OR inversión OR remesas OR turismo OR economía "
     "sourcelang:spanish"
 )
 
@@ -35,7 +35,8 @@ SPANISH_QUERY = (
 class GDELTScraper(BaseScraper):
     """
     Queries the GDELT DOC 2.0 API for English and Spanish articles
-    about Venezuela relevant to investment analysis.
+    about Cuba relevant to investment, sanctions, remittances, tourism,
+    and the macro economy.
     """
 
     def get_source_id(self) -> str:
@@ -168,8 +169,13 @@ class GDELTScraper(BaseScraper):
             "theguardian.com", "france24.com", "dw.com",
         }
         state_media = {
-            "telesurtv.net", "vtv.gob.ve", "correodelcaroni.com",
-            "ultimasnoticias.com.ve", "avn.info.ve",
+            # Cuban state and party-aligned outlets
+            "granma.cu", "cubadebate.cu", "juventudrebelde.cu",
+            "trabajadores.cu", "ain.cu", "prensa-latina.cu",
+            "tvcubana.icrt.cu", "radiorebelde.cu",
+            # Pan-regional state broadcaster frequently amplifying
+            # Havana's framing
+            "telesurtv.net",
         }
         domain_lower = domain.lower()
         if any(d in domain_lower for d in high_credibility):

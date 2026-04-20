@@ -50,17 +50,68 @@ def _enum_values(enum_cls):
 
 
 class SourceType(str, enum.Enum):
+    # ── Legacy Venezuela-era source codes ─────────────────────────────
+    # Kept around so the existing scraper modules keep importing while
+    # the Cuban Insights migration is in progress. They will be removed
+    # once each scraper is repointed at its Cuban equivalent and any
+    # remaining historical rows are either migrated or wiped. See
+    # MIGRATION.md for the exact retirement plan.
     GACETA_OFICIAL = "gaceta_oficial"
     TU_GACETA = "tu_gaceta"
     ASAMBLEA_NACIONAL = "asamblea_nacional"
     TSJ = "tsj"
+    BCV_RATES = "bcv_rates"
+
+    # ── Cuba sources (active going forward) ───────────────────────────
+    # Cuban official gazette — Gaceta Oficial de la República de Cuba
+    # (gacetaoficial.gob.cu). Replaces GACETA_OFICIAL/TU_GACETA.
+    GACETA_OFICIAL_CU = "gaceta_oficial_cu"
+    # Asamblea Nacional del Poder Popular (parlamentocubano.gob.cu) and
+    # Granma legislative coverage. Replaces ASAMBLEA_NACIONAL.
+    ASAMBLEA_NACIONAL_CU = "asamblea_nacional_cu"
+    # Banco Central de Cuba — official CUP/USD reference rate. Replaces
+    # BCV_RATES for the official side.
+    BCC_RATES = "bcc_rates"
+    # El Toque informal/parallel CUP/MLC/USD rate — the most-watched FX
+    # number on the island. New surface area, no Venezuela analog.
+    ELTOQUE_RATE = "eltoque_rate"
+    # MINREX (Ministerio de Relaciones Exteriores) press releases.
+    MINREX = "minrex"
+    # ONEI (Oficina Nacional de Estadística e Información) macro stats.
+    ONEI = "onei"
+    # Note: EU sanctions intentionally absent. Cuba is not in the EU
+    # consolidated financial sanctions list (the EU replaced its 1996
+    # Common Position with the 2016 PDCA, which is engagement-based, not
+    # restrictive). See docs/scraper_research.md §"EU sanctions".
+
+    # ── Cross-cutting sources (unchanged) ─────────────────────────────
     FEDERAL_REGISTER = "federal_register"
     OFAC_SDN = "ofac_sdn"
     GDELT = "gdelt"
-    BCV_RATES = "bcv_rates"
     TRAVEL_ADVISORY = "travel_advisory"
     NEWSDATA = "newsdata"
     EIA = "eia"
+
+    # ── Cuba-specific U.S. lists (added in Phase 2b) ──────────────────
+    # State Department's Cuba Restricted List (CRL) — entities and
+    # subentities the executive branch has prohibited direct financial
+    # transactions with under §515.209. Distinct from OFAC SDN; most CRL
+    # entries are NOT on the SDN.
+    STATE_DEPT_CRL = "state_dept_crl"
+    # State Department's Cuba Prohibited Accommodations List (CPAL) —
+    # specific hotels / casas particulares that fail the "no commerce
+    # with the Cuban government" test under §515.210. Hotel-blacklist;
+    # used by the company-exposure tooling to flag MAR/HLT/IHG/etc.
+    STATE_DEPT_CPAL = "state_dept_cpal"
+
+    # ── Press RSS aggregator (added in Phase 2d) ──────────────────────
+    # All Cuban press outlets consumed via RSS share this SourceType so
+    # we don't grow the enum to one-per-outlet. Per-outlet attribution
+    # (Granma, Cubadebate, 14ymedio, OnCuba, Diario de Cuba, Havana
+    # Times) is preserved in `ExternalArticleEntry.source_name`. See
+    # `src/scraper/rss.py` for the outlet whitelist + credibility
+    # tiering rationale.
+    PRESS_RSS = "press_rss"
 
 
 class CredibilityTier(str, enum.Enum):

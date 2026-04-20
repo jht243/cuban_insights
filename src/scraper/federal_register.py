@@ -1,8 +1,10 @@
 """
-Scraper for the US Federal Register API — OFAC / Venezuela documents.
+Scraper for the US Federal Register API — OFAC / Cuba documents.
 
 The Federal Register REST API is free, requires no API key, and publishes
 every OFAC rule, general license, and sanctions notice as a legal requirement.
+For Cuba this is the canonical source of CACR (Cuban Assets Control
+Regulations, 31 CFR Part 515) amendments and general licenses.
 
 Endpoint docs: https://www.federalregister.gov/developers/documentation/api/v1
 """
@@ -21,12 +23,13 @@ logger = logging.getLogger(__name__)
 
 FR_API_BASE = "https://www.federalregister.gov/api/v1"
 
-VENEZUELA_TERMS = [
-    "venezuela",
-    "venezuelan",
-    "PDVSA",
-    "Maduro",
-    "Caracas",
+CUBA_TERMS = [
+    "cuba",
+    "cuban",
+    "CACR",
+    "Helms-Burton",
+    "LIBERTAD Act",
+    "Havana",
 ]
 
 OFAC_AGENCY_SLUG = "foreign-assets-control-office"
@@ -34,7 +37,7 @@ OFAC_AGENCY_SLUG = "foreign-assets-control-office"
 
 class FederalRegisterScraper(BaseScraper):
     """
-    Queries the Federal Register API for OFAC documents mentioning Venezuela.
+    Queries the Federal Register API for OFAC documents mentioning Cuba.
     Returns structured article data with direct links to PDFs and HTML.
     """
 
@@ -47,7 +50,7 @@ class FederalRegisterScraper(BaseScraper):
         lookback = target_date - timedelta(days=settings.scraper_lookback_days)
 
         try:
-            articles = self._search_ofac_venezuela(lookback, target_date)
+            articles = self._search_ofac_cuba(lookback, target_date)
 
             return ScrapeResult(
                 source=self.get_source_id(),
@@ -65,12 +68,17 @@ class FederalRegisterScraper(BaseScraper):
                 duration_seconds=int(time.time() - start),
             )
 
-    def _search_ofac_venezuela(
+    def _search_ofac_cuba(
         self, date_from: date, date_to: date
     ) -> list[ScrapedArticle]:
+        # The Federal Register search supports a single ``term`` query
+        # parameter, so we use the broadest unambiguous keyword ("cuba")
+        # and rely on OFAC agency scoping to keep recall high while
+        # avoiding noise from Cuba-as-place-name in unrelated rules.
+        # CUBA_TERMS is retained for any future client-side reranking.
         params = {
             "conditions[agencies][]": OFAC_AGENCY_SLUG,
-            "conditions[term]": "venezuela",
+            "conditions[term]": "cuba",
             "conditions[publication_date][gte]": date_from.isoformat(),
             "conditions[publication_date][lte]": date_to.isoformat(),
             "per_page": 50,
@@ -116,7 +124,7 @@ class FederalRegisterScraper(BaseScraper):
             )
 
         logger.info(
-            "Federal Register: found %d OFAC/Venezuela docs (%s to %s)",
+            "Federal Register: found %d OFAC/Cuba docs (%s to %s)",
             len(articles), date_from, date_to,
         )
         return articles

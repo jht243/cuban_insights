@@ -26,13 +26,27 @@ from src.models import (
     SourceType, CredibilityTier, GazetteStatus, GazetteType,
 )
 from src.scraper.base import ScrapedGazette, ScrapedNews, ScrapedArticle, ScrapeResult
-from src.scraper.gazette import TuGacetaScraper, OfficialGazetteScraper
-from src.scraper.assembly import AssemblyNewsScraper
+# Cuba-era scrapers (Phase 2 — currently active in the daily pipeline).
+from src.scraper.gaceta_oficial_cu import GacetaOficialCUScraper
+from src.scraper.asamblea_nacional_cu import AsambleaNacionalCUScraper
+from src.scraper.minrex import MinrexScraper
+from src.scraper.onei import ONEIScraper
+from src.scraper.rss import PressRssScraper
+# Cross-cutting scrapers (Phase 2a/b).
 from src.scraper.federal_register import FederalRegisterScraper
 from src.scraper.ofac_sdn import OFACSdnScraper
 from src.scraper.gdelt import GDELTScraper
-from src.scraper.bcv import BCVScraper
+from src.scraper.bcc import BCCScraper
 from src.scraper.travel_advisory import TravelAdvisoryScraper
+from src.scraper.state_dept_crl import StateDeptCRLScraper
+from src.scraper.state_dept_cpal import StateDeptCPALScraper
+# NOTE: legacy Venezuela-era scrapers (gazette.TuGacetaScraper /
+# OfficialGazetteScraper, assembly.AssemblyNewsScraper, bcv.BCVScraper)
+# are intentionally NOT imported here. They've been replaced by the
+# Cuba-era modules above. The modules themselves remain on disk because
+# `run_backfill.py` and the legacy `/tools/bolivar-usd-exchange-rate`
+# route in `server.py` still import them; that's slated for cleanup in
+# the Phase 5 server/route rewrite.
 from src.ocr.engine import ocr_pdf
 
 logger = logging.getLogger(__name__)
@@ -73,14 +87,22 @@ def run_daily_scrape(target_date: Optional[date] = None) -> dict:
     scrape_results: list[ScrapeResult] = []
 
     scrapers = [
-        TuGacetaScraper(),
-        OfficialGazetteScraper(),
-        AssemblyNewsScraper(),
+        # Cuban official sources.
+        GacetaOficialCUScraper(),
+        AsambleaNacionalCUScraper(),
+        MinrexScraper(),
+        ONEIScraper(),
+        # Cuban press (RSS aggregator).
+        PressRssScraper(),
+        # US-side official sources.
         FederalRegisterScraper(),
         OFACSdnScraper(),
-        GDELTScraper(),
-        BCVScraper(),
         TravelAdvisoryScraper(),
+        StateDeptCRLScraper(),
+        StateDeptCPALScraper(),
+        # FX + global news monitoring.
+        BCCScraper(),
+        GDELTScraper(),
     ]
 
     for scraper in scrapers:
@@ -301,17 +323,35 @@ def _persist_articles(articles: list[ScrapedArticle]) -> list[int]:
 
 
 def _resolve_source_type(source_name: str) -> SourceType:
-    """Map a source name string to a SourceType enum value."""
+    """Map a source name string to a SourceType enum value.
+
+    Order matters — Python dicts preserve insertion order and the loop
+    below short-circuits on the first match, so put the more-specific
+    State Dept keys above the generic "state department" key that maps
+    to TRAVEL_ADVISORY.
+    """
     name_lower = (source_name or "").lower()
     mapping = {
         "federal register": SourceType.FEDERAL_REGISTER,
         "ofac": SourceType.OFAC_SDN,
         "ofac sdn": SourceType.OFAC_SDN,
         "gdelt": SourceType.GDELT,
-        "banco central": SourceType.BCV_RATES,
-        "bcv": SourceType.BCV_RATES,
+        "banco central de cuba": SourceType.BCC_RATES,
+        "banco central": SourceType.BCC_RATES,
+        "cuba restricted list": SourceType.STATE_DEPT_CRL,
+        "cuba prohibited accommodations": SourceType.STATE_DEPT_CPAL,
         "state department": SourceType.TRAVEL_ADVISORY,
         "us state department": SourceType.TRAVEL_ADVISORY,
+        "minrex": SourceType.MINREX,
+        "onei": SourceType.ONEI,
+        # Press RSS — every outlet feeds into the same SourceType.
+        # Per-outlet attribution is preserved in `source_name`.
+        "granma": SourceType.PRESS_RSS,
+        "cubadebate": SourceType.PRESS_RSS,
+        "14ymedio": SourceType.PRESS_RSS,
+        "diario de cuba": SourceType.PRESS_RSS,
+        "oncuba": SourceType.PRESS_RSS,
+        "havana times": SourceType.PRESS_RSS,
         "newsdata": SourceType.NEWSDATA,
         "eia": SourceType.EIA,
     }

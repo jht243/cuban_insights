@@ -423,7 +423,7 @@ def latest_bcv_usd() -> Optional[float]:
         try:
             row = (
                 db.query(ExternalArticleEntry)
-                .filter(ExternalArticleEntry.source == SourceType.BCV_RATES)
+                .filter(ExternalArticleEntry.source == SourceType.BCC_RATES)
                 .order_by(ExternalArticleEntry.published_date.desc())
                 .first()
             )

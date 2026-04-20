@@ -4,7 +4,7 @@
 # autoDeploy chain is wired up correctly end-to-end.
 services:
   - type: web
-    name: venezuela-investment-journal
+    name: cuban-insights
     runtime: python
     plan: starter
     buildCommand: "pip install -r requirements.txt"
@@ -23,7 +23,7 @@ services:
       - key: NEWSLETTER_PROVIDER
         value: buttondown
       - key: NEWSLETTER_FROM_EMAIL
-        value: briefing@venezuelanbusiness.net
+        value: briefing@cubaninsights.com
       - key: NEWSLETTER_API_KEY
         sync: false
       - key: GOOGLE_INDEXING_SA_JSON
@@ -37,10 +37,13 @@ services:
     healthCheckPath: /health
 
   - type: cron
-    name: vij-daily-pipeline
+    name: cij-daily-pipeline
     runtime: python
-    # Render schedules cron in UTC. We want 10:00 and 17:00 in Medellín
-    # (America/Bogota, UTC-5), which is 15:00 and 22:00 UTC.
+    # Render schedules cron in UTC. Cuba is UTC-5 standard, UTC-4 DST.
+    # Holding the slot at 15:00 / 22:00 UTC keeps parity with the
+    # Caracas Research schedule (10:00 / 17:00 Bogotá / Havana standard).
+    # Re-tune to "0 14,21 * * *" if you want 09:00 / 16:00 Havana time
+    # year-round (off by an hour during DST).
     schedule: "0 15,22 * * *"
     plan: starter
     buildCommand: "pip install -r requirements.txt"
@@ -57,7 +60,7 @@ services:
       - key: NEWSLETTER_PROVIDER
         value: buttondown
       - key: NEWSLETTER_FROM_EMAIL
-        value: briefing@venezuelanbusiness.net
+        value: briefing@cubaninsights.com
       - key: NEWSLETTER_API_KEY
         sync: false
       - key: BUTTONDOWN_API_KEY
@@ -72,9 +75,9 @@ services:
         value: INFO
 
   - type: cron
-    name: vij-weekly-climate
+    name: cij-weekly-climate
     runtime: python
-    # Mondays 14:00 UTC = 09:00 Medellín (America/Bogota, UTC-5).
+    # Mondays 14:00 UTC = 09:00 Havana standard (UTC-5).
     # Recomputes the Investment Climate Tracker scorecard for the
     # current quarter and upserts the climate_snapshots row. Idempotent
     # by quarter_label, so re-running on the same day is a no-op of work

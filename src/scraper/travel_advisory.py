@@ -1,9 +1,10 @@
 """
-Scraper for the US State Department Venezuela travel advisory.
+Scraper for the US State Department Cuba travel advisory.
 
-Monitors https://travel.state.gov for advisory level changes.
-A downgrade from Level 4 ("Do Not Travel") to Level 3 would be a
-significant positive signal for investors.
+Monitors https://travel.state.gov for advisory level changes. Cuba sits
+at Level 2 ("Exercise Increased Caution") as of the migration baseline,
+so any escalation (e.g. to Level 3 over unrest or health-system strain)
+or downgrade is a signal worth flagging in the daily brief.
 
 No API key required — public HTML page.
 """
@@ -24,14 +25,14 @@ logger = logging.getLogger(__name__)
 
 ADVISORY_URL = (
     "https://travel.state.gov/content/travel/en/traveladvisories/"
-    "traveladvisories/venezuela-travel-advisory.html"
+    "traveladvisories/cuba-travel-advisory.html"
 )
 
 
 class TravelAdvisoryScraper(BaseScraper):
     """
-    Scrapes the State Department Venezuela travel advisory page and
-    extracts the current advisory level, last update date, and summary.
+    Scrapes the State Department Cuba travel advisory page and extracts
+    the current advisory level, last update date, and summary.
     """
 
     def get_source_id(self) -> str:
@@ -65,7 +66,7 @@ class TravelAdvisoryScraper(BaseScraper):
 
             article = ScrapedArticle(
                 headline=(
-                    f"US Travel Advisory: Venezuela — Level {advisory['level']} "
+                    f"US Travel Advisory: Cuba — Level {advisory['level']} "
                     f"({advisory['level_text']})"
                 ),
                 published_date=last_updated_date,

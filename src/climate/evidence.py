@@ -395,7 +395,7 @@ def _collect_macro(db: Session, ev: Evidence) -> None:
     """
     bcv = (
         db.query(ExternalArticleEntry)
-        .filter(ExternalArticleEntry.source == SourceType.BCV_RATES)
+        .filter(ExternalArticleEntry.source == SourceType.BCC_RATES)
         .order_by(ExternalArticleEntry.published_date.desc())
         .first()
     )
