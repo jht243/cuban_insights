@@ -32,6 +32,18 @@ services:
         sync: false
       - key: BLUESKY_APP_PASSWORD
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_REPORT_BUCKET
+        value: reports
+      - key: SITE_URL
+        value: https://cubaninsights.com
+      - key: SITE_NAME
+        value: Cuban Insights
+      - key: SITE_OWNER_ORG
+        value: Cuban Insights
       - key: LOG_LEVEL
         value: INFO
     healthCheckPath: /health
@@ -71,6 +83,18 @@ services:
         sync: false
       - key: BLUESKY_APP_PASSWORD
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_REPORT_BUCKET
+        value: reports
+      - key: SITE_URL
+        value: https://cubaninsights.com
+      - key: SITE_NAME
+        value: Cuban Insights
+      - key: SITE_OWNER_ORG
+        value: Cuban Insights
       - key: LOG_LEVEL
         value: INFO
 
