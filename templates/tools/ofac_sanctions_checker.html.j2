@@ -2,11 +2,31 @@
 
 {% block head_extra %}
 <style>
-  .checker-form { display: flex; gap: 8px; margin: 20px 0; }
-  .checker-form input { flex: 1; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
-  .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; }
+  .quick-chips { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin: 14px 0 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .quick-chips .label { flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .quick-chips a { flex-shrink: 0; display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .quick-chips a:hover { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .picker-block { background: #fafbfd; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 14px 16px; margin: 12px 0 4px; }
+  .picker-block .picker-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 14px; align-items: center; }
+  .picker-block .picker-row + .picker-row { margin-top: 10px; }
+  .picker-block label { font-size: 13px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 1.1px; font-weight: 600; }
+  .picker-block select { width: 100%; padding: 11px 14px; border: 2px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .picker-block select:focus { border-color: var(--sr-blue); outline: none; }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0 10px; color: var(--sr-gray-text); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--sr-gray-light); }
+  .checker-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+  .checker-form input[type=text] { flex: 1 1 280px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; white-space: nowrap; }
   .checker-form button:hover { background: var(--sr-blue-dark); }
-  .result-banner { padding: 16px 20px; margin: 20px 0; border-radius: 3px; }
+  .checker-form .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 2px solid var(--sr-gray-light); padding: 12px 18px; font-size: 14px; font-weight: 500; }
+  .checker-form .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .checker-form .btn-clear:disabled { opacity: 0.45; cursor: default; }
+  .checker-form .btn-clear:disabled:hover { background: var(--white); color: var(--sr-gray-text); border-color: var(--sr-gray-light); }
+  @media (max-width: 540px) {
+    .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
+    .picker-block label { font-size: 12px; }
+  }
+  .result-banner { padding: 16px 20px; margin: 22px 0 14px; border-radius: 3px; }
   .result-banner.match { background: #fdecea; border-left: 4px solid var(--sr-red); color: #7a1f1a; }
   .result-banner.clear { background: #e8f5e9; border-left: 4px solid #2e7d32; color: #1b4d1f; }
   .result-banner.partial { background: #fff3e0; border-left: 4px solid #f5b041; color: #7c4a03; }
@@ -16,9 +36,11 @@
   .match-card .meta { font-size: 13px; color: var(--sr-gray-text); margin-top: 4px; }
   .match-card .remarks { font-size: 13px; margin-top: 6px; }
   .match-card .score { float: right; background: var(--sr-red); color: var(--white); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-  .examples { font-size: 13px; color: var(--sr-gray-text); margin-top: 6px; }
-  .examples a { margin-right: 12px; }
   .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+  .sector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin: 16px 0 28px; }
+  .sector-grid a { display: block; padding: 10px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; text-decoration: none; color: var(--sr-blue-dark); background: #fafafa; font-size: 14px; }
+  .sector-grid a:hover { background: #f0f4fa; border-color: var(--sr-blue); }
+  .sector-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
 </style>
 {% endblock %}
 
@@ -27,61 +49,130 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
-    <span>OFAC Sanctions Exposure Checker</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>OFAC Cuba Sanctions Exposure Checker</span>
   </nav>
 
   <header style="margin: 16px 0 20px;">
     <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
-      Compliance tool · Real-time check against {{ total_sdn }} SDN designations
+      Compliance tool · Real-time check against {{ total_sdn }} CUBA-program SDN designations · 31 CFR Part 515
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
       OFAC Cuba Sanctions Exposure Checker
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Search any name, vessel, IMO number, aircraft tail number, or Cuban national ID against every Cuba-related OFAC SDN entry. Fuzzy matching surfaces near-misses you should investigate before transacting.
+      Search any name, vessel, IMO number, aircraft tail number, or Cuban
+      national ID against every Cuba-program OFAC SDN entry. Fuzzy matching
+      surfaces near-misses you should investigate before transacting.
     </p>
   </header>
 
-  <form class="checker-form" method="get" action="/tools/ofac-cuba-sanctions-checker">
-    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. GAESA, Gaviota, Habaguanex, IMO 9432660, CU-T1234" autofocus required>
-    <button type="submit">Check exposure</button>
-  </form>
-
-  <div class="examples">
-    Try:
+  <div class="quick-chips">
+    <span class="label">Popular:</span>
     <a href="?q=gaesa">GAESA</a>
-    <a href="?q=gaviota">Gaviota</a>
-    <a href="?q=habaguanex">Habaguanex</a>
-    <a href="?q=fincimex">FINCIMEX</a>
+    <a href="?q=cimex">CIMEX</a>
+    <a href="?q=havanatur">Havanatur</a>
     <a href="?q=cubanacan">Cubanacán</a>
+    <a href="?q=cubatabaco">Cubatabaco</a>
+    <a href="?q=havin">Havin Bank</a>
+    <a href="?q=prensa+latina">Prensa Latina</a>
+    <a href="?q=moa+nickel">Moa Nickel</a>
   </div>
 
-  {% if query %}
+  <div class="picker-block" id="ofac-picker" data-base="/tools/ofac-cuba-sanctions-checker">
+    <div class="picker-row">
+      <label for="ofac-entity">Pick an entry</label>
+      <select id="ofac-entity" data-param="q" aria-label="Select an entry from the full Cuba-program SDN list (alphabetical)">
+        <option value="">All {{ total_sdn }} CUBA-program SDN entries &mdash; pick one&hellip;</option>
+        {% for e in entries_alpha %}
+        <option value="{{ e.name }}"{% if query and query == e.name %} selected{% endif %}>{{ e.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="ofac-sector">By sector</label>
+      <select id="ofac-sector" data-param="sector" aria-label="Filter SDN entries by industry sector">
+        <option value="">All sectors</option>
+        {% for s, c in sector_counts %}
+        <option value="{{ s }}"{% if sector_filter == s %} selected{% endif %}>{{ s }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="ofac-type">By type</label>
+      <select id="ofac-type" data-param="type" aria-label="Filter SDN entries by record type">
+        <option value="">All types</option>
+        {% for t, c in type_counts %}
+        <option value="{{ t }}"{% if type_filter == t %} selected{% endif %}>{{ t }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="or-divider"><span>or type a name, IMO, or tail number</span></div>
+
+  <form class="checker-form" method="get" action="/tools/ofac-cuba-sanctions-checker">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. GAESA, Gaviota, Habaguanex, IMO 9432660, CU-T1234">
+    <button type="submit">Check exposure</button>
+    <button type="button" id="ofac-clear" class="btn-clear" aria-label="Clear search and reset all filters">Clear</button>
+  </form>
+
+  <div id="ofac-results">
+  {% set scope_label %}{% if sector_filter %} in {{ sector_filter }}{% elif type_filter %} ({{ type_filter|lower }}s){% endif %}{% endset %}
+  {% if query or type_filter or sector_filter %}
     {% if matches and matches|length > 0 %}
     <div class="result-banner match">
-      <h3>{{ matches|length }} potential match{% if matches|length != 1 %}es{% endif %} for &ldquo;{{ query }}&rdquo;</h3>
+      <h3>{{ matches|length }} potential match{% if matches|length != 1 %}es{% endif %}{% if query %} for &ldquo;{{ query }}&rdquo;{% endif %}{{ scope_label }}</h3>
+      <p>U.S. persons must block all property and reject any transactions involving these designations under the Cuban Assets Control Regulations (31 CFR Part 515).</p>
     </div>
     {% for m in matches %}
     <article class="match-card">
+      <span class="score">{{ m.score }}% match</span>
       <div class="name">{{ m.name }}</div>
       <div class="meta">
         <strong>Type:</strong> {{ m.type }} ·
+        <strong>Sector:</strong> {{ m.sector }} ·
         <strong>Program:</strong> {{ m.program or '—' }}
       </div>
-      <div class="remarks">{{ m.remarks }}</div>
+      {% if m.remarks %}<div class="remarks">{{ m.remarks }}</div>{% endif %}
     </article>
     {% endfor %}
     {% else %}
     <div class="result-banner clear">
-      <h3>No SDN match for &ldquo;{{ query }}&rdquo;</h3>
-      <p>Cross-check the <a href="/tools/cuba-restricted-list-checker">CRL</a> and the <a href="/tools/cuba-prohibited-hotels-checker">CPAL</a> &mdash; a clean SDN screen alone is not enough.</p>
+      <h3>No SDN match found{% if query %} for &ldquo;{{ query }}&rdquo;{% endif %}{{ scope_label }}</h3>
+      <p>
+        A clean SDN screen alone is NOT enough. Cross-check the
+        <a href="/tools/cuba-restricted-list-checker">Cuba Restricted List (CRL)</a>
+        and the <a href="/tools/cuba-prohibited-hotels-checker">Cuba Prohibited Accommodations List (CPAL)</a>
+        &mdash; both prohibit transactions even for entities not on the SDN.
+        For ownership chains, apply the OFAC 50% Rule to every counterparty.
+      </p>
     </div>
     {% endif %}
   {% endif %}
 
+  {% if not query and not type_filter and not sector_filter %}
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 8px;">
+    Browse the Cuba-program SDN by sector
+  </h2>
+  <div class="sector-grid">
+    {% for s, c in sector_counts %}
+    <a href="?sector={{ s|urlencode }}">{{ s }}<span class="count">{{ c }}</span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  </div>{# /#ofac-results #}
+
   <div class="disclaimer">
-    <strong>Important:</strong> Fuzzy match against our cached snapshot of the Cuba-related OFAC SDN list. This tool does NOT run the OFAC 50% Rule ownership chain or check the State Department CRL. Not a substitute for vetted commercial screening or sanctions counsel on high-stakes counterparties.
+    <strong>Important:</strong> Fuzzy match against our cached snapshot of the
+    Cuba-program OFAC SDN list, refreshed twice daily from
+    <a href="https://ofac.treasury.gov/specially-designated-nationals-and-blocked-persons-list-sdn-human-readable-lists" rel="noopener" target="_blank">treasury.gov</a>.
+    This tool does NOT run the OFAC 50% Rule ownership chain or check the
+    State Department CRL / CPAL. Sector tags are heuristic groupings to aid
+    browsing &mdash; the official designation is the SDN entry itself. Not a
+    substitute for vetted commercial screening or sanctions counsel on
+    high-stakes counterparties. Retain documentation per §515.601 (5-year
+    recordkeeping).
   </div>
 
   {% from "_related_tools.html.j2" import related_tools_nav %}
@@ -91,4 +182,116 @@
   {{ cluster_nav(cluster_ctx) }}
 
 </section>
+
+<script>
+(function () {
+  var picker = document.getElementById('ofac-picker');
+  var results = document.getElementById('ofac-results');
+  if (!picker || !results) return;
+  var base = picker.getAttribute('data-base');
+  var form = document.querySelector('form.checker-form');
+  var input = form ? form.querySelector('input[name=q]') : null;
+  var clearBtn = document.getElementById('ofac-clear');
+  var inflight = null;
+
+  function buildUrl(param, value) {
+    if (!value) return base;
+    return base + '?' + param + '=' + encodeURIComponent(value);
+  }
+
+  function isFiltered() {
+    if (input && input.value.trim()) return true;
+    var any = false;
+    picker.querySelectorAll('select[data-param]').forEach(function (s) {
+      if (s.selectedIndex > 0) any = true;
+    });
+    return any;
+  }
+
+  function refreshClear() {
+    if (!clearBtn) return;
+    clearBtn.disabled = !isFiltered();
+  }
+
+  function resetControls() {
+    if (input) input.value = '';
+    picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+  }
+
+  function swap(url) {
+    if (inflight) inflight.abort && inflight.abort();
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    inflight = ctrl;
+    results.setAttribute('aria-busy', 'true');
+    fetch(url, { credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = doc.getElementById('ofac-results');
+        if (fresh) results.innerHTML = fresh.innerHTML;
+        if (history && history.replaceState) {
+          history.replaceState({ ofac: true }, '', url);
+        }
+        results.removeAttribute('aria-busy');
+        refreshClear();
+      })
+      .catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        results.removeAttribute('aria-busy');
+        refreshClear();
+      });
+  }
+
+  // Pickers: change handler swaps results in-place, no scroll, no nav.
+  // Query / sector / type are mutually exclusive in URL state, so
+  // changing one resets the others — matches server-side semantics.
+  picker.querySelectorAll('select[data-param]').forEach(function (sel) {
+    sel.addEventListener('change', function (e) {
+      e.preventDefault();
+      picker.querySelectorAll('select[data-param]').forEach(function (other) {
+        if (other !== sel) other.selectedIndex = 0;
+      });
+      if (input) input.value = '';
+      swap(buildUrl(sel.getAttribute('data-param'), sel.value));
+    });
+  });
+
+  // Popular-check chips: same swap behavior
+  document.querySelectorAll('.quick-chips a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      resetControls();
+      if (input) {
+        try {
+          var u = new URL(a.getAttribute('href'), window.location.origin);
+          input.value = u.searchParams.get('q') || '';
+        } catch (_) { /* no-op */ }
+      }
+      swap(a.getAttribute('href'));
+    });
+  });
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = input ? input.value.trim() : '';
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(buildUrl('q', v));
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (clearBtn.disabled) return;
+      resetControls();
+      swap(base);
+      if (input) input.focus();
+    });
+    if (input) {
+      input.addEventListener('input', refreshClear);
+    }
+    refreshClear();
+  }
+})();
+</script>
 {% endblock %}

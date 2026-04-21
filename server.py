@@ -879,6 +879,53 @@ def _legacy_bolivar_usd_redirect():
     return _legacy_redirect_to("/tools/eltoque-trmi-rate")
 
 
+def _sdn_normalize_type(raw: str) -> str:
+    """OFAC encodes a missing SDN type as ``-0-`` (their null sentinel),
+    which should be read as "Entity" — the default for SDN rows that
+    aren't explicitly tagged as a vessel, aircraft, or individual."""
+    t = (raw or "").strip().lower()
+    if not t or t in {"-0-", "entity"}:
+        return "Entity"
+    return t.capitalize()
+
+
+# Ordered (longest / most specific keywords first so e.g. "GRUPO DE
+# ADMINISTRACION EMPRESARIAL" wins over a generic "GRUPO" rule).
+_SDN_SECTOR_RULES: list[tuple[str, tuple[str, ...]]] = [
+    ("GAESA", ("GRUPO DE ADMINISTRACION EMPRESARIAL", "GRUPO GAE", "GAESA")),
+    ("CIMEX group", ("CIMEX",)),
+    ("Tourism & travel", (
+        "HAVANATUR", "CUBANATUR", "CUBANACAN", "HOLA SUN", "TROPIC TOURS",
+        "VIAJES", "VINALES TOURS", "TURISMO",
+    )),
+    ("Banking & finance", ("BANCO", "BANK", "FINANCIERA", "HAVIN")),
+    ("Mining & metals", ("NICKEL", "COBALT", "NIQUEL")),
+    ("Aviation", ("AVIACION", "AERO")),
+    ("Maritime & fishing", (
+        "MARINE", "MARITIME", "NAVES", "FLETES", "PESCADO",
+        "PESCABRAVA", "CARIBEX",
+    )),
+    ("Tobacco & cigars", ("CIGAR", "TABACO", "LA MAISON")),
+    ("Media & publishing", ("PRENSA", "EDICIONES")),
+    ("Trading & commodities", (
+        "COMERCIAL", "TRADING", "IMPORT", "EXPORT", "ETCO", "KAVE",
+        "BOUTIQUE", "CASA DE CUBA",
+    )),
+]
+
+
+def _sdn_sector_for(name: str, remarks: str) -> str:
+    """Heuristic sector tag for an SDN entry, derived from name +
+    remarks keywords. Returns "Other / holdings" as the fallback bucket
+    so the picker is never blank for a row."""
+    text = f"{name or ''} {remarks or ''}".upper()
+    for label, keywords in _SDN_SECTOR_RULES:
+        for kw in keywords:
+            if kw in text:
+                return label
+    return "Other / holdings"
+
+
 @app.route("/tools/ofac-cuba-sanctions-checker")
 @app.route("/tools/ofac-cuba-sanctions-checker/")
 def tool_ofac_sanctions_checker():
@@ -888,11 +935,18 @@ def tool_ofac_sanctions_checker():
         from src.page_renderer import _env
         from datetime import date as _date
         from difflib import SequenceMatcher
+        from collections import Counter
         import re as _re
 
         query = (request.args.get("q") or "").strip()
+        type_filter = (request.args.get("type") or "").strip()
+        sector_filter = (request.args.get("sector") or "").strip()
+
         matches: list[dict] = []
         total_sdn = 0
+        entries_alpha: list[dict] = []
+        type_counts: list[tuple[str, int]] = []
+        sector_counts: list[tuple[str, int]] = []
 
         init_db()
         db = SessionLocal()
@@ -904,41 +958,83 @@ def tool_ofac_sanctions_checker():
             )
             total_sdn = len(rows)
 
-            if query:
+            # Pre-compute the row dicts once so picker/filter/match all
+            # share the same normalized view (type and sector tagging).
+            normalized: list[dict] = []
+            for r in rows:
+                meta = r.extra_metadata or {}
+                name = (meta.get("name") or r.headline or "").strip()
+                if not name:
+                    continue
+                program = (meta.get("program") or "").strip()
+                remarks = (meta.get("remarks") or "").strip()
+                if remarks == "-0-":
+                    remarks = ""
+                normalized.append({
+                    "name": name,
+                    "type": _sdn_normalize_type(meta.get("type")),
+                    "sector": _sdn_sector_for(name, remarks),
+                    "program": program,
+                    "remarks": remarks,
+                })
+
+            entries_alpha = sorted(normalized, key=lambda x: x["name"].lower())
+
+            type_counter: Counter[str] = Counter(x["type"] for x in normalized)
+            # Entity first (the bulk), then vessels, individuals, anything
+            # else alphabetically.
+            _type_priority = {"Entity": 0, "Vessel": 1, "Individual": 2}
+            type_counts = sorted(
+                type_counter.items(),
+                key=lambda kv: (_type_priority.get(kv[0], 99), kv[0]),
+            )
+
+            sector_counter: Counter[str] = Counter(x["sector"] for x in normalized)
+            # Push "Other / holdings" to the bottom; everything else
+            # alphabetical so the long list scans predictably.
+            sector_counts = sorted(
+                sector_counter.items(),
+                key=lambda kv: (1 if kv[0] == "Other / holdings" else 0, kv[0]),
+            )
+
+            if query or type_filter or sector_filter:
                 q_low = query.lower()
                 q_norm = _re.sub(r"[^a-z0-9]+", "", q_low)
 
-                for r in rows:
-                    meta = r.extra_metadata or {}
-                    name = (meta.get("name") or r.headline or "").strip()
-                    program = (meta.get("program") or "").strip()
-                    remarks = (meta.get("remarks") or "").strip()
-                    ent_type = (meta.get("type") or "entity").lower()
+                for x in normalized:
+                    if type_filter and x["type"] != type_filter:
+                        continue
+                    if sector_filter and x["sector"] != sector_filter:
+                        continue
 
-                    haystack = " ".join([name, program, remarks]).lower()
-                    haystack_norm = _re.sub(r"[^a-z0-9]+", "", haystack)
-
-                    score = 0.0
-                    if q_low in haystack:
-                        score = max(score, 0.95)
-                    elif q_norm and q_norm in haystack_norm:
-                        score = max(score, 0.85)
+                    if query:
+                        haystack = " ".join([x["name"], x["program"], x["remarks"]]).lower()
+                        haystack_norm = _re.sub(r"[^a-z0-9]+", "", haystack)
+                        score = 0.0
+                        if q_low in haystack:
+                            score = max(score, 0.95)
+                        elif q_norm and q_norm in haystack_norm:
+                            score = max(score, 0.85)
+                        else:
+                            ratio = SequenceMatcher(None, q_low, x["name"].lower()).ratio()
+                            if ratio >= 0.7:
+                                score = max(score, ratio)
+                        if score < 0.7:
+                            continue
                     else:
-                        ratio = SequenceMatcher(None, q_low, name.lower()).ratio()
-                        if ratio >= 0.7:
-                            score = max(score, ratio)
+                        score = 1.0
 
-                    if score >= 0.7:
-                        matches.append({
-                            "name": name,
-                            "type": ent_type,
-                            "program": program,
-                            "remarks": remarks,
-                            "score": int(round(score * 100)),
-                        })
+                    matches.append({
+                        "name": x["name"],
+                        "type": x["type"],
+                        "sector": x["sector"],
+                        "program": x["program"],
+                        "remarks": x["remarks"],
+                        "score": int(round(score * 100)),
+                    })
 
-                matches.sort(key=lambda m: m["score"], reverse=True)
-                matches = matches[:30]
+                matches.sort(key=lambda m: (-m["score"], m["sector"], m["name"]))
+                matches = matches[:60]
         finally:
             db.close()
 
@@ -1002,8 +1098,13 @@ def tool_ofac_sanctions_checker():
         template = _env.get_template("tools/ofac_sanctions_checker.html.j2")
         html = template.render(
             query=query,
+            type_filter=type_filter,
+            sector_filter=sector_filter,
             matches=matches,
             total_sdn=total_sdn,
+            entries_alpha=entries_alpha,
+            type_counts=type_counts,
+            sector_counts=sector_counts,
             seo=seo,
             jsonld=jsonld,
             cluster_ctx=cluster_ctx,
@@ -1431,7 +1532,7 @@ def tool_crl_entity_checker():
     try:
         from src.page_renderer import _env
         from datetime import date as _date
-        from collections import Counter, defaultdict
+        from collections import Counter
 
         query = (request.args.get("q") or "").strip()
         # ``section`` is kept for backward compatibility with any inbound
@@ -1471,19 +1572,19 @@ def tool_crl_entity_checker():
                 location_counter[loc] += 1
         location_counts = sorted(location_counter.items(), key=lambda kv: kv[0])
 
-        # Entities grouped by section for the "Pick an entity" dropdown.
-        # Sections sorted alphabetically; entries within a section sorted by
-        # name for predictable scanning.
-        by_section: dict[str, list[dict]] = defaultdict(list)
-        for r in all_rows:
-            sec = (r.get("section") or "").strip() or "(uncategorised)"
-            by_section[sec].append({"name": (r.get("name") or "").strip()})
-        entities_by_section = sorted(
+        # Flat A-Z list for the "Pick an entity" dropdown. Section
+        # context is preserved on each match card after the user picks,
+        # so we don't need to clutter the long picker with optgroups.
+        entities_alpha = sorted(
             (
-                (sec, sorted(items, key=lambda x: x["name"].lower()))
-                for sec, items in by_section.items()
+                {
+                    "name": (r.get("name") or "").strip(),
+                    "section": (r.get("section") or "").strip(),
+                }
+                for r in all_rows
+                if (r.get("name") or "").strip()
             ),
-            key=lambda kv: kv[0].lower(),
+            key=lambda x: x["name"].lower(),
         )
 
         matches: list[dict] = []
@@ -1615,7 +1716,7 @@ def tool_crl_entity_checker():
             section_counts=section_counts,
             kind_counts=kind_counts,
             location_counts=location_counts,
-            entities_by_section=entities_by_section,
+            entities_alpha=entities_alpha,
             matches=matches,
             total_entries=total_entries,
             refreshed_on=refreshed_on or "snapshot pending",
@@ -3938,13 +4039,68 @@ def tool_public_company_exposure_check():
         from src.data.sp500_companies import find_company
         from src.page_renderer import _env
         from datetime import date as _date
+        from collections import Counter
 
         query = (request.args.get("q") or "").strip()
+        sector_filter = (request.args.get("sector") or "").strip()
+        exposure_filter = (request.args.get("exposure") or "").strip()
+
         report = None
         if query:
             company = find_company(query)
             if company is not None:
                 report = build_exposure_report(company, use_edgar=True, network=False)
+
+        # Build the picker dataset once. include_sdn_scan=False keeps this
+        # cheap (no per-company SDN match) — we only need ticker/name/sector
+        # /classification metadata for the dropdowns and the browse list.
+        all_rows = list_company_index_rows(include_sdn_scan=False)
+        entries_alpha = [
+            {
+                "ticker": r.ticker,
+                "name": r.name,
+                "short_name": r.short_name,
+                "sector": r.sector,
+                "url_path": r.url_path,
+                "classification": r.classification,
+            }
+            for r in all_rows
+        ]
+
+        # Sector facet — natural S&P GICS labels straight from the source.
+        sector_counter = Counter(e["sector"] for e in entries_alpha if e["sector"])
+        sector_counts = sorted(sector_counter.items(), key=lambda kv: kv[0])
+
+        # Exposure facet — kept in fixed compliance-priority order (most
+        # actionable signals first).
+        EXPOSURE_LABELS = {
+            "direct": "Direct exposure",
+            "indirect": "Indirect exposure",
+            "historical": "Historical exposure",
+            "none": "No current exposure",
+            "unknown": "No exposure on record",
+        }
+        EXPOSURE_ORDER = ["direct", "indirect", "historical", "none", "unknown"]
+        exposure_counter = Counter(e["classification"] for e in entries_alpha)
+        exposure_counts = [
+            {"key": k, "label": EXPOSURE_LABELS.get(k, k), "count": exposure_counter.get(k, 0)}
+            for k in EXPOSURE_ORDER if exposure_counter.get(k, 0)
+        ]
+
+        # When a facet is active, render the matching companies as a
+        # browseable list (in addition to / instead of the single-company
+        # report). Skip when a query is also present — the report wins.
+        filtered_companies: list[dict] = []
+        if not query and (sector_filter or exposure_filter):
+            for e in entries_alpha:
+                if sector_filter and e["sector"] != sector_filter:
+                    continue
+                if exposure_filter and e["classification"] != exposure_filter:
+                    continue
+                filtered_companies.append({
+                    **e,
+                    "exposure_label": EXPOSURE_LABELS.get(e["classification"], e["classification"]),
+                })
 
         # Pre-baked "popular" list for the empty state. Reflects the
         # most-asked Cuba-exposure tickers across compliance, IR, and
@@ -4070,6 +4226,13 @@ def tool_public_company_exposure_check():
             query=query,
             report=report,
             popular=popular,
+            entries_alpha=entries_alpha,
+            sector_counts=sector_counts,
+            exposure_counts=exposure_counts,
+            sector_filter=sector_filter,
+            exposure_filter=exposure_filter,
+            filtered_companies=filtered_companies,
+            total_entries=len(entries_alpha),
             seo=seo,
             jsonld=jsonld,
             cluster_ctx=cluster_ctx,

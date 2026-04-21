@@ -1,12 +1,16 @@
 {#
   /tools/public-company-cuba-exposure-check
 
-  Interactive lookup. The user types a company name (or ticker), we
-  resolve it against the S&P 500 list, build the exposure report
-  in-process, and either (a) preview the answer with a deep-link to
-  the canonical /companies/<slug>/cuba-exposure page, or (b) tell
-  them we don't have that ticker indexed and offer the OFAC SDN
-  checker as a generic fallback.
+  Interactive lookup. Three ways to find a company:
+    1. Quick-chip presets (most-asked tickers)
+    2. Picker block — pick a name, browse by S&P sector, or browse
+       by exposure level (direct / indirect / historical / none /
+       unknown). Browse modes render a filterable list.
+    3. Free-text search. Resolves against the S&P 500 list and
+       builds the per-company exposure report.
+
+  All result swaps are AJAX so the URL/picker state stays in sync
+  with the visible answer card or list.
 #}
 {% extends "_base.html.j2" %}
 {% from "_cluster_nav.html.j2" import cluster_nav %}
@@ -14,12 +18,30 @@
 
 {% block head_extra %}
 <style>
-  .tool-form { display: flex; gap: 8px; margin: 20px 0; }
-  .tool-form input { flex: 1; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
-  .tool-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; }
-  .tool-form button:hover { background: var(--sr-blue-dark); }
-  .examples { font-size: 13px; color: var(--sr-gray-text); margin-top: 6px; }
-  .examples a { margin-right: 12px; }
+  .quick-chips { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin: 14px 0 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .quick-chips .label { flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .quick-chips a { flex-shrink: 0; display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .quick-chips a:hover { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .picker-block { background: #fafbfd; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 14px 16px; margin: 12px 0 4px; }
+  .picker-block .picker-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 14px; align-items: center; }
+  .picker-block .picker-row + .picker-row { margin-top: 10px; }
+  .picker-block label { font-size: 13px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 1.1px; font-weight: 600; }
+  .picker-block select { width: 100%; padding: 11px 14px; border: 2px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .picker-block select:focus { border-color: var(--sr-blue); outline: none; }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0 10px; color: var(--sr-gray-text); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--sr-gray-light); }
+  .checker-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+  .checker-form input[type=text] { flex: 1 1 280px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; white-space: nowrap; }
+  .checker-form button:hover { background: var(--sr-blue-dark); }
+  .checker-form .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 2px solid var(--sr-gray-light); padding: 12px 18px; font-size: 14px; font-weight: 500; }
+  .checker-form .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .checker-form .btn-clear:disabled { opacity: 0.45; cursor: default; }
+  .checker-form .btn-clear:disabled:hover { background: var(--white); color: var(--sr-gray-text); border-color: var(--sr-gray-light); }
+  @media (max-width: 540px) {
+    .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
+    .picker-block label { font-size: 12px; }
+  }
 
   .answer-card { padding: 22px 24px; border-radius: 6px; margin: 24px 0; }
   .answer-card h2 { font-family: var(--font-serif); font-size: 22px; margin-bottom: 6px; }
@@ -48,6 +70,27 @@
   .quick-list { columns: 2; column-gap: 16px; padding: 0; list-style: none; margin: 12px 0 24px; font-size: 14px; }
   @media (max-width: 600px) { .quick-list { columns: 1; } }
   .quick-list li { padding: 4px 0; break-inside: avoid; }
+
+  .result-banner { padding: 16px 20px; margin: 22px 0 14px; border-radius: 3px; background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); }
+  .result-banner h3 { font-family: var(--font-serif); margin: 0 0 4px; color: var(--sr-blue-dark); }
+  .result-banner p { font-size: 13px; color: var(--sr-dark-text); margin: 0; }
+  .result-banner.empty { background: #eef2f7; border-left-color: var(--sr-gray-text); }
+
+  table.companies { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 24px; }
+  table.companies th, table.companies td { padding: 10px 12px; border-bottom: 1px solid var(--sr-gray-light); text-align: left; vertical-align: top; }
+  table.companies th { background: var(--sr-gray-bg); font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; }
+  table.companies td.ticker { font-family: var(--font-serif); font-weight: 700; color: var(--sr-blue-dark); white-space: nowrap; }
+  table.companies td.lvl .pill { display: inline-block; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; border-radius: 999px; color: var(--white); white-space: nowrap; }
+  table.companies td.lvl .pill.direct     { background: var(--sr-red); }
+  table.companies td.lvl .pill.indirect   { background: #f5b041; }
+  table.companies td.lvl .pill.historical { background: var(--sr-blue); }
+  table.companies td.lvl .pill.none       { background: #2e7d32; }
+  table.companies td.lvl .pill.unknown    { background: var(--sr-gray-text); }
+
+  .browse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin: 12px 0 24px; }
+  .browse-grid a { display: block; padding: 10px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; text-decoration: none; color: var(--sr-blue-dark); background: #fafafa; font-size: 14px; }
+  .browse-grid a:hover { background: #f0f4fa; border-color: var(--sr-blue); }
+  .browse-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
 </style>
 {% endblock %}
 
@@ -72,21 +115,57 @@
     </p>
   </header>
 
-  <form class="tool-form" method="get" action="/tools/public-company-cuba-exposure-check">
-    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. Marriott, Carnival, AAL, MELI" autofocus required>
-    <button type="submit">Check exposure</button>
-  </form>
-
-  <div class="examples">
-    Try:
+  <div class="quick-chips">
+    <span class="label">Popular:</span>
     <a href="?q=marriott">Marriott</a>
     <a href="?q=carnival">Carnival</a>
     <a href="?q=american airlines">American Airlines</a>
     <a href="?q=AAPL">Apple</a>
     <a href="?q=western union">Western Union</a>
     <a href="?q=meli">MercadoLibre</a>
+    <a href="?exposure=direct">All direct exposure</a>
+    <a href="?exposure=historical">All historical (Helms-Burton)</a>
   </div>
 
+  <div class="picker-block" id="pcec-picker" data-base="/tools/public-company-cuba-exposure-check">
+    <div class="picker-row">
+      <label for="pcec-company">Pick a company</label>
+      <select id="pcec-company" data-param="q" aria-label="Pick an S&P 500 company (alphabetical)">
+        <option value="">All {{ total_entries }} S&amp;P 500 companies &mdash; pick one&hellip;</option>
+        {% for e in entries_alpha %}
+        <option value="{{ e.ticker }}"{% if query and query|lower == e.ticker|lower %} selected{% endif %}>{{ e.short_name }} ({{ e.ticker }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="pcec-sector">By sector</label>
+      <select id="pcec-sector" data-param="sector" aria-label="Filter by S&P sector">
+        <option value="">All sectors</option>
+        {% for s, c in sector_counts %}
+        <option value="{{ s }}"{% if sector_filter == s %} selected{% endif %}>{{ s }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="pcec-exposure">By exposure</label>
+      <select id="pcec-exposure" data-param="exposure" aria-label="Filter by Cuba exposure level">
+        <option value="">All exposure levels</option>
+        {% for e in exposure_counts %}
+        <option value="{{ e.key }}"{% if exposure_filter == e.key %} selected{% endif %}>{{ e.label }} ({{ e.count }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="or-divider"><span>or type a name or ticker</span></div>
+
+  <form class="checker-form" method="get" action="/tools/public-company-cuba-exposure-check">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. Marriott, Carnival, AAL, MELI">
+    <button type="submit">Check exposure</button>
+    <button type="button" id="pcec-clear" class="btn-clear" aria-label="Clear search and reset all filters">Clear</button>
+  </form>
+
+  <div id="pcec-results">
   {% if query %}
     {% if report %}
       <article class="answer-card {{ report.classification }}">
@@ -135,7 +214,56 @@
         <a href="https://efts.sec.gov/LATEST/search-index?q=%22{{ query|urlencode }}%22+Cuba" rel="nofollow">SEC EDGAR full-text search</a>.
       </div>
     {% endif %}
+  {% elif sector_filter or exposure_filter %}
+    {% set scope_label %}
+      {%- if sector_filter and exposure_filter %} in {{ sector_filter }} with {{ exposure_filter }} exposure
+      {%- elif sector_filter %} in {{ sector_filter }}
+      {%- elif exposure_filter %} with {{ exposure_filter }} exposure{% endif -%}
+    {% endset %}
+    {% if filtered_companies %}
+    <div class="result-banner">
+      <h3>{{ filtered_companies|length }} S&amp;P 500 compan{% if filtered_companies|length == 1 %}y{% else %}ies{% endif %}{{ scope_label }}</h3>
+      <p>Click a name for the full exposure profile (OFAC + CRL + EDGAR + news).</p>
+    </div>
+    <table class="companies">
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>Company</th>
+          <th>Sector</th>
+          <th>Exposure</th>
+          <th>Profile</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in filtered_companies %}
+        <tr>
+          <td class="ticker">{{ c.ticker }}</td>
+          <td>{{ c.short_name }}</td>
+          <td>{{ c.sector }}</td>
+          <td class="lvl"><span class="pill {{ c.classification }}">{{ c.exposure_label }}</span></td>
+          <td><a href="{{ c.url_path }}">Open →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="result-banner empty">
+      <h3>No S&amp;P 500 companies{{ scope_label }}</h3>
+      <p>Try a broader filter, or clear and start over.</p>
+    </div>
+    {% endif %}
   {% endif %}
+
+  {% if not query and not sector_filter and not exposure_filter %}
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 8px;">
+    Browse by exposure level
+  </h2>
+  <div class="browse-grid">
+    {% for e in exposure_counts %}
+    <a href="?exposure={{ e.key|urlencode }}">{{ e.label }}<span class="count">{{ e.count }}</span></a>
+    {% endfor %}
+  </div>
 
   {% if popular %}
   <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 8px;">
@@ -150,6 +278,8 @@
     {% endfor %}
   </ul>
   {% endif %}
+  {% endif %}
+  </div>{# /#pcec-results #}
 
   <div class="disclaimer">
     <strong>Important:</strong> Combines fuzzy SDN matching, EDGAR full-text search, and our news corpus. Does NOT run the OFAC 50% Rule ownership chain or substitute for vetted commercial screening. Retain sanctions counsel on high-stakes counterparties.
@@ -159,4 +289,116 @@
 
   {{ cluster_nav(cluster_ctx) }}
 </section>
+
+<script>
+(function () {
+  var picker = document.getElementById('pcec-picker');
+  var results = document.getElementById('pcec-results');
+  if (!picker || !results) return;
+  var base = picker.getAttribute('data-base');
+  var form = document.querySelector('form.checker-form');
+  var input = form ? form.querySelector('input[name=q]') : null;
+  var clearBtn = document.getElementById('pcec-clear');
+  var inflight = null;
+
+  function buildUrl(param, value) {
+    if (!value) return base;
+    return base + '?' + param + '=' + encodeURIComponent(value);
+  }
+
+  function isFiltered() {
+    if (input && input.value.trim()) return true;
+    var any = false;
+    picker.querySelectorAll('select[data-param]').forEach(function (s) {
+      if (s.selectedIndex > 0) any = true;
+    });
+    return any;
+  }
+
+  function refreshClear() {
+    if (!clearBtn) return;
+    clearBtn.disabled = !isFiltered();
+  }
+
+  function resetControls() {
+    if (input) input.value = '';
+    picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+  }
+
+  function swap(url) {
+    if (inflight) inflight.abort && inflight.abort();
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    inflight = ctrl;
+    results.setAttribute('aria-busy', 'true');
+    fetch(url, { credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = doc.getElementById('pcec-results');
+        if (fresh) results.innerHTML = fresh.innerHTML;
+        if (history && history.replaceState) {
+          history.replaceState({ pcec: true }, '', url);
+        }
+        results.removeAttribute('aria-busy');
+        refreshClear();
+      })
+      .catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        results.removeAttribute('aria-busy');
+        refreshClear();
+      });
+  }
+
+  // Pickers: change handler swaps results in-place. Picker params are
+  // mutually exclusive in URL state to mirror the server-side semantics
+  // (q, sector, and exposure each replace the others).
+  picker.querySelectorAll('select[data-param]').forEach(function (sel) {
+    sel.addEventListener('change', function (e) {
+      e.preventDefault();
+      picker.querySelectorAll('select[data-param]').forEach(function (other) {
+        if (other !== sel) other.selectedIndex = 0;
+      });
+      if (input) input.value = '';
+      swap(buildUrl(sel.getAttribute('data-param'), sel.value));
+    });
+  });
+
+  // Quick-chips: same swap behaviour. Some chips carry q=, others
+  // exposure= — handle both by parsing the href.
+  document.querySelectorAll('.quick-chips a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      resetControls();
+      try {
+        var u = new URL(a.getAttribute('href'), window.location.origin);
+        var q = u.searchParams.get('q');
+        if (q && input) input.value = q;
+      } catch (_) { /* no-op */ }
+      swap(a.getAttribute('href'));
+    });
+  });
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = input ? input.value.trim() : '';
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(buildUrl('q', v));
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (clearBtn.disabled) return;
+      resetControls();
+      swap(base);
+      if (input) input.focus();
+    });
+    if (input) {
+      input.addEventListener('input', refreshClear);
+    }
+    refreshClear();
+  }
+})();
+</script>
 {% endblock %}

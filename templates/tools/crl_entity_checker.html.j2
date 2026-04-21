@@ -18,6 +18,10 @@
   .checker-form input[type=text] { flex: 1 1 280px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
   .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; white-space: nowrap; }
   .checker-form button:hover { background: var(--sr-blue-dark); }
+  .checker-form .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 2px solid var(--sr-gray-light); padding: 12px 18px; font-size: 14px; font-weight: 500; }
+  .checker-form .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .checker-form .btn-clear:disabled { opacity: 0.45; cursor: default; }
+  .checker-form .btn-clear:disabled:hover { background: var(--white); color: var(--sr-gray-text); border-color: var(--sr-gray-light); }
   @media (max-width: 540px) {
     .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
     .picker-block label { font-size: 12px; }
@@ -75,14 +79,10 @@
   <div class="picker-block" id="crl-picker" data-base="/tools/cuba-restricted-list-checker">
     <div class="picker-row">
       <label for="crl-entity">Pick an entity</label>
-      <select id="crl-entity" data-param="q" aria-label="Select an entity from the full CRL">
+      <select id="crl-entity" data-param="q" aria-label="Select an entity from the full CRL (alphabetical)">
         <option value="">All {{ total_entries }} prohibited entities &mdash; pick one&hellip;</option>
-        {% for sec, items in entities_by_section %}
-        <optgroup label="{{ sec }} ({{ items|length }})">
-          {% for e in items %}
-          <option value="{{ e.name }}"{% if query and query == e.name %} selected{% endif %}>{{ e.name }}</option>
-          {% endfor %}
-        </optgroup>
+        {% for e in entities_alpha %}
+        <option value="{{ e.name }}"{% if query and query == e.name %} selected{% endif %}>{{ e.name }}</option>
         {% endfor %}
       </select>
     </div>
@@ -111,6 +111,7 @@
   <form class="checker-form" method="get" action="/tools/cuba-restricted-list-checker">
     <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. GAESA, Gaviota, CIMEX, Habaguanex, FINCIMEX, Mariel">
     <button type="submit">Check entity</button>
+    <button type="button" id="crl-clear" class="btn-clear" aria-label="Clear search and reset all filters">Clear</button>
   </form>
 
   <div id="crl-results">
@@ -173,11 +174,33 @@
   var results = document.getElementById('crl-results');
   if (!picker || !results) return;
   var base = picker.getAttribute('data-base');
+  var form = document.querySelector('form.checker-form');
+  var input = form ? form.querySelector('input[name=q]') : null;
+  var clearBtn = document.getElementById('crl-clear');
   var inflight = null;
 
   function buildUrl(param, value) {
     if (!value) return base;
     return base + '?' + param + '=' + encodeURIComponent(value);
+  }
+
+  function isFiltered() {
+    if (input && input.value.trim()) return true;
+    var any = false;
+    picker.querySelectorAll('select[data-param]').forEach(function (s) {
+      if (s.selectedIndex > 0) any = true;
+    });
+    return any;
+  }
+
+  function refreshClear() {
+    if (!clearBtn) return;
+    clearBtn.disabled = !isFiltered();
+  }
+
+  function resetControls() {
+    if (input) input.value = '';
+    picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
   }
 
   function swap(url) {
@@ -195,22 +218,25 @@
           history.replaceState({ crl: true }, '', url);
         }
         results.removeAttribute('aria-busy');
+        refreshClear();
       })
       .catch(function (err) {
         if (err && err.name === 'AbortError') return;
         results.removeAttribute('aria-busy');
+        refreshClear();
       });
   }
 
   // Pickers: change handler swaps results in-place, no scroll, no nav.
-  // Query / section / location are mutually exclusive in URL state, so
-  // changing one resets the others — matches the server-side semantics.
+  // Query / kind / section / location are mutually exclusive in URL state,
+  // so changing one resets the others — matches the server-side semantics.
   picker.querySelectorAll('select[data-param]').forEach(function (sel) {
     sel.addEventListener('change', function (e) {
       e.preventDefault();
       picker.querySelectorAll('select[data-param]').forEach(function (other) {
         if (other !== sel) other.selectedIndex = 0;
       });
+      if (input) input.value = '';
       swap(buildUrl(sel.getAttribute('data-param'), sel.value));
     });
   });
@@ -219,21 +245,41 @@
   document.querySelectorAll('.quick-chips a').forEach(function (a) {
     a.addEventListener('click', function (e) {
       e.preventDefault();
-      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      resetControls();
+      if (input) {
+        // Reflect the chip's query in the text input so the user can see
+        // and edit / clear what's currently active.
+        try {
+          var u = new URL(a.getAttribute('href'), window.location.origin);
+          input.value = u.searchParams.get('q') || '';
+        } catch (_) { /* no-op */ }
+      }
       swap(a.getAttribute('href'));
     });
   });
 
   // Text-search form: intercept submit so we don't navigate
-  var form = document.querySelector('form.checker-form');
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      var input = form.querySelector('input[name=q]');
       var v = input ? input.value.trim() : '';
       picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
       swap(buildUrl('q', v));
     });
+  }
+
+  // Clear button: wipe input + pickers and reload base view in-place.
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (clearBtn.disabled) return;
+      resetControls();
+      swap(base);
+      if (input) input.focus();
+    });
+    if (input) {
+      input.addEventListener('input', refreshClear);
+    }
+    refreshClear();
   }
 })();
 </script>

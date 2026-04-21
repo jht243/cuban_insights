@@ -2,8 +2,15 @@
 
 {% block head_extra %}
 <style>
-  .visa-form { display: flex; gap: 8px; margin: 20px 0; }
-  .visa-form select { flex: 1; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .visa-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 18px 0 4px; }
+  .visa-chips .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .visa-chips a { display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; cursor: pointer; }
+  .visa-chips a:hover, .visa-chips a.active { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .visa-form { display: flex; gap: 8px; margin: 8px 0 20px; flex-wrap: wrap; }
+  .visa-form select { flex: 1 1 240px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .visa-form .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 2px solid var(--sr-gray-light); padding: 12px 18px; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 3px; }
+  .visa-form .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .visa-form .btn-clear:disabled { opacity: 0.45; cursor: default; }
   .visa-result { background: var(--white); border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 24px; margin: 20px 0; display: none; }
   .visa-result.active { display: block; }
   .visa-result h2 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 22px; margin-bottom: 8px; }
@@ -43,6 +50,17 @@
     </p>
   </header>
 
+  <div class="visa-chips" id="visa-chips" role="group" aria-label="Popular passports">
+    <span class="label">Popular:</span>
+    <a href="#US" data-code="US">United States</a>
+    <a href="#CA" data-code="CA">Canada</a>
+    <a href="#GB" data-code="GB">United Kingdom</a>
+    <a href="#ES" data-code="ES">Spain</a>
+    <a href="#MX" data-code="MX">Mexico</a>
+    <a href="#CN" data-code="CN">China</a>
+    <a href="#RU" data-code="RU">Russia</a>
+  </div>
+
   <div class="visa-form">
     <select id="visa-country" aria-label="Passport country">
       <option value="">— Select your passport country —</option>
@@ -50,6 +68,7 @@
       <option value="{{ v.code }}">{{ v.country }}</option>
       {% endfor %}
     </select>
+    <button type="button" id="visa-clear" class="btn-clear" aria-label="Clear selection">Clear</button>
   </div>
 
   {% for v in visas %}
@@ -87,18 +106,57 @@
     (function() {
       var sel = document.getElementById('visa-country');
       var cards = document.querySelectorAll('.visa-result');
-      sel.addEventListener('change', function() {
+      var chips = document.getElementById('visa-chips');
+      var clearBtn = document.getElementById('visa-clear');
+
+      function show(code, opts) {
         cards.forEach(function(c) { c.classList.remove('active'); });
-        if (sel.value) {
-          var t = document.getElementById('r-' + sel.value);
+        chips.querySelectorAll('a').forEach(function(a) {
+          a.classList.toggle('active', a.getAttribute('data-code') === code);
+        });
+        if (code) {
+          var t = document.getElementById('r-' + code);
           if (t) {
             t.classList.add('active');
-            t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (opts && opts.scroll) {
+              t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
           }
         }
+        clearBtn.disabled = !sel.value;
+      }
+
+      sel.addEventListener('change', function() { show(sel.value, { scroll: true }); });
+
+      chips.addEventListener('click', function(e) {
+        var a = e.target.closest('a');
+        if (!a) return;
+        e.preventDefault();
+        var code = a.getAttribute('data-code') || '';
+        sel.value = code;
+        show(code, { scroll: true });
+        if (history && history.replaceState) {
+          history.replaceState({}, '', code ? '#' + code : location.pathname);
+        }
       });
+
+      clearBtn.addEventListener('click', function() {
+        if (clearBtn.disabled) return;
+        sel.value = '';
+        show('', { scroll: false });
+        if (history && history.replaceState) {
+          history.replaceState({}, '', location.pathname);
+        }
+        sel.focus();
+      });
+
       var hash = (location.hash || '').replace('#', '');
-      if (hash) { sel.value = hash; sel.dispatchEvent(new Event('change')); }
+      if (hash) {
+        sel.value = hash;
+        show(hash, { scroll: true });
+      } else {
+        clearBtn.disabled = true;
+      }
     })();
   </script>
 

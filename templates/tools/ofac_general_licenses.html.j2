@@ -5,9 +5,18 @@
   .tool-intro { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 18px 22px; margin: 16px 0 28px; }
   .tool-intro h2 { margin: 0 0 6px; font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 18px; }
   .tool-intro p { margin: 0; font-size: 14px; color: var(--sr-dark-text); }
-  .gl-search { display: flex; gap: 8px; margin: 16px 0 24px; }
-  .gl-search input { flex:1; padding: 10px 14px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; }
-  .gl-search select { padding: 10px 14px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; }
+  .gl-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0 6px; }
+  .gl-chips .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .gl-chips a { display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; }
+  .gl-chips a:hover, .gl-chips a.active { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .gl-search { display: flex; gap: 8px; margin: 8px 0 16px; flex-wrap: wrap; }
+  .gl-search input { flex:1 1 240px; padding: 10px 14px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; }
+  .gl-search select { padding: 10px 14px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .gl-search .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 1px solid var(--sr-gray-light); padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 3px; }
+  .gl-search .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .gl-search .btn-clear:disabled { opacity: 0.45; cursor: default; }
+  .gl-empty { background: #eef2f7; border-left: 4px solid var(--sr-gray-text); padding: 14px 18px; font-size: 14px; color: var(--sr-dark-text); border-radius: 3px; margin: 8px 0 16px; display: none; }
+  .gl-empty.show { display: block; }
   .gl-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-blue); padding: 18px 22px; margin-bottom: 14px; border-radius: 3px; background: var(--white); }
   .gl-card.expired { border-left-color: var(--sr-red); }
   .gl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
@@ -51,6 +60,17 @@
     </div>
   </details>
 
+  <div class="gl-chips" id="gl-chips" role="group" aria-label="Filter by scope">
+    <span class="label">Common scopes:</span>
+    <a href="#" data-scope="">All</a>
+    <a href="#" data-scope="travel">Travel</a>
+    <a href="#" data-scope="remittances">Remittances</a>
+    <a href="#" data-scope="telecom">Telecom / internet</a>
+    <a href="#" data-scope="financial">Financial services</a>
+    <a href="#" data-scope="humanitarian">Humanitarian</a>
+    <a href="#" data-scope="informational">Informational materials</a>
+  </div>
+
   <div class="gl-search">
     <input type="text" id="gl-q" placeholder="Search by §, category, counterparty…" aria-label="Search">
     <select id="gl-scope" aria-label="Filter by scope">
@@ -62,7 +82,10 @@
       <option value="humanitarian">Humanitarian</option>
       <option value="informational">Informational materials</option>
     </select>
+    <button type="button" id="gl-clear" class="btn-clear" aria-label="Clear filters">Clear</button>
   </div>
+
+  <div class="gl-empty" id="gl-empty">No general licenses match those filters. <a href="#" id="gl-empty-clear">Clear filters</a>.</div>
 
   <div id="gl-list">
     {% for gl in licenses %}
@@ -92,19 +115,56 @@
       var cards = Array.prototype.slice.call(document.querySelectorAll('#gl-list .gl-card'));
       var q = document.getElementById('gl-q');
       var scope = document.getElementById('gl-scope');
+      var chips = document.getElementById('gl-chips');
+      var clearBtn = document.getElementById('gl-clear');
+      var empty = document.getElementById('gl-empty');
+      var emptyClear = document.getElementById('gl-empty-clear');
+
+      function active() { return (q.value || '').trim() !== '' || scope.value !== ''; }
+
+      function syncChips() {
+        chips.querySelectorAll('a').forEach(function(a) {
+          a.classList.toggle('active', (a.getAttribute('data-scope') || '') === scope.value);
+        });
+      }
+
       function apply() {
         var qs = (q.value || '').toLowerCase().trim();
         var sc = scope.value;
+        var visible = 0;
         cards.forEach(function(c) {
           var matchQ = !qs || c.dataset.num.indexOf(qs) !== -1
             || c.dataset.summary.indexOf(qs) !== -1
             || c.dataset.context.indexOf(qs) !== -1;
           var matchS = !sc || c.dataset.scope.split(' ').indexOf(sc) !== -1;
-          c.style.display = (matchQ && matchS) ? '' : 'none';
+          var show = matchQ && matchS;
+          c.style.display = show ? '' : 'none';
+          if (show) visible++;
         });
+        empty.classList.toggle('show', visible === 0);
+        clearBtn.disabled = !active();
+        syncChips();
       }
+
+      function clearAll() {
+        q.value = '';
+        scope.value = '';
+        apply();
+        q.focus();
+      }
+
       q.addEventListener('input', apply);
       scope.addEventListener('change', apply);
+      clearBtn.addEventListener('click', clearAll);
+      emptyClear.addEventListener('click', function(e) { e.preventDefault(); clearAll(); });
+      chips.addEventListener('click', function(e) {
+        var a = e.target.closest('a');
+        if (!a) return;
+        e.preventDefault();
+        scope.value = a.getAttribute('data-scope') || '';
+        apply();
+      });
+      apply();
     })();
   </script>
 

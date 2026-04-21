@@ -49,6 +49,19 @@
   table.disclosers td.level .pill.indirect   { background: #f5b041; }
   table.disclosers td.level .pill.historical { background: var(--sr-blue); }
   table.disclosers td.actions a { display: inline-block; margin-right: 8px; font-size: 13px; }
+  table.disclosers tr.dim td { color: var(--sr-gray-text); }
+
+  .disc-filter { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0 12px; }
+  .disc-filter input[type=text] { flex: 1 1 220px; padding: 9px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; }
+  .disc-filter select { padding: 9px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .disc-filter .btn-clear { background: var(--white); color: var(--sr-gray-text); border: 1px solid var(--sr-gray-light); padding: 8px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 3px; }
+  .disc-filter .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
+  .disc-filter .btn-clear:disabled { opacity: 0.45; cursor: default; }
+  .disc-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 6px; }
+  .disc-chips .label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .disc-chips a { display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; }
+  .disc-chips a:hover, .disc-chips a.active { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .disc-empty { padding: 16px; text-align: center; color: var(--sr-gray-text); font-size: 14px; }
 
   .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
 
@@ -127,7 +140,26 @@
     {{ disclosers|length }} S&amp;P 500 tickers with documented Cuba exposure &mdash; direct ops, indirect subs, Helms-Burton Title III defendants, or historical impairments.
   </p>
 
-  <table class="disclosers">
+  <div class="disc-chips" id="disc-chips" role="group" aria-label="Filter by exposure level">
+    <span class="label">Filter:</span>
+    <a href="#" data-level="">All ({{ disclosers|length }})</a>
+    <a href="#" data-level="direct">Direct</a>
+    <a href="#" data-level="indirect">Indirect</a>
+    <a href="#" data-level="historical">Historical (Helms-Burton)</a>
+  </div>
+
+  <div class="disc-filter">
+    <input type="text" id="disc-q" placeholder="Filter by ticker, company, or note&hellip;" aria-label="Filter disclosers">
+    <select id="disc-level" aria-label="Exposure level">
+      <option value="">All exposure levels</option>
+      <option value="direct">Direct</option>
+      <option value="indirect">Indirect</option>
+      <option value="historical">Historical</option>
+    </select>
+    <button type="button" id="disc-clear" class="btn-clear" aria-label="Clear filters">Clear</button>
+  </div>
+
+  <table class="disclosers" id="disc-table">
     <thead>
       <tr>
         <th>Ticker</th>
@@ -139,7 +171,7 @@
     </thead>
     <tbody>
       {% for d in disclosers %}
-      <tr>
+      <tr data-ticker="{{ d.ticker|lower }}" data-name="{{ d.short_name|lower }}" data-note="{{ d.one_line|lower }}" data-level="{{ d.exposure_level }}">
         <td class="ticker">{{ d.ticker }}</td>
         <td>{{ d.short_name }}</td>
         <td class="level">
@@ -154,10 +186,71 @@
       {% endfor %}
     </tbody>
   </table>
+  <div class="disc-empty" id="disc-empty" hidden>No disclosers match those filters. <a href="#" id="disc-empty-clear">Clear filters</a>.</div>
 
   <p style="font-size:14px;">
     <a href="/companies"><strong>Browse the full S&amp;P 500 Cuba exposure register →</strong></a>
   </p>
+
+  <script>
+    (function() {
+      var rows = Array.prototype.slice.call(document.querySelectorAll('#disc-table tbody tr'));
+      var q = document.getElementById('disc-q');
+      var lvl = document.getElementById('disc-level');
+      var chips = document.getElementById('disc-chips');
+      var clearBtn = document.getElementById('disc-clear');
+      var empty = document.getElementById('disc-empty');
+      var emptyClear = document.getElementById('disc-empty-clear');
+
+      function active() { return (q.value || '').trim() !== '' || lvl.value !== ''; }
+
+      function syncChips() {
+        chips.querySelectorAll('a').forEach(function(a) {
+          var v = a.getAttribute('data-level') || '';
+          a.classList.toggle('active', v === lvl.value);
+        });
+      }
+
+      function apply() {
+        var qs = (q.value || '').toLowerCase().trim();
+        var lv = lvl.value;
+        var visible = 0;
+        rows.forEach(function(r) {
+          var matchQ = !qs
+            || r.dataset.ticker.indexOf(qs) !== -1
+            || r.dataset.name.indexOf(qs) !== -1
+            || r.dataset.note.indexOf(qs) !== -1;
+          var matchL = !lv || r.dataset.level === lv;
+          var show = matchQ && matchL;
+          r.style.display = show ? '' : 'none';
+          if (show) visible++;
+        });
+        empty.hidden = visible !== 0;
+        clearBtn.disabled = !active();
+        syncChips();
+      }
+
+      function clearAll() {
+        q.value = '';
+        lvl.value = '';
+        apply();
+        q.focus();
+      }
+
+      q.addEventListener('input', apply);
+      lvl.addEventListener('change', apply);
+      clearBtn.addEventListener('click', clearAll);
+      emptyClear.addEventListener('click', function(e) { e.preventDefault(); clearAll(); });
+      chips.addEventListener('click', function(e) {
+        var a = e.target.closest('a');
+        if (!a) return;
+        e.preventDefault();
+        lvl.value = a.getAttribute('data-level') || '';
+        apply();
+      });
+      apply();
+    })();
+  </script>
   {% endif %}
 
   {# ── Methodology / disclaimer ──────────────────────────────────── #}
