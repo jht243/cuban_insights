@@ -70,14 +70,14 @@ def main() -> None:
     subtitle = _font(36)
     footer = _font(26)
 
-    draw.text((80, 100), "CARACAS RESEARCH", font=eyebrow, fill=ACCENT)
+    draw.text((80, 100), "CUBAN INSIGHTS", font=eyebrow, fill=ACCENT)
 
-    draw.text((80, 170), "Venezuelan Research", font=title, fill=WHITE)
+    draw.text((80, 170), "Cuba Investment Research", font=title, fill=WHITE)
     draw.text((80, 270), "for International Investors", font=title, fill=WHITE)
 
     draw.text(
         (80, 410),
-        "OFAC tracker · Asamblea Nacional · BCV rates · sector analysis",
+        "OFAC tracker · ANPP · BCC + elTOQUE TRMI · sector analysis",
         font=subtitle,
         fill=MUTED,
     )
@@ -85,7 +85,7 @@ def main() -> None:
     draw.line([(80, HEIGHT - 90), (WIDTH - 80, HEIGHT - 90)], fill=ACCENT, width=2)
     draw.text(
         (80, HEIGHT - 70),
-        "caracasresearch.com",
+        "cubaninsights.com",
         font=footer,
         fill=MUTED,
     )

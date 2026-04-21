@@ -27,7 +27,7 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
     <span>Visa &amp; Entry Requirements Checker</span>
   </nav>
 
@@ -36,12 +36,10 @@
       Travel tool · Verified against embassy &amp; state-department sources
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Venezuela Visa &amp; Travel Requirements Checker
+      Cuba Visa &amp; Travel Requirements Checker
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Pick your passport country to see whether you need a visa, the maximum
-      stay, the current US/UK travel-advisory level, and what investors should
-      know before booking a trip to Caracas.
+      Pick your passport to see whether you need a Tourist Card or full visa, the maximum stay, and the current travel advisory.
     </p>
   </header>
 
@@ -56,7 +54,7 @@
 
   {% for v in visas %}
   <div class="visa-result" id="r-{{ v.code }}" data-code="{{ v.code }}">
-    <h2>{{ v.country }} citizens travelling to Venezuela</h2>
+    <h2>{{ v.country }} citizens travelling to Cuba</h2>
     <p>
       {% if v.visa_required %}
       <span class="badge red">Visa required</span>
@@ -82,11 +80,7 @@
   {% endfor %}
 
   <p style="font-size:12px; color:var(--sr-gray-text); margin: 24px 0;">
-    All entries verified against the official embassy network and home-country
-    foreign-affairs ministry sources. Policy can change quickly — always
-    re-verify with the linked official source within 14 days of travel.
-    See related: <a href="/invest-in-venezuela">how to invest in Venezuela</a> ·
-    <a href="/sectors/tourism">Venezuela tourism sector</a>.
+    Verified against official embassy and foreign-affairs sources. Policy changes quickly &mdash; re-verify with the linked source within 14 days of travel.
   </p>
 
   <script>
@@ -107,6 +101,9 @@
       if (hash) { sel.value = hash; sel.dispatchEvent(new Event('change')); }
     })();
   </script>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
 
 </section>
 {% endblock %}

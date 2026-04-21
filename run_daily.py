@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Daily orchestrator for the Caracas Research.
+Daily orchestrator for Cuban Insights.
 
 Chains: scrape -> analyze -> generate report -> send newsletter
 
@@ -40,9 +40,9 @@ logger = logging.getLogger("run_daily")
 @click.option("--dry-run", is_flag=True, help="Run everything but don't send real emails")
 @click.option("--report-only", is_flag=True, help="Only generate the report, skip scrape and email")
 def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
-    """Caracas Research — Daily Pipeline"""
+    """Cuban Insights — Daily Pipeline"""
 
-    console.print(Panel("[bold]Caracas Research — Daily Pipeline[/bold]", style="blue"))
+    console.print(Panel("[bold]Cuban Insights — Daily Pipeline[/bold]", style="blue"))
 
     results = {}
     start = time.time()

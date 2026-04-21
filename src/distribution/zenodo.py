@@ -5,7 +5,7 @@ Each daily Investor Tearsheet PDF is deposited as a public Zenodo record
 and assigned a permanent DOI (e.g. 10.5281/zenodo.123456). Zenodo records
 are indexed by Google Search, Google Dataset Search, and OpenAIRE — over
 time this builds a permanent, DOI-citable corpus of dated research notes
-that all link back to caracasresearch.com.
+that all link back to cubaninsights.com.
 
 Note on Google Scholar: as of 2026, Zenodo is *not* indexed by Google
 Scholar (per Zenodo's own FAQ; their generic-repository policy + URL
@@ -85,39 +85,45 @@ def _build_metadata(d: date) -> dict:
     and citation hygiene."""
     nice_date = d.strftime("%B %d, %Y")
     meta: dict = {
-        "title": f"Caracas Research — Daily Venezuela Investor Tearsheet — {nice_date}",
+        "title": f"Cuban Insights — Daily Cuba Investor Tearsheet — {nice_date}",
         "upload_type": _UPLOAD_TYPE,
         "publication_type": _PUBLICATION_TYPE,
         "publication_date": d.isoformat(),
         "description": (
             f"<p>One-page research note for international investors covering "
-            f"Venezuela on {nice_date}.</p>"
-            f"<p>Includes: BCV official + parallel FX rates and parallel "
-            f"premium, US travel advisory level, the day's top development "
-            f"with full investor takeaway, the 6-bar Investment Climate "
-            f"Scorecard (sanctions trajectory, diplomatic progress, legal "
-            f"framework, political stability, property rights, macro "
-            f"stability), and any high-relevance calendar events in the "
-            f"next 14 days.</p>"
-            f"<p><b>Sources:</b> BCV (live scrape), OFAC SDN, US State "
-            f"Department, Federal Register, GDELT, Asamblea Nacional. "
-            f"Full daily briefing and methodology at "
-            f'<a href="https://caracasresearch.com">caracasresearch.com</a>.</p>'
+            f"Cuba on {nice_date}.</p>"
+            f"<p>Includes: the elTOQUE TRMI informal CUP/USD rate vs the "
+            f"BCC official rate (with spread), OFAC SDN Cuba program "
+            f"designations and Cuba Restricted List updates, Helms-Burton "
+            f"Title III lawsuits and settlements, MIPYME policy moves and "
+            f"Mariel ZED approvals, the US State Department travel-advisory "
+            f"level for Cuba, and upcoming OFAC general-license renewals "
+            f"plus ANPP / Council of State calendar items in the next 14 "
+            f"days.</p>"
+            f"<p><b>Sources:</b> elTOQUE (live scrape), BCC, OFAC SDN, "
+            f"US State Department, Cuban Gaceta Oficial, ANPP, "
+            f"Granma/Cubadebate corpus. Full daily briefing and methodology "
+            f"at <a href=\"https://cubaninsights.com\">cubaninsights.com</a>.</p>"
         ),
         "creators": [
-            {"name": "Caracas Research", "affiliation": "Caracas Research"},
+            {"name": "Cuban Insights", "affiliation": "Cuban Insights"},
         ],
         "keywords": [
-            "Venezuela",
+            "Cuba",
             "investment",
             "sanctions",
             "OFAC",
-            "BCV",
-            "emerging markets",
-            "Latin America",
-            "country risk",
+            "CACR",
+            "Helms-Burton",
+            "Mariel ZED",
+            "MIPYMES",
             "tearsheet",
-            "research note",
+            "elTOQUE TRMI",
+            "BCC",
+        ],
+        "subjects": [
+            {"term": "Economics and Business", "scheme": "FOS"},
+            {"term": "Political Sciences", "scheme": "FOS"},
         ],
         "language": "eng",
         "access_right": "open",
@@ -125,7 +131,7 @@ def _build_metadata(d: date) -> dict:
         "notes": (
             "Daily auto-generated research note. For methodology, "
             "historical archive, and live data, see "
-            "https://caracasresearch.com."
+            "https://cubaninsights.com."
         ),
     }
     community = (settings.zenodo_community or "").strip()
@@ -154,7 +160,7 @@ def upload_tearsheet(pdf_bytes: bytes, d: date) -> ZenodoUploadResult:
         )
 
     base = _api_base()
-    filename = f"caracas-research-tearsheet-{d.isoformat()}.pdf"
+    filename = f"cuban-insights-tearsheet-{d.isoformat()}.pdf"
     deposition_id: Optional[int] = None
 
     with httpx.Client(timeout=60) as client:

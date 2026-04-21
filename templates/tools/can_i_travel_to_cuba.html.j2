@@ -1,0 +1,149 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .wizard { background: var(--white); border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 24px; margin: 20px 0; }
+  .wizard h2 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 22px; margin: 0 0 12px; }
+  .wizard p { font-size: 15px; color: #333; margin: 6px 0; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 16px 0; }
+  .option-btn { display: block; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; background: #fafcff; color: var(--sr-blue-dark); text-decoration: none; font-size: 15px; font-weight: 600; transition: all 0.15s; }
+  .option-btn:hover { background: var(--sr-blue); color: var(--white); }
+  .option-btn .small { display: block; font-size: 12px; font-weight: 400; color: var(--sr-gray-text); margin-top: 4px; }
+  .option-btn:hover .small { color: #e9eef7; }
+  .verdict { padding: 22px 24px; border-radius: 4px; margin: 24px 0; }
+  .verdict.allowed { background: #e8f5e9; border-left: 6px solid #2e7d32; color: #1b4d1f; }
+  .verdict.conditional { background: #fff3e0; border-left: 6px solid #f5b041; color: #7c4a03; }
+  .verdict.prohibited { background: #fdecea; border-left: 6px solid var(--sr-red); color: #7a1f1a; }
+  .verdict h2 { font-family: var(--font-serif); margin: 0 0 6px; font-size: 22px; }
+  .verdict .gl-cite { font-family: var(--font-mono, monospace); background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 2px; font-size: 13px; }
+  .checklist { background: var(--white); border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 20px 24px; margin: 16px 0; }
+  .checklist h3 { font-family: var(--font-serif); font-size: 17px; color: var(--sr-blue-dark); margin: 0 0 8px; }
+  .checklist ol, .checklist ul { margin: 6px 0 6px 22px; }
+  .checklist li { margin: 6px 0; font-size: 14px; }
+  .breadcrumb-step { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--sr-gray-text); margin-bottom: 10px; }
+  .breadcrumb-step .crumb { color: var(--sr-blue-dark); font-weight: 600; }
+  .restart { display: inline-block; margin-top: 16px; padding: 8px 16px; border: 1px solid var(--sr-blue); border-radius: 3px; color: var(--sr-blue-dark); text-decoration: none; font-size: 13px; }
+  .restart:hover { background: var(--sr-blue); color: var(--white); }
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Can I Legally Travel to Cuba?</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Decision tool · 12 OFAC categories · CACR §515.560–.578
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Can I Legally Travel to Cuba?
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      Three quick questions to find out whether your trip is authorised, which OFAC category covers it, and what records you need to keep.
+    </p>
+  </header>
+
+  {% if step %}
+  <div class="breadcrumb-step">
+    Step {{ step_num }} of 3
+    {% if passport %} &middot; <span class="crumb">Passport: {{ passport_label }}</span>{% endif %}
+    {% if purpose_label %} &middot; <span class="crumb">Purpose: {{ purpose_label }}</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {# ─────────── STEP 1: passport country ─────────── #}
+  {% if step == 'passport' or not step %}
+  <div class="wizard">
+    <h2>Step 1 &mdash; What passport are you travelling on?</h2>
+    <p>Pick the option that best describes your status. Pure non-U.S. travellers face no U.S. legal restrictions; everyone else needs an authorised category.</p>
+    <div class="options">
+      <a class="option-btn" href="?step=purpose&amp;passport=us">U.S. citizen or U.S. green-card holder
+        <span class="small">Subject to OFAC / CACR &mdash; need an authorised category</span></a>
+      <a class="option-btn" href="?step=purpose&amp;passport=us-resident">Foreign national, but ordinarily resident in the U.S.
+        <span class="small">Treated as a U.S. person under §515.329 &mdash; same rules apply</span></a>
+      <a class="option-btn" href="?step=verdict&amp;passport=non-us&amp;purpose=tourism">Non-U.S. citizen, not resident in the U.S.
+        <span class="small">Free to travel as a tourist &mdash; only Cuban entry rules apply</span></a>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ─────────── STEP 2: purpose of trip ─────────── #}
+  {% if step == 'purpose' %}
+  <div class="wizard">
+    <h2>Step 2 &mdash; What is the primary purpose of your trip?</h2>
+    <p>Pick the closest match. If your trip doesn&rsquo;t fit any of these, OFAC requires a specific license.</p>
+    <div class="options">
+      {% for opt in purpose_options %}
+      <a class="option-btn" href="?step=verdict&amp;passport={{ passport }}&amp;purpose={{ opt.id }}">
+        {{ opt.label }}
+        <span class="small">{{ opt.cite }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    <p style="margin-top:14px; font-size:13px; color:var(--sr-gray-text);">
+      <a href="?step=passport">&larr; back to passport step</a>
+    </p>
+  </div>
+  {% endif %}
+
+  {# ─────────── STEP 3: verdict ─────────── #}
+  {% if step == 'verdict' and verdict %}
+
+  <div class="verdict {{ verdict.tone }}">
+    <h2>{{ verdict.headline }}</h2>
+    {% if verdict.gl %}
+    <p><strong>Authorising regulation:</strong> <span class="gl-cite">{{ verdict.gl }}</span> &mdash; {{ verdict.gl_title }}</p>
+    {% endif %}
+    <p>{{ verdict.body }}</p>
+  </div>
+
+  {% if verdict.checklist %}
+  <div class="checklist">
+    <h3>Compliance checklist for this trip</h3>
+    <ol>
+      {% for item in verdict.checklist %}
+      <li>{{ item|safe }}</li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+  {% if verdict.cuban_side %}
+  <div class="checklist">
+    <h3>Cuban-side entry requirements (every traveller, every passport)</h3>
+    <ul>
+      {% for item in verdict.cuban_side %}
+      <li>{{ item|safe }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <a class="restart" href="?step=passport">&#8635; Start over</a>
+
+  {% endif %}
+
+  <div class="disclaimer">
+    <strong>Important:</strong> Educational decision aid, not legal advice. CACR (31 CFR Part 515) and the State Department&rsquo;s Cuba Restricted &amp; Prohibited Accommodations Lists change periodically &mdash; verify before booking, and keep full-time-schedule + transaction records for five years per §515.601.
+    <details class="show-more">
+      <summary><span class="label-closed">When to retain counsel</span><span class="label-open">Hide</span></summary>
+      <div class="show-more__body">
+        For any high-stakes trip &mdash; particularly journalism (§515.561), business travel, group people-to-people travel (§515.565), or anything involving transactions with Cuban government counterparties &mdash; retain qualified U.S. sanctions counsel before booking. The CRL changes intra-administration, the CPAL between our refreshes, and OFAC enforcement priorities can shift without notice.
+      </div>
+    </details>
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+{% endblock %}

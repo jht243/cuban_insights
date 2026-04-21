@@ -44,7 +44,7 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
     <span>Investment ROI Calculator</span>
   </nav>
 
@@ -53,14 +53,10 @@
       Free tool · Risk-adjusted scenario modelling
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Venezuela Investment ROI Calculator
+      Cuba Investment ROI Calculator
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px; max-width: 820px;">
-      Estimate the IRR, NPV, and multi-year unlevered after-tax cash flow of
-      a hypothetical Venezuelan investment across oil &amp; gas, mining, real
-      estate, banking, agriculture, telecom, and tourism — with sector-
-      specific EBITDA margins and Venezuela-specific risk premiums anchored
-      to traded sovereign spreads and 2024–2025 EM sector benchmarks.
+      IRR, NPV, and multi-year after-tax cash flow for a Cuba investment across seven sectors, with risk premiums baked in for Helms-Burton, MLC friction, and the CACR overlay.
     </p>
   </header>
 
@@ -70,22 +66,25 @@
       <div class="field">
         <label for="sector">Sector</label>
         <!--
-          Defaults below are anchored to 2024-2025 EM-comparable benchmarks
-          (see "Where the sector defaults come from" section). data-rev =
-          USD nominal revenue growth, data-margin = EBITDA margin,
-          data-rp = Venezuela-specific country/sector risk premium added on
-          top of the user's base USD WACC.
+          Defaults below are anchored to 2024-2025 Caribbean / EM-comparable
+          benchmarks (see "Where the sector defaults come from" section).
+          data-rev = USD/MLC nominal revenue growth, data-margin = EBITDA
+          margin, data-rp = Cuba-specific country/sector risk premium added
+          on top of the user's base USD WACC. Helms-Burton Title III
+          trafficking-claim risk and CACR overlay dominate the high-end
+          premiums (tourism on confiscated property, hospitality JV with
+          GAESA, banking on FINCIMEX rails).
         -->
         <select id="sector">
-          <option value="oil_gas"     data-rev="0.08" data-margin="0.40" data-rp="0.18">Oil &amp; Gas (upstream, sanctions-exposed)</option>
-          <option value="mining"      data-rev="0.10" data-margin="0.38" data-rp="0.16">Mining (gold, iron, bauxite)</option>
-          <option value="real_estate" data-rev="0.06" data-margin="0.55" data-rp="0.12">Real Estate (Caracas commercial)</option>
-          <option value="banking"     data-rev="0.12" data-margin="0.35" data-rp="0.17">Banking &amp; Financial Services</option>
-          <option value="agriculture" data-rev="0.07" data-margin="0.18" data-rp="0.10">Agriculture (domestic)</option>
-          <option value="telecom"     data-rev="0.09" data-margin="0.38" data-rp="0.13">Telecom &amp; Digital</option>
-          <option value="tourism"     data-rev="0.12" data-margin="0.28" data-rp="0.11">Tourism &amp; Hospitality</option>
+          <option value="tourism"     data-rev="0.12" data-margin="0.28" data-rp="0.16">Tourism &amp; Hospitality (Helms-Burton Title III risk)</option>
+          <option value="mipyme"      data-rev="0.18" data-margin="0.22" data-rp="0.10">MIPYMES (private sector under §515.574)</option>
+          <option value="mariel_zed"  data-rev="0.10" data-margin="0.32" data-rp="0.13">Mariel ZED (light manufacturing &amp; logistics)</option>
+          <option value="biotech"     data-rev="0.08" data-margin="0.35" data-rp="0.14">Biotech &amp; Pharma (BioCubaFarma)</option>
+          <option value="mining"      data-rev="0.07" data-margin="0.34" data-rp="0.14">Mining (nickel, cobalt — Moa)</option>
+          <option value="telecom"     data-rev="0.09" data-margin="0.38" data-rp="0.13">Telecom &amp; Digital (ETECSA monopoly)</option>
+          <option value="agriculture" data-rev="0.06" data-margin="0.16" data-rp="0.10">Agriculture (domestic / ALIMPORT)</option>
         </select>
-        <div class="hint" id="sector-hint">Each sector ships with a baseline USD revenue growth rate, EBITDA margin, and Venezuela-specific risk premium added to your discount rate. Override any of them below.</div>
+        <div class="hint" id="sector-hint">Each sector ships with a baseline USD revenue growth rate, EBITDA margin, and Cuba-specific risk premium added to your discount rate. Override any of them below.</div>
       </div>
       <div class="field">
         <label for="capex">Initial capital deployed (USD)</label>
@@ -111,8 +110,8 @@
       </div>
       <div class="field">
         <label for="tax">Effective tax rate</label>
-        <input type="number" id="tax" value="0.34" min="0" max="0.6" step="0.01">
-        <div class="hint">Default 34% — Venezuela's standard ISLR rate for non-hydrocarbons. Oil &amp; gas effective burden can run higher under the sector's separate regime.</div>
+        <input type="number" id="tax" value="0.35" min="0" max="0.6" step="0.01">
+        <div class="hint">Default 35% — the headline Cuban corporate income-tax rate (Ley 113). Mariel ZED projects can negotiate down to 12% (or zero) for an initial 8-10 year holiday under Ley 118 / Decreto 313; foreign-invested JVs typically run 15%.</div>
       </div>
       <div class="field">
         <label for="maintcapex">Maintenance capex (% of revenue)</label>
@@ -122,7 +121,7 @@
       <div class="field">
         <label for="discount">Base discount rate (USD WACC)</label>
         <input type="number" id="discount" value="0.10" min="0" step="0.005">
-        <div class="hint">Sector-specific Venezuela risk premium added on top.</div>
+        <div class="hint">Sector-specific Cuba risk premium added on top.</div>
       </div>
       <div class="field">
         <label for="exit">Exit multiple on year-{n} EBITDA</label>
@@ -140,9 +139,10 @@
       <div class="sector-context" id="risk-context">
         Risk-adjusted discount rate: <strong id="r-rate">—</strong>
         (= base WACC + sector premium).
-        Sector-specific Venezuela premium reflects sanctions exposure, FX
-        convertibility risk, and regulatory volatility. See the
-        <a href="/sectors/oil-gas" id="sector-link" style="color: var(--sr-blue);">sector landing page</a>
+        Sector-specific Cuba premium reflects CACR / OFAC sanctions overlay,
+        Helms-Burton Title III trafficking-claim exposure, MLC convertibility
+        friction, no US-issued payment cards, and regulatory volatility. See
+        the <a href="/sectors/tourism" id="sector-link" style="color: var(--sr-blue);">sector landing page</a>
         for the underlying analysis.
       </div>
       <table class="cf-table" id="cf-table">
@@ -154,7 +154,7 @@
 
   <div class="gate">
     <h3>Get the full PDF investor model</h3>
-    <p>Subscribe for the daily Caracas Research briefing and we'll email you a polished PDF version of this scenario, plus a Google Sheet you can fork.</p>
+    <p>Subscribe for the daily Cuban Insights briefing and we'll email you a polished PDF version of this scenario, plus a Google Sheet you can fork.</p>
     <form id="gate-form">
       <input type="email" id="gate-email" placeholder="you@firm.com" required>
       <button type="submit">Send the model</button>
@@ -163,36 +163,32 @@
   </div>
 
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin: 32px 0 8px;">How this calculator works</h2>
-  <p>The model projects a deterministic revenue / EBITDA schedule using the sector defaults you can override, applies the chosen tax rate to EBITDA to approximate operating cash taxes, deducts maintenance capex as a percent of revenue, then applies an exit multiple to terminal-year EBITDA. Every cash flow is discounted at your USD WACC plus a sector-specific Venezuela risk premium. The result is an order-of-magnitude estimate suitable for first-round filtering — not a substitute for a fully diligenced model with project-finance structuring, FX repatriation friction, working-capital movements, and country-of-origin tax.</p>
-
-  <p style="font-size:13px; color: var(--sr-gray-text);">
-    FCF formula used: <code>FCF&nbsp;=&nbsp;EBITDA&nbsp;×&nbsp;(1&nbsp;−&nbsp;tax)&nbsp;−&nbsp;maintenance&nbsp;capex</code>.
-    Terminal year adds <code>exit&nbsp;multiple&nbsp;×&nbsp;terminal&nbsp;EBITDA</code> on top.
-  </p>
+  <p style="margin: 0 0 4px;">Order-of-magnitude estimate. Discount = your USD WACC + a sector-specific Cuba risk premium. Not a substitute for a fully diligenced model.</p>
+  <details class="show-more">
+    <summary><span class="label-closed">Methodology &amp; FCF formula</span><span class="label-open">Hide</span></summary>
+    <div class="show-more__body">
+      <p>The model projects a deterministic revenue / EBITDA schedule using the sector defaults you can override, applies the chosen tax rate to EBITDA to approximate operating cash taxes, deducts maintenance capex as a percent of revenue, then applies an exit multiple to terminal-year EBITDA.</p>
+      <p style="margin-top:8px;">FCF formula: <code>FCF&nbsp;=&nbsp;EBITDA&nbsp;×&nbsp;(1&nbsp;−&nbsp;tax)&nbsp;−&nbsp;maintenance&nbsp;capex</code>. Terminal year adds <code>exit&nbsp;multiple&nbsp;×&nbsp;terminal&nbsp;EBITDA</code> on top.</p>
+    </div>
+  </details>
 
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin: 24px 0 8px;">Where the sector defaults come from</h2>
-  <p>Defaults reflect 2024–2025 EM-comparable benchmarks, adjusted to a recovery / partial-normalisation scenario for Venezuela. Risk premiums are anchored to traded Venezuelan sovereign-debt spreads — Venezuela's restructured external bonds remain among the highest-yielding sovereign instruments globally — and adjusted up or down by sector based on sanctions exposure, foreign-investor dispute history, and convertibility friction. See the <a href="/invest-in-venezuela">pillar guide</a> for the full methodology.</p>
+  <p style="margin: 0 0 12px;">2024–2025 Caribbean / EM-comparable benchmarks, adjusted for Cuba&rsquo;s specific overlay (CACR, Helms-Burton Title III, MLC stack, payment friction). Full methodology in the <a href="/invest-in-cuba">pillar guide</a>.</p>
 
   <table class="bench-table">
     <thead>
-      <tr><th>Sector</th><th class="num">EBITDA margin</th><th class="num">Rev. growth</th><th class="num">VE risk premium</th><th>Reference comp set</th></tr>
+      <tr><th>Sector</th><th class="num">EBITDA margin</th><th class="num">Rev. growth</th><th class="num">Cuba risk premium</th><th>Reference comp set</th></tr>
     </thead>
     <tbody>
-      <tr><td>Oil &amp; Gas (upstream)</td><td class="num">40%</td><td class="num">8%</td><td class="num">18%</td><td>Latin American IOCs / NOCs at Brent $65–75; lifting cost &lt; $25/bbl. Sanctions risk dominates the premium.</td></tr>
-      <tr><td>Mining (gold-led)</td><td class="num">38%</td><td class="num">10%</td><td class="num">16%</td><td>Major gold producers' all-in EBITDA margins at gold $2,400–2,700/oz (Newmont, Barrick, AngloGold). Reduced for VE artisanal mix.</td></tr>
-      <tr><td>Real Estate (commercial)</td><td class="num">55%</td><td class="num">6%</td><td class="num">12%</td><td>EM commercial NOI margins of 60–70%, reduced ~10pts for vacancy and Caracas operating overhead. Growth = inflation-linked rent escalators.</td></tr>
-      <tr><td>Banking &amp; Financial Services</td><td class="num">35%</td><td class="num">12%</td><td class="num">17%</td><td>Pre-tax operating margin (net interest + fees as "revenue"). Comps: EM banks with NIM 4–6%. Sanctions-exposed correspondent banking is the binding risk.</td></tr>
-      <tr><td>Agriculture</td><td class="num">18%</td><td class="num">7%</td><td class="num">10%</td><td>Domestic-market crop &amp; protein producers; commodity-cycle exposed. Lowest premium because least sanctions-exposed.</td></tr>
-      <tr><td>Telecom &amp; Digital</td><td class="num">38%</td><td class="num">9%</td><td class="num">13%</td><td>EM mobile operators (América Móvil, MTN, Telefónica LatAm) typically run 35–45% EBITDA margins.</td></tr>
-      <tr><td>Tourism &amp; Hospitality</td><td class="num">28%</td><td class="num">12%</td><td class="num">11%</td><td>Branded EM hotels typically run 25–35% EBITDA margins. Higher growth reflects recovery upside off a low base.</td></tr>
+      <tr><td>Tourism &amp; Hospitality</td><td class="num">28%</td><td class="num">12%</td><td class="num">16%</td><td>Branded Caribbean hotels run 25–35% EBITDA margins. Premium dominated by Helms-Burton Title III exposure on confiscated property and JV partner concentration with GAESA / Gaviota / Habaguanex.</td></tr>
+      <tr><td>MIPYMES (private sector)</td><td class="num">22%</td><td class="num">18%</td><td class="num">10%</td><td>Newly-legal Cuban private firms (since Decreto-Ley 46/2021). Highest growth reflects formalisation off a near-zero base; lowest premium because §515.574 explicitly authorises engagement.</td></tr>
+      <tr><td>Mariel ZED</td><td class="num">32%</td><td class="num">10%</td><td class="num">13%</td><td>EM SEZ benchmarks (Dominican Republic free zones, Panama Pacífico) at 28–35% EBITDA. ZED-specific tax holiday lowers cash burden materially below headline 35%.</td></tr>
+      <tr><td>Biotech &amp; Pharma (BioCubaFarma)</td><td class="num">35%</td><td class="num">8%</td><td class="num">14%</td><td>BioCubaFarma generics + immunotherapy comps; mid-30s EBITDA. Premium reflects CACR licensing exposure on US clinical trials and FDA pathway uncertainty.</td></tr>
+      <tr><td>Mining (nickel, cobalt — Moa)</td><td class="num">34%</td><td class="num">7%</td><td class="num">14%</td><td>Sherritt-style nickel/cobalt JV comps at Ni ~$16,000/t; battery-metal demand pull. Premium reflects sustained Helms-Burton exposure (Title III claims around Moa).</td></tr>
+      <tr><td>Telecom &amp; Digital</td><td class="num">38%</td><td class="num">9%</td><td class="num">13%</td><td>EM mobile operators run 35–45% EBITDA margins. ETECSA monopoly limits foreign equity entry; CACR §515.578 carves out specific telecom GLs.</td></tr>
+      <tr><td>Agriculture (domestic / ALIMPORT)</td><td class="num">16%</td><td class="num">6%</td><td class="num">10%</td><td>Domestic-market food producers; commodity-cycle exposed and constrained by ALIMPORT pricing. Lowest premium because least sanctions-exposed.</td></tr>
     </tbody>
   </table>
-
-  <p style="font-size:12px; color:var(--sr-gray-text); margin: 32px 0;">
-    See related: <a href="/invest-in-venezuela">how to invest in Venezuela</a> ·
-    <a href="/sectors/mining">sector landing pages</a> ·
-    <a href="/tools/bolivar-usd-exchange-rate">bolivar/USD converter</a>.
-  </p>
 
   <script>
     (function() {
@@ -321,6 +317,9 @@
       });
     })();
   </script>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
 
 </section>
 {% endblock %}

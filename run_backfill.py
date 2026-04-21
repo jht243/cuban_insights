@@ -4,8 +4,8 @@ Backfill historical data from official sources.
 
 By default, scrapes from 2026-01-01 to today across:
   - Federal Register (single API call covering the full range)
-  - Asamblea Nacional (per-day loop)
-  - Gaceta Oficial — TuGaceta + official portal (per-day loop)
+  - Asamblea Nacional del Poder Popular (per-day loop)
+  - Gaceta Oficial de la República de Cuba (per-day loop)
   - OFAC SDN (current snapshot — historical state is not recoverable)
   - State Dept Travel Advisory (current state)
 
@@ -14,7 +14,7 @@ After scraping, runs the analyzer and regenerates the report.
 Usage:
     python run_backfill.py
     python run_backfill.py --start-date 2026-01-01 --end-date 2026-04-15
-    python run_backfill.py --sources federal_register,asamblea_nacional
+    python run_backfill.py --sources federal_register,asamblea_nacional_cu
     python run_backfill.py --skip-analyze --skip-report
 """
 
@@ -38,10 +38,12 @@ from src.pipeline import (
     _persist_news,
     _log_scrape,
 )
-from src.scraper.assembly import AssemblyNewsScraper
+from src.scraper.asamblea_nacional_cu import AsambleaNacionalCUScraper
 from src.scraper.federal_register import FederalRegisterScraper
-from src.scraper.gazette import OfficialGazetteScraper, TuGacetaScraper
+from src.scraper.gaceta_oficial_cu import GacetaOficialCUScraper
+from src.scraper.minrex import MinrexScraper
 from src.scraper.ofac_sdn import OFACSdnScraper
+from src.scraper.onei import ONEIScraper
 from src.scraper.travel_advisory import TravelAdvisoryScraper
 
 console = Console()
@@ -54,9 +56,10 @@ logger = logging.getLogger("run_backfill")
 
 
 PER_DAY_SCRAPERS = {
-    "asamblea_nacional": AssemblyNewsScraper,
-    "tu_gaceta": TuGacetaScraper,
-    "gaceta_oficial": OfficialGazetteScraper,
+    "asamblea_nacional_cu": AsambleaNacionalCUScraper,
+    "gaceta_oficial_cu": GacetaOficialCUScraper,
+    "minrex": MinrexScraper,
+    "onei": ONEIScraper,
 }
 
 ONE_SHOT_SCRAPERS = {
@@ -99,7 +102,7 @@ def _backfill_federal_register(start: date, end: date) -> dict:
     scraper = FederalRegisterScraper()
     summary = {"articles_new": 0, "errors": []}
     try:
-        articles = scraper._search_ofac_venezuela(start, end)
+        articles = scraper._search_ofac_cuba(start, end)
         if articles:
             new_ids = _persist_articles(articles)
             summary["articles_new"] = len(new_ids)
@@ -215,7 +218,7 @@ def _backfill_per_day(source: str, start: date, end: date) -> dict:
 @click.option("--skip-analyze", is_flag=True, help="Skip the LLM analyzer pass.")
 @click.option("--skip-report", is_flag=True, help="Skip report regeneration.")
 def main(start_date: str, end_date: str | None, sources: str, skip_analyze: bool, skip_report: bool):
-    """Venezuela Investment Journal — historical backfill"""
+    """Cuban Insights — historical backfill"""
 
     start = _parse_date(start_date)
     end = _parse_date(end_date) if end_date else date.today()

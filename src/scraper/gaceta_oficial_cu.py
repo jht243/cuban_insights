@@ -18,9 +18,9 @@ type explicitly. The identificador also encodes the same info
 the detail page is unavailable we still get useful metadata.
 
 Each scraped norm becomes a `ScrapedGazette` so it lands in
-`GazetteEntry` and flows through the same OCR / analyzer / report
-pipeline as the old Venezuelan TuGaceta entries. Cuba doesn't expose
-PDF download links on the public website — only the in-page sumario
+`GazetteEntry` and flows through the OCR / analyzer / report pipeline
+shared with every other gazette source. Cuba doesn't expose PDF
+download links on the public website — only the in-page sumario
 text — so `pdf_download_url` is left empty and the analyzer is
 expected to work off `sumario_raw` directly. (For the small number of
 norms we want full-text for, we'd need to subscribe to the print

@@ -171,6 +171,70 @@
   {% from "_cluster_nav.html.j2" import cluster_nav_css %}
   {{ cluster_nav_css() }}
 
+  {# "Other tools" strip styles — same rationale: load on every page so
+     the related_tools_nav macro (rendered on tool pages) inherits styles
+     even if a specific template forgets the import. #}
+  {% from "_related_tools.html.j2" import related_tools_nav_css %}
+  {{ related_tools_nav_css() }}
+
+  {#
+    Site-wide "show more" pattern — a native <details> element used for
+    progressive disclosure of long explainer text. Pattern:
+
+        <p>2-line teaser…</p>
+        <details class="show-more">
+          <summary>Show more</summary>
+          <div class="show-more__body">…full body…</div>
+        </details>
+
+    Native <details>/<summary> means: works without JS, accessible by
+    default, keyboard-friendly. Loaded site-wide so any template can
+    use it without per-template imports.
+  #}
+  <style>
+    details.show-more {
+      margin: 8px 0 16px;
+    }
+    details.show-more > summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: #002b5e;
+      padding: 4px 0;
+      user-select: none;
+    }
+    details.show-more > summary::-webkit-details-marker { display: none; }
+    details.show-more > summary::after {
+      content: "▸";
+      display: inline-block;
+      font-size: 11px;
+      transition: transform 0.15s ease;
+      color: #cc0000;
+    }
+    details.show-more[open] > summary::after { transform: rotate(90deg); }
+    details.show-more > summary:hover { color: #cc0000; }
+    details.show-more[open] > summary { color: #cc0000; }
+    details.show-more > summary > .label-closed { display: inline; }
+    details.show-more > summary > .label-open { display: none; }
+    details.show-more[open] > summary > .label-closed { display: none; }
+    details.show-more[open] > summary > .label-open { display: inline; }
+    details.show-more > .show-more__body {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e9ecef;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #495057;
+    }
+    details.show-more > .show-more__body > *:first-child { margin-top: 0; }
+    details.show-more > .show-more__body > *:last-child { margin-bottom: 0; }
+  </style>
+
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -185,7 +249,7 @@
     </button>
     <div class="nav-links" id="primary-nav">
       <a href="/briefing">Analysis</a>
-      <a href="/invest-in-venezuela">Invest</a>
+      <a href="/invest-in-cuba">Invest</a>
       <a href="/sanctions-tracker">Sanctions</a>
       <a href="/tools">Tools</a>
       <a href="/explainers">Explainers</a>

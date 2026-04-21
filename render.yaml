@@ -54,8 +54,8 @@ services:
     name: cij-daily-pipeline
     runtime: python
     # Render schedules cron in UTC. Cuba is UTC-5 standard, UTC-4 DST.
-    # Holding the slot at 15:00 / 22:00 UTC keeps parity with the
-    # Caracas Research schedule (10:00 / 17:00 Bogotá / Havana standard).
+    # 15:00 / 22:00 UTC = 10:00 / 17:00 Havana time during standard time
+    # (Nov–Mar) and 11:00 / 18:00 during Cuban DST (Mar–Nov).
     # Re-tune to "0 14,21 * * *" if you want 09:00 / 16:00 Havana time
     # year-round (off by an hour during DST).
     schedule: "0 15,22 * * *"

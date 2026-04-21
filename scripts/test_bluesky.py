@@ -28,18 +28,18 @@ def main() -> int:
         print("ERROR: Failed to construct Bluesky client.")
         return 1
 
-    test_url = "https://caracasresearch.com/"
+    test_url = "https://cubaninsights.com/"
     text = (
-        f"Smoke test from caracasresearch.com pipeline @ "
+        f"Smoke test from cubaninsights.com pipeline @ "
         f"{datetime.utcnow().isoformat()}Z. Will be deleted after verification."
     )
 
     print(f"Posting as @{client.handle} ...")
-    thumb = client.upload_image_from_url("https://caracasresearch.com/static/og-image.png?v=3")
+    thumb = client.upload_image_from_url("https://cubaninsights.com/static/og-image.png?v=3")
     link_card = bluesky.LinkCard(
         uri=test_url,
-        title="Caracas Research",
-        description="Daily Venezuelan investment, sanctions, and policy research.",
+        title="Cuban Insights",
+        description="Daily Cuba investment, sanctions, and policy research.",
         thumb_blob=thumb,
     )
     result = client.post(text=text, link_card=link_card)

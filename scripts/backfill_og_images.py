@@ -30,7 +30,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.models import BlogPost, SessionLocal, init_db  # noqa: E402
-from src.og_image import latest_bcv_usd, render_briefing_card  # noqa: E402
+from src.og_image import latest_eltoque_usd, render_briefing_card  # noqa: E402
 
 
 logging.basicConfig(
@@ -63,14 +63,14 @@ def main() -> int:
     init_db()
     db = SessionLocal()
 
-    # Snapshot the BCV rate ONCE per run so every backfilled card uses
-    # the same "as of" stat (consistent across the batch and one fewer
-    # DB roundtrip per post).
-    bcv = latest_bcv_usd()
-    if bcv is not None:
-        logger.info("using BCV USD = %.2f", bcv)
+    # Snapshot the elTOQUE TRMI informal rate ONCE per run so every
+    # backfilled card uses the same "as of" stat (consistent across the
+    # batch and one fewer DB roundtrip per post).
+    informal_usd = latest_eltoque_usd()
+    if informal_usd is not None:
+        logger.info("using elTOQUE TRMI USD = %.2f CUP", informal_usd)
     else:
-        logger.info("no BCV rate available; cards will omit the stat block")
+        logger.info("no elTOQUE TRMI rate available; cards will omit the stat block")
 
     try:
         q = db.query(BlogPost).order_by(BlogPost.published_date.desc(), BlogPost.id.desc())
@@ -95,7 +95,7 @@ def main() -> int:
                     title=post.title or "",
                     category=post.primary_sector,
                     published_date=post.published_date,
-                    bcv_usd=bcv,
+                    informal_usd=informal_usd,
                 )
             except Exception as exc:
                 logger.warning("[%d/%d] render failed for slug=%s: %s", i, len(posts), post.slug, exc)

@@ -46,14 +46,14 @@ logger = logging.getLogger("backfill_social_hooks")
 _TAG_RE = re.compile(r"<[^>]+>")
 
 
-SYSTEM_PROMPT = """You write social-media opening lines for a Venezuela-focused investment-research publication. Voice: one analyst messaging another over Slack — concrete, calm, slightly conspiratorial, never marketing. NEVER restate the headline. NEVER use hashtags, emoji, exclamation marks, or words like "groundbreaking", "must-read", "game-changing", "alert". Surface the tension, the surprise, or the "why this matters in one beat".
+SYSTEM_PROMPT = """You write social-media opening lines for a Cuba-focused investment-research publication. Voice: one analyst messaging another over Slack — concrete, calm, slightly conspiratorial, never marketing. NEVER restate the headline. NEVER use hashtags, emoji, exclamation marks, or words like "groundbreaking", "must-read", "game-changing", "alert". Surface the tension, the surprise, or the "why this matters in one beat".
 
 Return a single JSON object: {"social_hook": "<180-250 char line>"}.
 
 Examples of the right register:
-- "Caracas just gave the assembly an unusual seat at the table on the OFAC talks — first time since 2022."
-- "PDVSA quietly let the Eulen waiver lapse last week. Most of the desk hasn't noticed yet."
-- "The new gold-export decree looks technical, but it strips the central bank of a tool it actually uses."
+- "Havana just walked back a MIPYME licensing freeze nobody on the desk noticed last quarter — the second quiet reversal on private-sector rules in six weeks."
+- "OFAC let a CACR §515 GL drift inside its renewal window. The cruise lines have been calling counsel since Tuesday."
+- "The new MLC re-pricing decree reads procedural, but it shifts where Western Union's settlement risk actually lives."
 """
 
 

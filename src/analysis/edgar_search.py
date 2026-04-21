@@ -5,9 +5,9 @@ EDGAR exposes a free, no-key full-text search API at
   https://efts.sec.gov/LATEST/search-index?q=...&forms=10-K,10-Q,8-K&dateRange=custom
 
 We use it to find recent filings where a public company mentions
-Venezuela / PdVSA / CITGO / Maduro. A handful of hits is strong evidence
-the company has material Venezuela exposure even if it isn't on the
-OFAC SDN list.
+Cuba / CACR / ETECSA / ALIMPORT / Helms-Burton / Mariel ZEDM. A handful
+of hits is strong evidence the company has material Cuba exposure even
+if it isn't on the OFAC SDN list or the Cuba Restricted List.
 
 SEC enforces a ~10 req/sec rate limit per IP and requires a descriptive
 User-Agent string with contact info. We comply with both.
@@ -33,20 +33,27 @@ EDGAR_SEARCH_URL = "https://efts.sec.gov/LATEST/search-index"
 EDGAR_FILING_BASE = "https://www.sec.gov/Archives/edgar/data"
 
 # Default forms we search. Annual + quarterly + current reports cover
-# the vast majority of "the company disclosed Venezuela exposure"
+# the vast majority of "the company disclosed Cuba exposure"
 # moments. 20-F covers foreign filers (e.g. ADRs).
 DEFAULT_FORMS = ("10-K", "10-Q", "8-K", "20-F", "6-K")
 
-# Search terms we OR together for the Venezuela exposure question. We
-# wrap each term in quotes so EDGAR treats them as phrase matches.
-VENEZUELA_TERMS = (
-    "Venezuela",
-    "PdVSA",
-    "PDVSA",
-    "Citgo",
-    "CITGO",
-    "Maduro",
-    "Caracas",
+# Search terms we OR together for the Cuba exposure question. We wrap
+# each term in quotes so EDGAR treats them as phrase matches. We
+# include both common forms ("Cuba", "Cuban") and the specific
+# institutional / regulatory acronyms most likely to appear in a
+# filing's risk-factors / commitments-and-contingencies sections.
+CUBA_TERMS = (
+    "Cuba",
+    "Cuban",
+    "Helms-Burton",
+    "LIBERTAD Act",
+    "CACR",
+    "Cuban Assets Control Regulations",
+    "ETECSA",
+    "ALIMPORT",
+    "BioCubaFarma",
+    "Mariel",
+    "Havana",
 )
 
 
@@ -83,7 +90,7 @@ class EdgarRateLimiter:
 _DEFAULT_LIMITER = EdgarRateLimiter()
 
 
-def search_company_venezuela_filings(
+def search_company_cuba_filings(
     *,
     company_name: str,
     cik: str | None = None,
@@ -91,13 +98,13 @@ def search_company_venezuela_filings(
     lookback_days: int = 730,
     limit: int = 8,
     rate_limiter: EdgarRateLimiter | None = None,
-    user_agent: str = "Caracas Research compliance-bot contact@caracasresearch.com",
+    user_agent: str = "Cuban Insights compliance-bot contact@cubaninsights.com",
 ) -> list[EdgarHit]:
     """Return up to `limit` recent EDGAR filings by `company_name` that
-    contain Venezuela-related terms.
+    contain Cuba-related terms.
 
     Strategy: query EDGAR with a constrained phrase search:
-        ("Venezuela" OR "PdVSA" OR ...) AND <company filter>
+        ("Cuba" OR "Helms-Burton" OR "ETECSA" OR ...) AND <company filter>
     where <company filter> is the CIK if we have it (most precise) or the
     company name (fuzzy).
 
@@ -110,7 +117,7 @@ def search_company_venezuela_filings(
     end = date.today()
     start = end - timedelta(days=lookback_days)
 
-    q_terms = " OR ".join(f'"{t}"' for t in VENEZUELA_TERMS)
+    q_terms = " OR ".join(f'"{t}"' for t in CUBA_TERMS)
     params = {
         "q": q_terms,
         "dateRange": "custom",
@@ -209,7 +216,7 @@ if __name__ == "__main__":
     parser.add_argument("--limit", type=int, default=5)
     args = parser.parse_args()
 
-    hits = search_company_venezuela_filings(
+    hits = search_company_cuba_filings(
         company_name=args.company, cik=args.cik, limit=args.limit
     )
     print(_json.dumps([h.to_dict() for h in hits], indent=2))

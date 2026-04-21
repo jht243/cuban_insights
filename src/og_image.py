@@ -4,7 +4,7 @@ Per-briefing Open Graph card generator.
 Renders the 1200x630 PNG that Bluesky / X / LinkedIn / iMessage / Slack
 display when a briefing URL is shared. One unique card per briefing,
 with the headline, category, and date burned into the image so the
-preview tile stops being the same generic "Caracas Research" tile for
+preview tile stops being the same generic "Cuban Insights" tile for
 every link.
 
 Design = Concept 3 ("Modern Sans"), the one we ship:
@@ -12,15 +12,15 @@ Design = Concept 3 ("Modern Sans"), the one we ship:
   +--------------------------------------------------------+
   | navy  |                       (red 6px rule)           |
   |       |                                                |
-  | CARA- |  DAILY BRIEFING · MAR 13, 2026                 |
-  | CAS   |                                                |
-  | RES'H |  [ MINING ]                                    |
+  | CUBAN |  DAILY BRIEFING · MAR 13, 2026                 |
+  | INSI- |                                                |
+  | GHTS  |  [ TOURISM ]                                   |
   |       |                                                |
   |       |  Headline goes here, in big                    |
   |       |  modern Inter Display Bold,                    |
-  | BCV   |  three or four lines max                       |
-  | 481   |                                                |
-  | Bs/$  |                       caracasresearch.com      |
+  | TRMI  |  three or four lines max                       |
+  | 320   |                                                |
+  | CUP/$ |                       cubaninsights.com        |
   +--------------------------------------------------------+
 
 Pure-Python (Pillow) — same dependency we already have for the static
@@ -32,7 +32,7 @@ Usage:
         title=post.title,
         category=post.primary_sector,
         published_date=post.published_date,
-        bcv_usd=481.22,                # optional — adds the stat block
+        informal_usd=320.0,            # optional — adds the stat block
     )
     # write to BlogPost.og_image_bytes; serve via /og/briefing/<slug>.png
 """
@@ -58,7 +58,7 @@ WIDTH, HEIGHT = 1200, 630
 LEFT_PANEL_W = 450
 RIGHT_PANEL_X = LEFT_PANEL_W
 
-# ── Brand palette (matches caracasresearch.com) ───────────────────────
+# ── Brand palette (matches cubaninsights.com) ─────────────────────────
 NAVY = (0, 31, 68)            # left panel + headline ink
 NAVY_DEEP = (0, 19, 44)       # top of vertical gradient
 RED = (204, 0, 0)             # accent — chip, rule, "RESEARCH" wordmark
@@ -221,8 +221,14 @@ def _format_category(category: Optional[str]) -> str:
         "ASAMBLEA NACIONAL": "POLITICS",
         "GACETA": "REGULATION",
         "GACETA OFICIAL": "REGULATION",
-        "BCV": "FX & RATES",
-        "BCV RATES": "FX & RATES",
+        "BCC": "FX & RATES",
+        "BCC RATES": "FX & RATES",
+        "ELTOQUE": "FX & RATES",
+        "ELTOQUE RATE": "FX & RATES",
+        "TRMI": "FX & RATES",
+        "MARIEL": "MARIEL ZEDM",
+        "MARIEL ZEDM": "MARIEL ZEDM",
+        "PRIVATE SECTOR": "MIPYMES",
     }
     upper = cleaned.upper()
     return aliases.get(upper, upper)[:24]
@@ -243,7 +249,7 @@ def render_briefing_card(
     title: str,
     category: Optional[str] = None,
     published_date: date | datetime | None = None,
-    bcv_usd: Optional[float] = None,
+    informal_usd: Optional[float] = None,
 ) -> bytes:
     """Render a per-briefing OG card and return PNG bytes.
 
@@ -265,23 +271,23 @@ def render_briefing_card(
     wm_x = 60
     wm_y = 90
     wm_font = _font("inter_bold", 44)
-    draw.text((wm_x, wm_y), "CARACAS", font=wm_font, fill=WHITE)
-    _, wm_h = _measure(draw, "CARACAS", wm_font)
-    draw.text((wm_x, wm_y + wm_h + 2), "RESEARCH", font=wm_font, fill=RED)
+    draw.text((wm_x, wm_y), "CUBAN", font=wm_font, fill=WHITE)
+    _, wm_h = _measure(draw, "CUBAN", wm_font)
+    draw.text((wm_x, wm_y + wm_h + 2), "INSIGHTS", font=wm_font, fill=RED)
 
     # Tagline under the wordmark
     tag_font = _font("inter_regular", 18)
     draw.text(
         (wm_x, wm_y + (wm_h + 2) * 2 + 14),
-        "Venezuela investment intelligence",
+        "Cuba investment intelligence",
         font=tag_font,
         fill=NAVY_MUTED,
     )
 
-    # Optional BCV stat block at bottom-left
-    if bcv_usd is not None:
+    # Optional informal-rate (TRMI) stat block at bottom-left
+    if informal_usd is not None:
         try:
-            rate_value = float(bcv_usd)
+            rate_value = float(informal_usd)
         except (TypeError, ValueError):
             rate_value = None
         if rate_value:
@@ -296,7 +302,7 @@ def render_briefing_card(
             )
             draw.text(
                 (wm_x, HEIGHT - 150),
-                "BCV OFFICIAL",
+                "TRMI INFORMAL",
                 font=label_font,
                 fill=NAVY_MUTED,
             )
@@ -308,7 +314,7 @@ def render_briefing_card(
             )
             draw.text(
                 (wm_x, HEIGHT - 64),
-                "Bs.D / USD",
+                "CUP / USD",
                 font=unit_font,
                 fill=NAVY_MUTED,
             )
@@ -368,7 +374,7 @@ def render_briefing_card(
         width=1,
     )
     footer_font = _font("inter_semibold", 22)
-    url_text = "caracasresearch.com"
+    url_text = "cubaninsights.com"
     url_w, _ = _measure(draw, url_text, footer_font)
     draw.text(
         (inner_right - url_w, footer_y),
@@ -398,19 +404,20 @@ def render_default_card() -> bytes:
     per-briefing one. Suitable for shares of `/`, `/briefing`, etc.
     """
     return render_briefing_card(
-        title="Venezuelan investment intelligence — daily research for international capital",
+        title="Cuba investment intelligence — daily research on the embargo, the private sector, and the macro picture",
         category="DAILY BRIEFING",
         published_date=date.today(),
-        bcv_usd=None,
+        informal_usd=None,
     )
 
 
 # ── Live data lookup ──────────────────────────────────────────────────
 
-def latest_bcv_usd() -> Optional[float]:
-    """Best-effort fetch of the most recent BCV official USD rate from
-    the DB. Returns None if the table is empty or any error trips —
-    callers should treat this as optional decoration."""
+def latest_eltoque_usd() -> Optional[float]:
+    """Best-effort fetch of the most recent informal-market USD/CUP rate
+    (TRMI) from elTOQUE in the DB. Returns None if the table is empty
+    or any error trips — callers should treat this as optional
+    decoration on the OG card."""
     try:
         from src.models import (  # local import to avoid cycle on module load
             ExternalArticleEntry,
@@ -423,7 +430,7 @@ def latest_bcv_usd() -> Optional[float]:
         try:
             row = (
                 db.query(ExternalArticleEntry)
-                .filter(ExternalArticleEntry.source == SourceType.BCC_RATES)
+                .filter(ExternalArticleEntry.source == SourceType.ELTOQUE_RATE)
                 .order_by(ExternalArticleEntry.published_date.desc())
                 .first()
             )
@@ -434,5 +441,10 @@ def latest_bcv_usd() -> Optional[float]:
         finally:
             db.close()
     except Exception as exc:
-        logger.warning("og_image: latest_bcv_usd failed: %s", exc)
+        logger.warning("og_image: latest_eltoque_usd failed: %s", exc)
         return None
+
+
+# Backwards-compatible alias so any older imports keep working
+# during the phased migration. Remove after Phase 3 cleanup.
+latest_bcv_usd = latest_eltoque_usd

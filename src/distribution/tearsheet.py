@@ -1,5 +1,5 @@
 """
-Daily Venezuela Investor Tearsheet — branded PDF generator.
+Daily Cuba Investor Tearsheet — branded PDF generator.
 
 Produces a 1-2 page PDF that condenses the day's intelligence into a
 research-note-style document suitable for:
@@ -13,10 +13,10 @@ Storage and an Internet Archive upload helper.
 
 Layout (single PDF, portrait, US Letter):
   ┌─────────────────────────────────────────────────────────┐
-  │  CARACAS RESEARCH                       <date> · Vol N  │
-  │  Daily Venezuela Investor Tearsheet                     │
+  │  CUBAN INSIGHTS                         <date> · Vol N  │
+  │  Daily Cuba Investor Tearsheet                          │
   │ ─────────────────────────────────────────────────────── │
-  │  KPI strip: BCV USD | Parallel | Premium | Advisory     │
+  │  KPI strip: BCC | elTOQUE TRMI | Spread | Advisory      │
   │ ─────────────────────────────────────────────────────── │
   │  TODAY'S TOP DEVELOPMENT                                │
   │  <headline> · <takeaway 2-3 sentences>                  │
@@ -31,7 +31,7 @@ Layout (single PDF, portrait, US Letter):
   │  UPCOMING CALENDAR (next 14 days)                       │
   │  <date> · <event>                                       │
   │ ─────────────────────────────────────────────────────── │
-  │  Footer: methodology · disclaimer · caracasresearch.com │
+  │  Footer: methodology · disclaimer · cubaninsights.com   │
   └─────────────────────────────────────────────────────────┘
 """
 
@@ -267,8 +267,8 @@ def _header_block(generated_at: datetime, styles) -> list:
         issue_label = today.strftime("%A, %B %d, %Y").replace(" 0", " ")
 
     left = [
-        Paragraph("CARACAS RESEARCH", styles["brand"]),
-        Paragraph("Daily Venezuela Investor Tearsheet", styles["title"]),
+        Paragraph("CUBAN INSIGHTS", styles["brand"]),
+        Paragraph("Daily Cuba Investor Tearsheet", styles["title"]),
     ]
     right = [
         Paragraph(f"<para align='right'><b>{issue_label}</b></para>", styles["body"]),
@@ -277,7 +277,7 @@ def _header_block(generated_at: datetime, styles) -> list:
             styles["muted_sm"],
         ),
         Paragraph(
-            "<para align='right'>caracasresearch.com</para>",
+            "<para align='right'>cubaninsights.com</para>",
             styles["muted_sm"],
         ),
     ]
@@ -299,7 +299,7 @@ def _header_block(generated_at: datetime, styles) -> list:
 
     # Full-width subtitle (one line, no wrap)
     subtitle = Paragraph(
-        "Independent investment intelligence on Venezuela — "
+        "Independent investment intelligence on Cuba — "
         "sanctions, FX, calendar, and policy",
         styles["subtitle"],
     )
@@ -324,13 +324,18 @@ def _section_rule() -> Table:
 
 
 def _kpi_row(ticker_items: list[dict], styles) -> Table:
-    """4-cell KPI strip: BCV, Parallel, Premium %, Travel Advisory."""
+    """4-cell KPI strip: BCC, elTOQUE TRMI, Spread %, Travel Advisory."""
+    # TODO(human-review): confirm src.report_generator._build_ticker emits
+    # ticker entries with label="BCC Official" and label="elTOQUE TRMI".
+    # As of this rebrand the ticker emitter still produced "BCV Official"
+    # / "USD Parallel" labels; once that is migrated these lookups will
+    # start resolving.
     cells = []
-    bcv_official = next(
-        (t for t in ticker_items if t.get("label") == "BCV Official"), None
+    bcc_official = next(
+        (t for t in ticker_items if t.get("label") == "BCC Official"), None
     )
-    bcv_parallel = next(
-        (t for t in ticker_items if t.get("label") == "USD Parallel"), None
+    eltoque_trmi = next(
+        (t for t in ticker_items if t.get("label") == "elTOQUE TRMI"), None
     )
     advisory = next(
         (t for t in ticker_items if t.get("label") == "Travel Advisory"), None
@@ -346,19 +351,19 @@ def _kpi_row(ticker_items: list[dict], styles) -> Table:
         ]
 
     cells.append(kpi_cell(
-        "BCV Official Rate",
-        f"Bs.D {bcv_official['value']}/$" if bcv_official else "n/a",
-        "live BCV scrape" if bcv_official else "",
+        "BCC Official Rate",
+        f"CUP {bcc_official['value']}/$" if bcc_official else "n/a",
+        "live BCC scrape" if bcc_official else "",
     ))
     cells.append(kpi_cell(
-        "Parallel Rate",
-        f"Bs.D {bcv_parallel['value']}/$" if bcv_parallel else "n/a",
-        "Monitor (avg)" if bcv_parallel else "",
-        color=BRAND_WARN if bcv_parallel else BRAND_INK,
+        "elTOQUE TRMI",
+        f"CUP {eltoque_trmi['value']}/$" if eltoque_trmi else "n/a",
+        "elTOQUE (informal)" if eltoque_trmi else "",
+        color=BRAND_WARN if eltoque_trmi else BRAND_INK,
     ))
-    if bcv_official and bcv_parallel:
+    if bcc_official and eltoque_trmi:
         try:
-            premium = (float(bcv_parallel["value"]) / float(bcv_official["value"]) - 1) * 100
+            premium = (float(eltoque_trmi["value"]) / float(bcc_official["value"]) - 1) * 100
             premium_str = f"{premium:+.1f}%"
             premium_color = BRAND_BAD if premium > 20 else BRAND_WARN if premium > 10 else BRAND_GOOD
         except (ValueError, ZeroDivisionError):
@@ -366,7 +371,7 @@ def _kpi_row(ticker_items: list[dict], styles) -> Table:
             premium_color = BRAND_INK
     else:
         premium_str, premium_color = "n/a", BRAND_INK
-    cells.append(kpi_cell("Parallel Premium", premium_str, "vs official", color=premium_color))
+    cells.append(kpi_cell("Informal Spread", premium_str, "vs official", color=premium_color))
 
     if advisory:
         adv_value = advisory.get("value", "n/a")
@@ -554,18 +559,19 @@ def _footer(generated_at: datetime, styles) -> list:
 
     line1 = (
         f"<b>Generated {ts}.</b> "
-        f"<b>Sources:</b> BCV (live scrape), OFAC SDN, US State Department, "
-        f"Federal Register, GDELT, Asamblea Nacional. "
+        f"<b>Sources:</b> elTOQUE TRMI (live API), BCC, OFAC SDN, "
+        f"Cuba Restricted List, US State Department, Cuban Gaceta Oficial, "
+        f"ANPP, Granma/Cubadebate corpus. "
         f"<b>Methodology:</b> "
-        f"<font color='{BRAND_BLUE.hexval()[:-2]}'>caracasresearch.com/methodology</font>."
+        f"<font color='{BRAND_BLUE.hexval()[:-2]}'>cubaninsights.com/methodology</font>."
     )
     line2 = (
         "<b>Disclaimer:</b> This document is for informational purposes only "
         "and does not constitute investment, legal, or tax advice. Sanctions "
         "regimes change frequently — always verify current OFAC guidance and "
         "consult qualified counsel before any transaction. "
-        "© Caracas Research · "
-        f"<font color='{BRAND_BLUE.hexval()[:-2]}'>caracasresearch.com</font>."
+        "© Cuban Insights · "
+        f"<font color='{BRAND_BLUE.hexval()[:-2]}'>cubaninsights.com</font>."
     )
 
     parts = [
@@ -592,10 +598,10 @@ def render_daily_tearsheet_pdf(data: Optional[dict] = None) -> bytes:
         buf, pagesize=letter,
         leftMargin=MARGIN, rightMargin=MARGIN,
         topMargin=MARGIN, bottomMargin=MARGIN,
-        title="Caracas Research — Daily Venezuela Investor Tearsheet",
-        author="Caracas Research",
-        subject="Venezuela investment intelligence",
-        keywords="Venezuela, investment, sanctions, OFAC, BCV, tearsheet",
+        title="Cuban Insights — Daily Cuba Investor Tearsheet",
+        author="Cuban Insights",
+        subject="Cuba investment intelligence",
+        keywords="Cuba, investment, sanctions, OFAC, CACR, Helms-Burton, Mariel ZED, MIPYMES, tearsheet, elTOQUE TRMI, BCC",
     )
 
     flow = []

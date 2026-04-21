@@ -3,8 +3,8 @@ S&P 500 company list — sourced from the public Wikipedia table at
 https://en.wikipedia.org/wiki/List_of_S%26P_500_companies and cached to
 disk so we don't re-scrape on every page generation.
 
-Used by the /companies/<slug>/venezuela-exposure landing pages and the
-/tools/public-company-venezuela-exposure-check tool. We deliberately
+Used by the /companies/<slug>/cuba-exposure landing pages and the
+/tools/public-company-cuba-exposure-check tool. We deliberately
 keep this list in JSON rather than the database so the build is
 deterministic from a single git commit and refreshing the list is a
 one-line `python -m src.data.sp500_companies --refresh` away.
@@ -35,8 +35,8 @@ WIKIPEDIA_URL = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
 _CACHE_PATH = Path(__file__).resolve().parent / "sp500_snapshot.json"
 
 # Generic legal-entity suffixes we strip when generating slugs / search
-# queries. These add nothing to the search intent ("Apple Inc Venezuela
-# exposure" vs "Apple Venezuela exposure") and create slug noise.
+# queries. These add nothing to the search intent ("Apple Inc Cuba
+# exposure" vs "Apple Cuba exposure") and create slug noise.
 _LEGAL_SUFFIXES = (
     "incorporated", "inc", "corporation", "corp", "company", "co",
     "ltd", "limited", "llc", "lp", "plc", "holdings", "holding",
@@ -152,7 +152,7 @@ def refresh_sp500_snapshot(*, persist: bool = True) -> list[SP500Company]:
     """
     headers = {
         "User-Agent": (
-            "CaracasResearchBot/1.0 (+https://caracasresearch.com/about) "
+            "CubanInsightsBot/1.0 (+https://cubaninsights.com/about) "
             "python-httpx (sp500 list refresh)"
         )
     }

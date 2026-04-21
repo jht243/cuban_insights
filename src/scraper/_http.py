@@ -37,9 +37,9 @@ CUBA_GOV_USER_AGENT: str = (
 
 CUBA_GOV_HEADERS: dict[str, str] = {
     "User-Agent": CUBA_GOV_USER_AGENT,
-    # Cuban sites prefer Spanish; the Venezuelan codebase used "es-VE"
-    # which a few Cuba edge nodes treat as suspicious. "es-CU" first,
-    # generic Spanish second, English last.
+    # Cuban sites prefer Spanish; a few CU edge nodes treat non-CU
+    # Spanish locales as suspicious. "es-CU" first, generic Spanish
+    # second, English last.
     "Accept-Language": "es-CU,es;q=0.9,en;q=0.6",
     "Accept": (
         "text/html,application/xhtml+xml,application/xml;q=0.9,"

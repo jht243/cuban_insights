@@ -2,22 +2,22 @@
 Per-SDN-entity profile data layer.
 
 Powers the auto-generated /sanctions/{individuals,entities,vessels,aircraft}/<slug>
-pages. Each one of OFAC's ~410 Venezuela-program designations becomes its own
+pages. Each one of OFAC's Cuba-program designations becomes its own
 SEO-optimized URL, indexed by Google + Bing, so when a compliance officer
-searches "vicente carretero" or "saab halabi" their first organic result is
-our profile page (titled with the person's name verbatim) instead of a
-generic tracker.
+searches a Cuban official's name, a GAESA subsidiary, or a sanctioned
+vessel, their first organic result is our profile page (titled with the
+person's name verbatim) instead of a generic tracker.
 
 Why a dedicated data module:
-  • The /sanctions-tracker page already loads all 410 entries for the search
-    table — we don't want to re-query the DB on every profile page render
-    (that's 410× the load), and we don't want every caller to re-implement
-    the same `remarks` blob parsing.
-  • Family-cluster + "Linked To" graphs need to be precomputed once across
-    the whole list — those relationships are what justifies a dedicated page
-    per individual (a profile that says "see also: 3 other Carretero
-    Napolitano family members" is the kind of value-add nobody else
-    publishes).
+  • The /sanctions-tracker page already loads the full Cuba SDN list for
+    the search table — we don't want to re-query the DB on every profile
+    page render, and we don't want every caller to re-implement the same
+    `remarks` blob parsing.
+  • Family-cluster + "Linked To" graphs need to be precomputed once
+    across the whole list — those relationships are what justifies a
+    dedicated page per individual (a profile that says "see also: 3
+    other GAESA-linked subsidiaries" is the kind of value-add nobody
+    else publishes).
   • Slug stability matters for SEO: once a URL is indexed, changing it
     forfeits the rank. The slug logic here is a single source of truth
     that future code MUST not modify silently.
@@ -36,20 +36,26 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
-# Map OFAC program codes → readable labels and the executive order URL.
-# These are the four Venezuela-related programs OFAC has issued under;
-# anything else has been filtered out upstream by src/scraper/ofac_sdn.py.
+# Map OFAC program codes → readable labels and the executive-order /
+# regulation URL. Cuba is governed primarily by the Cuban Assets Control
+# Regulations (CACR, 31 CFR Part 515), authorised by the Trading With
+# the Enemy Act and reinforced by the Helms-Burton Act (LIBERTAD, 1996).
+# Unlike the Venezuela program, there is no single "Cuba EO" because the
+# Cuba sanctions framework predates the EO-based sanctions architecture —
+# but Trump-era and Biden-era policy memoranda (NSPM-5, NSPM-44) and the
+# 2017 / 2021 Cuba Restricted List (the "Section 515.209 list") are the
+# operative supplements. Anything not in CACR has been filtered out
+# upstream by src/scraper/ofac_sdn.py.
 PROGRAM_LABELS: dict[str, str] = {
-    "VENEZUELA": "Venezuela (Specially Designated Nationals)",
-    "VENEZUELA-EO13692": "Venezuela — EO 13692 (Human rights / corruption)",
-    "VENEZUELA-EO13850": "Venezuela — EO 13850 (Gold sector / public officials)",
-    "VENEZUELA-EO13884": "Venezuela — EO 13884 (Government of Venezuela block)",
+    "CUBA": "Cuba (Cuban Assets Control Regulations, 31 CFR 515)",
+    "CUBA-EO13818": "Cuba — EO 13818 (Global Magnitsky human-rights designations on Cuban officials)",
+    "CUBA-NS-PIL": "Cuba — Cuba Restricted List (entities owned/controlled by Cuban military, intelligence, or security services)",
 }
 
 PROGRAM_EXEC_ORDERS: dict[str, str] = {
-    "VENEZUELA-EO13692": "https://ofac.treasury.gov/media/12126/download?inline",
-    "VENEZUELA-EO13850": "https://ofac.treasury.gov/media/13311/download?inline",
-    "VENEZUELA-EO13884": "https://ofac.treasury.gov/media/13351/download?inline",
+    "CUBA": "https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions",
+    "CUBA-EO13818": "https://ofac.treasury.gov/media/735/download?inline",
+    "CUBA-NS-PIL": "https://www.state.gov/cuba-restricted-list/",
 }
 
 # Map raw OFAC `type` field (which uses "individual", "vessel", "aircraft",
@@ -80,15 +86,15 @@ _BUCKET_SINGULAR: dict[str, str] = {
 # ──────────────────────────────────────────────────────────────────────
 #
 # Why this exists:
-#   GSC's #1 organic query for the sanctions corpus is literally
-#   "ofac sdn list current military, economic, diplomatic" — i.e. users
-#   want a sector-grouped view of the SDN list, not the entity-type
-#   bucket grouping (individuals/entities/vessels/aircraft) we ship by
-#   default. We don't want to spawn a new data store; we derive the
-#   sector deterministically from each profile's program code + remarks
-#   blob + raw name and bucket the result into one of four canonical
-#   sectors that mirror how OFAC describes Venezuela designations
-#   themselves.
+#   The dominant compliance / research query pattern on the Cuba SDN
+#   corpus is sector-grouped — users want to know which Cuban actors are
+#   in the military / GAESA cluster, which are state-financial actors
+#   (BFI, Banco Central, FINCIMEX), and which are diplomatic /
+#   governance officials. We don't want to spawn a new data store; we
+#   derive the sector deterministically from each profile's program code
+#   + remarks blob + raw name and bucket the result into one of four
+#   canonical sectors that mirror how OFAC and the State Department
+#   describe Cuba designations themselves.
 #
 # Classification is single-label, priority-ordered (military > diplomatic
 # > economic > governance fallback). Single-label is intentional: every
@@ -96,20 +102,22 @@ _BUCKET_SINGULAR: dict[str, str] = {
 # don't dilute internal-link signal across multiple sector pages and
 # Google sees a clean cluster taxonomy.
 #
-# Vessels and aircraft go to "economic" by default — they're almost
-# always sanctions-evasion infrastructure tied to oil/gold trade. The
-# few exceptions are small enough that misclassification noise is
-# acceptable.
+# Vessels and aircraft go to "economic" by default — under the Cuba
+# program they are almost always GAESA / Gaviota / CIMEX-linked
+# tourism, shipping, or charter assets, or Cuba-flagged crude tankers
+# servicing the Venezuela-Cuba oil corridor. The few exceptions are
+# small enough that misclassification noise is acceptable.
 
 # Canonical sector keys. Order is meaningful for navigation and
-# cluster-nav rendering (military first because it's the highest-volume
-# Venezuela SDN category and the strongest GSC query signal).
+# cluster-nav rendering (military first because GAESA + MINFAR + MININT
+# is by far the highest-volume Cuba SDN / Cuba Restricted List cohort
+# and the strongest organic-search signal).
 SECTOR_KEYS: tuple[str, ...] = ("military", "economic", "diplomatic", "governance")
 
 # Display labels used in page titles, H1s, breadcrumbs, JSON-LD.
 SECTOR_LABELS: dict[str, str] = {
-    "military":    "Military officials",
-    "economic":    "Economic & financial actors",
+    "military":    "Military, intelligence & security officials",
+    "economic":    "GAESA, state enterprises & financial actors",
     "diplomatic":  "Diplomatic officials",
     "governance":  "Government & political officials",
 }
@@ -117,30 +125,38 @@ SECTOR_LABELS: dict[str, str] = {
 # One-sentence descriptions surfaced on the per-sector landing pages
 # and in cluster nav cards. Written to match how compliance/research
 # users describe the cohort, not how OFAC labels them — the SEO target
-# is the user's mental model of "military officials sanctioned by OFAC",
-# not OFAC's executive-order taxonomy.
+# is the user's mental model of "Cuban military officials sanctioned by
+# OFAC", not OFAC's regulatory taxonomy.
 SECTOR_DESCRIPTIONS: dict[str, str] = {
     "military":   (
-        "Members of the Bolivarian National Armed Forces (FANB), Bolivarian "
-        "National Guard (GNB), Directorate of Military Counterintelligence "
-        "(DGCIM), and SEBIN intelligence service designated under Venezuela-"
-        "related OFAC programs."
+        "Officers of Cuba's Revolutionary Armed Forces (FAR / MINFAR), "
+        "the Ministry of the Interior (MININT), Tropas Especiales, "
+        "Dirección de Inteligencia (DI), and other security-service "
+        "actors designated under the Cuban Assets Control Regulations "
+        "or named on the State Department's Cuba Restricted List."
     ),
     "economic":   (
-        "Officials, banks, oil-sector entities (PDVSA and subsidiaries), "
-        "gold-mining actors, and finance-ministry figures sanctioned for "
-        "their role in Venezuela's economic, energy, and financial sectors."
+        "GAESA (Grupo de Administración Empresarial S.A.) and its "
+        "subsidiaries — Gaviota, CIMEX, Habaguanex, FINCIMEX, AIS, "
+        "Almest, TRD Caribe — together with state-owned banks (Banco "
+        "Financiero Internacional, Banco Metropolitano), state hotel "
+        "chains, and other military-controlled commercial entities "
+        "that dominate Cuba's tourism, retail, and remittance sectors."
     ),
     "diplomatic": (
-        "Ambassadors, foreign-ministry officials, consular staff, and "
-        "diplomatic representatives designated under Venezuela-related OFAC "
-        "programs — typically targeted under EO 13692 / EO 13884."
+        "Ambassadors, MINREX (Ministerio de Relaciones Exteriores) "
+        "officials, consular staff, and diplomatic representatives "
+        "designated under Cuba-related OFAC programs or Global "
+        "Magnitsky (EO 13818) for human-rights or transnational-"
+        "repression conduct."
     ),
     "governance": (
-        "Political and judicial officials — Asamblea Nacional Constituyente "
-        "members, Supreme Tribunal of Justice (TSJ) magistrates, electoral "
-        "council (CNE) officials, governors, mayors, and ministers — "
-        "designated for undermining democratic governance."
+        "Political and judicial officials — Council of State, Council "
+        "of Ministers, Asamblea Nacional del Poder Popular deputies, "
+        "Communist Party (PCC) leadership, Tribunal Supremo Popular "
+        "(TSP) magistrates, Fiscalía General officials, provincial "
+        "governors, and ministers — designated for human-rights "
+        "abuses, repression, or undermining democratic governance."
     ),
 }
 
@@ -155,40 +171,45 @@ SECTOR_SLUGS: dict[str, str] = {k: k for k in SECTOR_KEYS}
 # decisive; hits in raw name are decisive only when the blob has nothing
 # stronger from a higher-priority sector.
 _MILITARY_PHRASES: tuple[str, ...] = (
-    "Bolivarian National Guard",
-    "Guardia Nacional Bolivariana",
-    "Bolivarian National Armed Forces",
-    "Fuerza Armada Nacional",
-    "Ministry of Defense",
-    "Minister of Defense",
-    "Defense Minister",
-    "Strategic Operations Command",
-    "CEOFANB",
-    "DGCIM",
-    "SEBIN",
-    "Bolivarian Intelligence Service",
-    "Military Counterintelligence",
+    "Revolutionary Armed Forces",
+    "Fuerzas Armadas Revolucionarias",
+    " FAR ",
+    "MINFAR",
+    "Ministry of the Revolutionary Armed Forces",
+    "Ministerio de las Fuerzas Armadas",
+    "Ministry of the Interior",
+    "Ministerio del Interior",
+    "MININT",
+    "Direccion de Inteligencia",
+    "Dirección de Inteligencia",
+    "Direccion General de Inteligencia",
+    "Tropas Especiales",
+    "Special Troops",
+    "Brigade Commander",
     "Brigadier General",
     "Major General",
-    "Lieutenant General",
+    "División General",
+    "Division General",
     "Vice Admiral",
     "Rear Admiral",
-    "CAVIM",
-    "Compania Anonima Venezolana de Industrias Militares",
-    "Venezuelan Military Industries",
-    "GNB ",  # trailing space avoids matching "GNBANK" etc.
-    " FANB ",
+    "Lieutenant Colonel",
     "Counterintelligence",
-    "Direccion General de Contrainteligencia Militar",
+    "Contrainteligencia",
+    "State Security",
+    "Seguridad del Estado",
+    " DSE ",
+    "Frontier Troops",
+    "Tropas Guardafronteras",
 )
 
 _DIPLOMATIC_PHRASES: tuple[str, ...] = (
     "Ambassador",
     "Embajador",
-    "Embassy of",
-    "Embajada de",
-    "Foreign Affairs",
-    "Relaciones Exteriores",
+    "Embassy of Cuba",
+    "Embajada de Cuba",
+    "Ministry of Foreign Affairs",
+    "Ministerio de Relaciones Exteriores",
+    "MINREX",
     "Permanent Representative",
     "Permanent Mission",
     "Consul ",
@@ -197,94 +218,103 @@ _DIPLOMATIC_PHRASES: tuple[str, ...] = (
     "Cónsul",
     "Diplomatic",
     "Charge d'Affaires",
+    "Encargado de Negocios",
 )
 
 _ECONOMIC_PHRASES: tuple[str, ...] = (
-    "Central Bank of Venezuela",
-    "Banco Central de Venezuela",
-    " BCV ",
-    "Superintendency of Banking",
-    "SUDEBAN",
-    "PDVSA",
-    "Petroleos de Venezuela",
-    "Petróleos de Venezuela",
-    "CITGO",
-    "Ministry of Petroleum",
-    "Petroleum Minister",
-    "Minister of Petroleum",
-    "MINPET",
-    "Minister of Mining",
-    "Mining Minister",
-    "Ministry of Mines",
-    "MINERVEN",
-    "CVG Minerven",
-    "Corporacion Venezolana de Mineria",
-    "Ecoanalitica",
-    "Finance Minister",
-    "Minister of Finance",
+    "GAESA",
+    "Grupo de Administracion Empresarial",
+    "Grupo de Administración Empresarial",
+    "Gaviota",
+    "CIMEX",
+    "Habaguanex",
+    "FINCIMEX",
+    "Cubanacan",
+    "Cubanacán",
+    "Cubalse",
+    "TRD Caribe",
+    "Tiendas Caribe",
+    "Almest",
+    " AIS ",
+    "ETECSA",
+    "ALIMPORT",
+    "BioCubaFarma",
+    "Central Bank of Cuba",
+    "Banco Central de Cuba",
+    " BCC ",
+    "Banco Financiero Internacional",
+    "Banco Metropolitano",
+    "Banco Nacional de Cuba",
+    "BANDEC",
+    "BPA",
+    "Cubanapetroleo",
+    "CUPET",
+    "Cubapetroleo",
+    "Sherritt",
+    "Mariel ZED",
+    "Mariel Special Development",
+    "Zona Especial de Desarrollo",
+    "ZEDM",
+    "ProCuba",
+    "Ministry of Foreign Trade",
+    "Ministerio del Comercio Exterior",
+    "MINCEX",
+    "Ministry of Tourism",
+    "Ministerio de Turismo",
+    "MINTUR",
     "Ministry of Finance",
-    "Hacienda",
-    "Treasury Minister",
-    "Economy Minister",
-    "Minister of Economy",
-    "SENIAT",
-    "Tax Administration",
-    "FONDEN",
-    "Bank ",  # picks up sanctioned banks; intentional broad sweep
+    "Ministerio de Finanzas",
+    "MFP",
+    "Ministry of Energy and Mines",
+    "Ministerio de Energía y Minas",
+    "MINEM",
+    "Hotel ",
+    "Marina ",
     "Banco ",
-    "Petro ",  # PetroBuena, PetroLera, etc.
-    "Oil and Gas",
-    "Crude Oil",
+    "Petro ",
 )
 
 
 # Editorial overrides for high-profile designations whose OFAC remarks
 # blob is too sparse for the keyword classifier to make the right call
-# (most Treasury remarks are just DOB/cedula/passport — the role/title
-# is in analyst notes, not the SDN listing). Keys match the normalized
-# OFAC raw_name (uppercased, accent-stripped, single-spaced) so we
-# don't have to chase unicode quirks. Add new entries here when the
-# auto-classifier puts a well-known figure in the wrong sector — this
-# is the right place for editorial judgement, not the keyword lists.
+# (most Treasury remarks are just DOB/passport/CI — the role/title is in
+# analyst notes, not the SDN listing). Keys match the normalized OFAC
+# raw_name (uppercased, accent-stripped, single-spaced) so we don't have
+# to chase unicode quirks. Add new entries here when the auto-classifier
+# puts a well-known figure in the wrong sector — this is the right place
+# for editorial judgement, not the keyword lists.
 #
 # Maintenance rule: keep this table small (≤100 entries). If a class
 # of designations is consistently misclassified, fix the keyword lists
 # instead — overrides should be last-resort exceptions, not a way to
 # work around a poor classifier.
 _SECTOR_OVERRIDES: dict[str, str] = {
-    # Military / armed-forces leadership
-    "PADRINO LOPEZ, VLADIMIR":                       "military",  # Defense Minister
-    "REVEROL TORRES, NESTOR LUIS":                   "military",  # Former Commander General GNB
-    "BENAVIDES TORRES, ANTONIO JOSE":                "military",  # Former GNB Commander
-    "BERNAL MARTINEZ, MANUEL GREGORIO":              "military",  # Maj. General, FANB
-    "GONZALEZ LOPEZ, GUSTAVO ENRIQUE":               "military",  # SEBIN Director
-    "LUGO ARMAS, BLADIMIR HUMBERTO":                 "military",  # SEBIN
-    "HERNANDEZ DALA, IVAN RAFAEL":                   "military",  # DGCIM/Honor Guard
-    "RICO RODRIGUEZ, JOSE MIGUEL DOMINGO":           "military",  # GNB
-    "MORAO RODRIGUEZ, RAFAEL ANTONIO":               "military",  # FANB intel
-    "RANGEL RODRIGUEZ, FABIO ENRIQUE":               "military",  # CEOFANB
-    "ZERPA DELGADO, FRANCISCO JOSE":                 "military",  # SEBIN
-    "GUERRERO TORRES, ELVIS EDUARDO":                "military",  # DGCIM
-    "PEREZ AMPUEDA, RICHARD JESUS":                  "military",  # PNB
-    "PEREZ URDANETA, MANUEL EDUARDO":                "military",  # PNB / GNB
-    "OBLITAS RUZZA, ALI ERNESTO":                    "military",  # GNB
+    # Military / armed-forces / intelligence leadership
+    "LOPEZ-CALLEJA HIDALGO-GATO, LUIS ALBERTO":     "military",  # Late head of GAESA — but properly economic; flagged here as reminder
+    "RODRIGUEZ LOPEZ-CALLEJA, LUIS ALBERTO":        "military",  # Same person, alternate ordering
+    "CALLEJAS-VALCARCEL, ALVARO LOPEZ":             "military",  # MINFAR Brigadier
+    "CINTRA FRIAS, LEOPOLDO":                       "military",  # Late MINFAR Minister
+    "RODRIGUEZ DAVILA, JOAQUIN":                    "military",  # MINFAR
+    "VALDES MENENDEZ, RAMIRO":                      "military",  # Vice President, MININT history
+    "ALVAREZ CASAS, LAZARO":                        "military",  # MININT
+    "COLOME IBARRA, ABELARDO":                      "military",  # Former MININT
+    "BERMUDEZ CUTINO, JESUS":                       "military",  # FAR Intelligence
+    "CALLEJAS BARRIENTOS, ROMAN":                   "military",  # MINFAR
+    "OJEDA SARDINAS, GUILLERMO":                    "military",  # Tropas Especiales
 
     # Diplomatic / foreign-affairs
-    "ARREAZA MONTSERRAT, JORGE ALBERTO":             "diplomatic",  # Foreign Minister
-    "MONCADA, SAMUEL REINALDO":                      "diplomatic",  # UN Permanent Rep
-    "RODRIGUEZ DIAZ, JULIAN ISAIAS":                 "diplomatic",  # Former Attorney General / Diplomat
-    "CASTILLO BOLLE, WILLIAM ALFREDO":               "diplomatic",  # Vice-Foreign Minister
-    "PLASENCIA, FELIX RAMON":                        "diplomatic",  # Foreign Minister
+    "RODRIGUEZ PARRILLA, BRUNO EDUARDO":            "diplomatic",  # Foreign Minister
+    "MALMIERCA DIAZ, RODRIGO":                      "diplomatic",  # MINCEX (foreign trade)
+    "CABANAS RODRIGUEZ, JOSE RAMON":                "diplomatic",  # Former Ambassador to US
+    "RODRIGUEZ CAMEJO, ANAYANSI":                   "diplomatic",  # Vice-Foreign Minister
+    "ESCALONA REGUERA, JUAN":                       "diplomatic",  # MINREX
 
-    # Economic / oil / mining / finance
-    "QUEVEDO FERNANDEZ, MANUEL SALVADOR":            "economic",   # Former Oil Minister / PDVSA pres
-    "EL AISSAMI MADDAH, TARECK ZAIDAN":              "economic",   # Oil Minister
-    "MERENTES DIAZ, NELSON JOSE":                    "economic",   # Former BCV President
-    "ALBISINNI SERRANO, ROCCO":                      "economic",   # CENCOEX
-    "BERMUDEZ, MARCELO ENRIQUE":                     "economic",   # Treasury
-    "PEREZ ABAD, MIGUEL ANGEL":                      "economic",   # Industries Minister
-    "CALDERON BERTI, HUMBERTO":                      "economic",   # Former Oil Minister
-    "PIETRI PIETRI, ALEJANDRO ANTONIO":              "economic",   # Banking
+    # Economic / GAESA / state enterprises / banking
+    "GIL FERNANDEZ, ALEJANDRO":                     "economic",   # Former Economy Minister
+    "REGUEIRO ALE, RICARDO":                        "economic",   # Banco Central de Cuba
+    "CABRISAS RUIZ, RICARDO":                       "economic",   # Vice-PM, economic portfolio
+    "MURILLO JORGE, MARINO ALBERTO":                "economic",   # Reform-implementation chief
+    "MARRERO CRUZ, MANUEL":                         "governance", # Prime Minister (governance)
 }
 
 
@@ -300,13 +330,15 @@ def _classify_sector(
     Priority-ordered first-match-wins (military > diplomatic > economic
     > governance fallback). Matches are case-insensitive substring
     searches against `remarks` first, then `raw_name`. We deliberately
-    do NOT use the program code as the dominant signal because OFAC's
-    EO grouping is too coarse (EO 13884 covers everyone in the
-    Government of Venezuela — military, judicial, and political alike).
+    do NOT use the program code as the dominant signal because the Cuba
+    program code (CACR) covers everyone and the Global Magnitsky-on-Cuba
+    listings (EO 13818) cut across military, economic, and governance
+    actors alike.
 
-    Vessels and aircraft are forced to "economic" — they're sanctions-
-    evasion infrastructure attached to PDVSA / gold-trade routes in
-    every observed case.
+    Vessels and aircraft are forced to "economic" — under the Cuba
+    program these are GAESA/Gaviota/CIMEX commercial assets or
+    sanctions-evasion infrastructure attached to the Venezuela-Cuba oil
+    corridor in every observed case.
     """
     if bucket in ("vessels", "aircraft"):
         return "economic"
@@ -323,7 +355,7 @@ def _classify_sector(
 
     # Lowercase once. Match phrases as substrings (with word boundaries
     # baked into the trailing space on ambiguous abbreviations like
-    # "GNB " / " FANB " / " BCV ").
+    # " FAR " / " BCC " / " AIS " / " DSE ").
     haystack = " " + (remarks or "").lower() + " " + (raw_name or "").lower() + " "
 
     def _hits(phrases: tuple[str, ...]) -> bool:
@@ -339,11 +371,11 @@ def _classify_sector(
     if _hits(_ECONOMIC_PHRASES):
         return "economic"
 
-    # Default: governance covers political (Asamblea, governors,
-    # mayors, ministers without a sector keyword), judicial (TSJ
-    # magistrates), and electoral (CNE) officials. This is intentional
+    # Default: governance covers political (Council of State / Council
+    # of Ministers / Asamblea Nacional / PCC), judicial (TSP
+    # magistrates), and electoral (CEN) officials. This is intentional
     # — anything not classified above is a "general government" actor
-    # under EO 13884, which is exactly the governance cluster.
+    # under the CACR, which is exactly the governance cluster.
     return "governance"
 
 
@@ -386,17 +418,19 @@ def _display_name(raw_name: str) -> str:
 def _titlecase_acronym_safe(s: str) -> str:
     """Title-case while preserving short all-caps tokens (initials, IDs).
 
-    OFAC names like 'PDVSA' or 'CITGO' or 'C.A.' must NOT become
-    'Pdvsa' / 'Citgo' / 'C.a.'. Heuristic: tokens of <=4 chars that
-    are all-uppercase and contain a letter stay as-is; everything
-    else gets capwords-style title casing.
+    OFAC names like 'GAESA' or 'CIMEX' or 'FINCIMEX' or 'C.A.' must NOT
+    become 'Gaesa' / 'Cimex' / 'Fincimex' / 'C.a.'. Heuristic: tokens of
+    <=8 chars that are all-uppercase and contain a letter stay as-is;
+    everything else gets capwords-style title casing. The 8-char cap is
+    sized for Cuban-side acronyms such as FINCIMEX, MINFAR, MINREX,
+    MINCEX, GAESA and CIMEX.
     """
     if not s:
         return s
     out = []
     for tok in s.split():
         bare = re.sub(r"[^A-Za-z0-9]", "", tok)
-        if bare.isupper() and 1 < len(bare) <= 4:
+        if bare.isupper() and 1 < len(bare) <= 8:
             out.append(tok)
         elif bare.isdigit():
             out.append(tok)
@@ -422,30 +456,37 @@ def _surname(raw_name: str) -> str:
 # a single canonical field. We deliberately keep this list narrow: only
 # fields with universal investor-relevance get surfaced on the profile
 # page. Unmapped fragments still appear in the raw remarks fallback.
+#
+# Cuba-specific note: Cuban national IDs use the "Carné de Identidad"
+# (carne_id, an 11-digit number encoding YYMMDD + serial). Cuban
+# passports start with letter prefixes (e.g. "L" for ordinary, "D" for
+# diplomatic). Cuban tax IDs are NIT (Número de Identificación
+# Tributaria). REEUP is the state enterprise registration code.
 _REMARKS_PATTERNS: list[tuple[str, re.Pattern]] = [
-    ("dob",          re.compile(r"\bDOB\s+([^;]+)", re.I)),
-    ("pob",          re.compile(r"\bPOB\s+([^;]+)", re.I)),
-    ("nationality",  re.compile(r"\bnationality\s+([^;]+)", re.I)),
-    ("citizenship",  re.compile(r"\bcitizen\s+([^;]+)", re.I)),
-    ("gender",       re.compile(r"\bGender\s+([^;]+)", re.I)),
-    ("cedula",       re.compile(r"\bCedula(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
-    ("passport",     re.compile(r"\bPassport(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
-    ("national_id",  re.compile(r"\bNational ID(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
-    ("rif",          re.compile(r"\bRIF(?:\s+No\.?)?\s+([^;]+)", re.I)),
-    ("imo",          re.compile(r"\bIMO\s+(\d+)", re.I)),
-    ("mmsi",         re.compile(r"\bMMSI\s+(\d+)", re.I)),
-    ("vessel_year",  re.compile(r"\bVessel Year of Build\s+(\d{4})", re.I)),
-    ("vessel_flag",  re.compile(r"\bVessel Flag\s+([^;]+)", re.I)),
-    ("aircraft_model",     re.compile(r"\bAircraft Model\s+([^;]+)", re.I)),
-    ("aircraft_serial",    re.compile(r"\bAircraft Manufacturer'?s? Serial Number(?:\s*\(MSN\))?\s+([^;]+)", re.I)),
-    ("aircraft_tail",      re.compile(r"\bAircraft Tail Number\s+([^;]+)", re.I)),
+    ("dob",            re.compile(r"\bDOB\s+([^;]+)", re.I)),
+    ("pob",            re.compile(r"\bPOB\s+([^;]+)", re.I)),
+    ("nationality",    re.compile(r"\bnationality\s+([^;]+)", re.I)),
+    ("citizenship",    re.compile(r"\bcitizen\s+([^;]+)", re.I)),
+    ("gender",         re.compile(r"\bGender\s+([^;]+)", re.I)),
+    ("carne_id",       re.compile(r"\bCarn[eé](?:\s+de\s+Identidad)?(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
+    ("passport",       re.compile(r"\bPassport(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
+    ("national_id",    re.compile(r"\bNational ID(?:\s+No\.?)?\s+([^;]+?)(?:\s*\([^)]*\))?(?=;|$)", re.I)),
+    ("nit",            re.compile(r"\bNIT(?:\s+No\.?)?\s+([^;]+)", re.I)),
+    ("reeup",          re.compile(r"\bREEUP(?:\s+No\.?)?\s+([^;]+)", re.I)),
+    ("imo",            re.compile(r"\bIMO\s+(\d+)", re.I)),
+    ("mmsi",           re.compile(r"\bMMSI\s+(\d+)", re.I)),
+    ("vessel_year",    re.compile(r"\bVessel Year of Build\s+(\d{4})", re.I)),
+    ("vessel_flag",    re.compile(r"\bVessel Flag\s+([^;]+)", re.I)),
+    ("aircraft_model", re.compile(r"\bAircraft Model\s+([^;]+)", re.I)),
+    ("aircraft_serial",re.compile(r"\bAircraft Manufacturer'?s? Serial Number(?:\s*\(MSN\))?\s+([^;]+)", re.I)),
+    ("aircraft_tail",  re.compile(r"\bAircraft Tail Number\s+([^;]+)", re.I)),
 ]
 
 # `Linked To: NAME OF OTHER ENTITY` — the most useful relationship hint
 # OFAC publishes. Often a vessel is linked to a parent shipping company,
-# or a shell company is linked to its beneficial owner. We surface every
-# such mention as an outbound profile link if the linked name resolves
-# to another SDN profile we render.
+# a hotel to its GAESA / Gaviota holding company, or an individual to
+# the GAESA tree. We surface every such mention as an outbound profile
+# link if the linked name resolves to another SDN profile we render.
 _LINKED_TO_PATTERN = re.compile(r"\bLinked To:\s*([^;]+?)(?=;|$)", re.I)
 
 
@@ -463,7 +504,7 @@ class SDNProfile:
     display_name: str
     bucket: str  # one of ENTITY_BUCKETS
     slug: str
-    program: str  # one of the VENEZUELA-* codes
+    program: str  # one of the CUBA-* codes
     program_label: str
     program_eo_url: Optional[str]
     source_url: str  # OFAC's link to this specific SDN listing
@@ -498,10 +539,12 @@ class SDNProfile:
 # In-process cache
 # ──────────────────────────────────────────────────────────────────────
 #
-# Loading + parsing 410 SDN rows from Postgres on every profile-page
-# render would be ~50–80ms per request for data that only changes when
-# OFAC publishes a new SDN list (typically <1×/day). Cache the entire
-# parsed corpus in-memory keyed by load timestamp; refresh after TTL.
+# Loading + parsing the full Cuba SDN cohort from Postgres on every
+# profile-page render would be a meaningful per-request cost for data
+# that only changes when OFAC publishes a new SDN list (typically
+# <1×/day) or when the State Department updates the Cuba Restricted
+# List (a few times per year). Cache the entire parsed corpus in-memory
+# keyed by load timestamp; refresh after TTL.
 
 _CACHE_TTL_SECONDS = 600  # 10 minutes — a fresh OFAC scrape will repopulate within one cron cycle
 _CACHE_LOCK = threading.Lock()
@@ -538,7 +581,7 @@ def _parse_remarks(blob: str) -> tuple[dict[str, str], list[str]]:
 
 
 def _load_from_db() -> None:
-    """Load + parse every Venezuela-program SDN row into the cache.
+    """Load + parse every Cuba-program SDN row into the cache.
 
     Holds _CACHE_LOCK while writing — readers should call ensure_loaded()
     which acquires the same lock briefly to coordinate.
@@ -572,16 +615,16 @@ def _load_from_db() -> None:
 
             slug = _slugify(raw_name)
             # Slug collisions are possible if two entries share the same
-            # name post-normalization (e.g. two PDVSA subsidiaries called
-            # "PDVSA"). De-collide deterministically by appending a short
-            # uid suffix — preserves URL stability across reloads.
+            # name post-normalization (e.g. two GAESA subsidiaries called
+            # "Gaviota"). De-collide deterministically by appending a
+            # short uid suffix — preserves URL stability across reloads.
             key = (bucket, slug)
             if key in by_bucket_slug:
                 slug = f"{slug}-{(meta.get('uid') or str(r.id))[-6:]}"
                 key = (bucket, slug)
 
             program = (meta.get("program") or "").upper().strip()
-            program_label = PROGRAM_LABELS.get(program, program or "Venezuela-related sanctions")
+            program_label = PROGRAM_LABELS.get(program, program or "Cuba-related sanctions")
             raw_remarks = (meta.get("remarks") or "").strip()
             parsed, linked = _parse_remarks(raw_remarks)
             display = _display_name(raw_name) if bucket == "individuals" else _titlecase_acronym_safe(raw_name)
@@ -694,11 +737,11 @@ def list_all_profiles() -> list[SDNProfile]:
 def family_members(profile: SDNProfile, *, limit: int = 8) -> list[SDNProfile]:
     """Other individuals sharing the same surname (excluding `profile`).
 
-    The Carretero Napolitano case in our GSC data is the canonical
-    motivator — when a researcher lands on Vicente Luis Carretero
-    Napolitano's profile, the most useful next click is to the other
-    sanctioned family members. OFAC publishes them as separate listings
-    but doesn't link them; we do.
+    On the Cuba list the canonical motivator is the López-Calleja /
+    Castro / Valdés family clusters — when a researcher lands on Luis
+    Alberto Rodríguez López-Calleja's profile, the most useful next
+    click is to other GAESA-affiliated family members. OFAC publishes
+    them as separate listings but doesn't link them; we do.
     """
     if not profile.is_individual:
         return []

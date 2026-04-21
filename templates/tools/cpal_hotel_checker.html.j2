@@ -1,0 +1,244 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .quick-chips { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin: 14px 0 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .quick-chips .label { flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .quick-chips a { flex-shrink: 0; display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .quick-chips a:hover { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .picker-block { background: #fafbfd; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 14px 16px; margin: 12px 0 4px; }
+  .picker-block .picker-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 14px; align-items: center; }
+  .picker-block .picker-row + .picker-row { margin-top: 10px; }
+  .picker-block label { font-size: 13px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 1.1px; font-weight: 600; }
+  .picker-block select { width: 100%; padding: 11px 14px; border: 2px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .picker-block select:focus { border-color: var(--sr-blue); outline: none; }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0 10px; color: var(--sr-gray-text); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--sr-gray-light); }
+  .checker-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+  .checker-form input[type=text] { flex: 1 1 280px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .checker-form select { padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 15px; background: var(--white); min-width: 180px; }
+  .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; white-space: nowrap; }
+  .checker-form button:hover { background: var(--sr-blue-dark); }
+  @media (max-width: 540px) {
+    .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
+    .picker-block label { font-size: 12px; }
+  }
+  .result-banner { padding: 14px 18px; margin: 22px 0 14px; border-radius: 3px; }
+  .result-banner.match { background: #fdecea; border-left: 4px solid var(--sr-red); color: #7a1f1a; }
+  .result-banner.clear { background: #e8f5e9; border-left: 4px solid #2e7d32; color: #1b4d1f; }
+  .result-banner h3 { font-family: var(--font-serif); margin: 0; font-size: 18px; }
+  .result-banner p { margin: 4px 0 0; font-size: 14px; }
+  .match-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-red); padding: 14px 18px; margin-bottom: 10px; background: #fff8f7; border-radius: 3px; }
+  .match-card .name { font-weight: 700; color: #7a1f1a; font-family: var(--font-serif); font-size: 17px; }
+  .match-card .meta { font-size: 13px; color: var(--sr-gray-text); margin-top: 4px; }
+  .match-card .addr { font-size: 13px; margin-top: 6px; color: #444; }
+  .match-card .marker-badge { display: inline-block; background: #f5b041; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; margin-left: 8px; }
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 12px 16px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+  .province-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; margin: 16px 0 28px; }
+  .province-grid a { display: block; padding: 10px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; text-decoration: none; color: var(--sr-blue-dark); background: #fafafa; font-size: 14px; }
+  .province-grid a:hover { background: #f0f4fa; border-color: var(--sr-blue); }
+  .province-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
+  .marker-key { background: #f9f9f9; border: 1px solid var(--sr-gray-light); padding: 12px 16px; border-radius: 3px; font-size: 13px; margin: 16px 0; }
+  .marker-key strong { color: #7a1f1a; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Cuba Prohibited Accommodations List Checker</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Compliance tool · Live check against {{ total_entries }} prohibited properties · CACR §515.210
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Cuba Prohibited Hotels &amp; Accommodations Checker (CPAL)
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      Check any Cuban hotel, casa, or resort against the State Department&rsquo;s prohibited list (CPAL). U.S. persons can&rsquo;t lawfully stay at properties on this list &mdash; even via a third-country booking.
+    </p>
+  </header>
+
+  <div class="quick-chips">
+    <span class="label">Popular:</span>
+    <a href="?q=hotel+nacional">Hotel Nacional</a>
+    <a href="?q=iberostar">Iberostar</a>
+    <a href="?q=meli%C3%A1+cohiba">Meliá Cohiba</a>
+    <a href="?q=kempinski">Kempinski</a>
+    <a href="?q=saratoga">Saratoga</a>
+    <a href="?q=parque+central">Parque Central</a>
+  </div>
+
+  <div class="picker-block" id="cpal-picker" data-base="/tools/cuba-prohibited-hotels-checker">
+    <div class="picker-row">
+      <label for="cpal-property">Pick a property</label>
+      <select id="cpal-property" data-param="q" aria-label="Select a property from the full CPAL">
+        <option value="">All {{ total_entries }} prohibited properties &mdash; pick one&hellip;</option>
+        {% for province, props in properties_by_province %}
+        <optgroup label="{{ province }} ({{ props|length }})">
+          {% for p in props %}
+          <option value="{{ p.name }}"{% if query and query == p.name %} selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="cpal-neighborhood">By neighborhood</label>
+      <select id="cpal-neighborhood" data-param="neighborhood" aria-label="Filter CPAL by neighborhood or tourist zone">
+        <option value="">Pick a Cuban tourist neighborhood / zone&hellip;</option>
+        {% for n, c in neighborhood_counts %}
+        <option value="{{ n }}"{% if neighborhood_filter == n %} selected{% endif %}>{{ n }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="cpal-province">By province</label>
+      <select id="cpal-province" data-param="province" aria-label="Filter CPAL by province">
+        <option value="">All provinces</option>
+        {% for p, c in province_counts %}
+        <option value="{{ p }}"{% if province_filter == p %} selected{% endif %}>{{ p }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="or-divider"><span>or type a name</span></div>
+
+  <form class="checker-form" method="get" action="/tools/cuba-prohibited-hotels-checker">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="Type any hotel, casa, or resort name &mdash; e.g. Hotel Nacional, Iberostar Selection Varadero">
+    <button type="submit">Check property</button>
+  </form>
+
+  <div id="cpal-results">
+  {% set scope_label %}{% if neighborhood_filter %} in {{ neighborhood_filter }}{% elif province_filter %} in {{ province_filter }}{% endif %}{% endset %}
+  {% if query or province_filter or neighborhood_filter %}
+    {% if matches and matches|length > 0 %}
+    <div class="result-banner match">
+      <h3>
+        {% if matches|length == 1 %}1 match{% else %}{{ matches|length }} matches{% endif %}{{ scope_label }} &mdash; lodging prohibited (§515.210)
+      </h3>
+    </div>
+    {% for m in matches %}
+    <article class="match-card">
+      <div class="name">
+        {{ m.name }}
+        {% if m.marker == '*' %}<span class="marker-badge">State-controlled &ldquo;casa&rdquo;</span>{% endif %}
+        {% if m.marker == '^' %}<span class="marker-badge">Genuine casa particular</span>{% endif %}
+      </div>
+      <div class="meta">
+        <strong>Province:</strong> {{ m.province }}{% if m.neighborhood %} &middot; <strong>Zone:</strong> {{ m.neighborhood }}{% endif %}
+      </div>
+      <div class="addr">{{ m.address }}</div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="result-banner clear">
+      <h3>No CPAL match{% if query %} for &ldquo;{{ query }}&rdquo;{% endif %}{{ scope_label }}</h3>
+      <p>Still cross-check the <a href="/tools/cuba-restricted-list-checker">CRL</a> (operator may be prohibited) and the <a href="/tools/ofac-cuba-sanctions-checker">OFAC SDN list</a>.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  {% if not query and not province_filter and not neighborhood_filter %}
+  <div class="marker-key">
+    <p><strong>How to read the list:</strong></p>
+    <ul style="margin:6px 0 0 22px;">
+      <li><strong>Plain entry:</strong> a state-owned hotel, hostal, or resort &mdash; categorically prohibited for U.S. lodging.</li>
+      <li><strong>State-controlled &ldquo;casa&rdquo; (* marker):</strong> property marketed as a casa particular but actually owned or controlled by the Cuban government, so it does not qualify as an independent casa.</li>
+      <li><strong>Genuine casa particular (^ marker):</strong> a real privately-owned casa that nevertheless meets CPAL inclusion criteria (e.g. linked to a prohibited entity).</li>
+    </ul>
+  </div>
+  {% endif %}
+  </div>{# /#cpal-results #}
+
+  <div class="disclaimer">
+    <strong>Important:</strong> Cached snapshot of <a href="https://www.state.gov/cuba-sanctions/cuba-prohibited-accommodations-list/" rel="noopener" target="_blank">state.gov &mdash; CPAL</a> (last refreshed {{ refreshed_on }}). The State Department updates the list between our refreshes &mdash; verify with the official source for high-stakes bookings. Not legal advice.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+
+<script>
+(function () {
+  var picker = document.getElementById('cpal-picker');
+  var results = document.getElementById('cpal-results');
+  if (!picker || !results) return;
+  var base = picker.getAttribute('data-base');
+  var inflight = null;
+
+  function buildUrl(param, value) {
+    if (!value) return base;
+    return base + '?' + param + '=' + encodeURIComponent(value);
+  }
+
+  function swap(url) {
+    if (inflight) inflight.abort && inflight.abort();
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    inflight = ctrl;
+    results.setAttribute('aria-busy', 'true');
+    fetch(url, { credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = doc.getElementById('cpal-results');
+        if (fresh) results.innerHTML = fresh.innerHTML;
+        if (history && history.replaceState) {
+          history.replaceState({ cpal: true }, '', url);
+        }
+        results.removeAttribute('aria-busy');
+      })
+      .catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        results.removeAttribute('aria-busy');
+      });
+  }
+
+  // Pickers: change handler swaps results in-place, no scroll, no nav
+  picker.querySelectorAll('select[data-param]').forEach(function (sel) {
+    sel.addEventListener('change', function (e) {
+      e.preventDefault();
+      // Reset the other two pickers so a single filter is active at a
+      // time (matches the server-side semantics — query/neighborhood/
+      // province are mutually exclusive in URL state).
+      picker.querySelectorAll('select[data-param]').forEach(function (other) {
+        if (other !== sel) other.selectedIndex = 0;
+      });
+      swap(buildUrl(sel.getAttribute('data-param'), sel.value));
+    });
+  });
+
+  // Popular-check chips: same swap behavior
+  document.querySelectorAll('.quick-chips a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      // Clear pickers since chips are query-based
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(a.getAttribute('href'));
+    });
+  });
+
+  // Text-search form: intercept submit so we don't navigate
+  var form = document.querySelector('form.checker-form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = form.querySelector('input[name=q]');
+      var v = input ? input.value.trim() : '';
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(buildUrl('q', v));
+    });
+  }
+})();
+</script>
+{% endblock %}

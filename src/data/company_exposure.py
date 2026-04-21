@@ -1,37 +1,44 @@
 """
-Public-company → Venezuela-exposure assessment engine.
+Public-company → Cuba-exposure assessment engine.
 
 Powers two surfaces:
-  1.  Static-style landing pages at /companies/<slug>/venezuela-exposure
+  1.  Static-style landing pages at /companies/<slug>/cuba-exposure
       (one per S&P 500 ticker — long-tail SEO bet).
   2.  An interactive lookup tool at
-      /tools/public-company-venezuela-exposure-check that resolves a
+      /tools/public-company-cuba-exposure-check that resolves a
       free-text query to one of those pages and surfaces a preview.
 
 For each company we synthesize an `ExposureReport` from four signals:
 
-  - **Curated overlay** (`src/data/curated_venezuela_exposure.py`) —
+  - **Curated overlay** (`src/data/curated_cuba_exposure.py`) —
     hand-maintained ground truth for the ~30 companies with non-trivial
-    exposure. When a curated row exists, it dominates the headline
-    classification and is the source of the analyst-style summary.
+    Cuba exposure (mostly air carriers, cruise lines, telecom roaming
+    partners, ag/pharma TSRA exporters, and Helms-Burton Title III
+    defendants/plaintiffs). When a curated row exists, it dominates the
+    headline classification and is the source of the analyst-style
+    summary.
 
-  - **OFAC SDN matches** — fuzzy match the company's short name AND
-    every curated subsidiary string against the live OFAC SDN list (via
-    `src/data/sdn_profiles.py`). A match here is the strongest possible
-    hit — it means the entity itself, or one of its subsidiaries, is
-    Treasury-blocked.
+  - **OFAC SDN + Cuba Restricted List matches** — fuzzy match the
+    company's short name AND every curated subsidiary string against
+    the live OFAC SDN list and the State Department's Cuba Restricted
+    List (via `src/data/sdn_profiles.py`). A match here is the strongest
+    possible hit — it means the entity itself, or one of its
+    subsidiaries / counterparties, is Treasury-blocked or barred from
+    direct US-person dealings.
 
-  - **Internal corpus mentions** — Federal Register notices and analyzed
-    news articles in our own DB that namedrop the company alongside
-    Venezuela-relevant context. Cheap and high-precision; we already
-    rank these for relevance.
+  - **Internal corpus mentions** — Federal Register notices and
+    analyzed news articles in our own DB that namedrop the company
+    alongside Cuba-relevant context (CACR amendments, OFAC GLs,
+    Helms-Burton Title III filings, ZEDM concessions). Cheap and
+    high-precision; we already rank these for relevance.
 
-  - **EDGAR full-text mentions** — recent SEC filings (10-K, 10-Q, 8-K,
-    20-F, 6-K) where the company itself disclosed a Venezuela / PdVSA /
-    CITGO mention. This is the killer signal for "did the company tell
-    its shareholders it has exposure?". Cached to disk for 30 days
-    because EDGAR is rate-limited and we don't want a cold page render
-    to round-trip to sec.gov.
+  - **EDGAR full-text mentions** — recent SEC filings (10-K, 10-Q,
+    8-K, 20-F, 6-K) where the company itself disclosed a Cuba / CACR /
+    ETECSA / ALIMPORT / Helms-Burton mention. This is the killer
+    signal for "did the company tell its shareholders it has Cuba
+    exposure?". Cached to disk for 30 days because EDGAR is
+    rate-limited and we don't want a cold page render to round-trip
+    to sec.gov.
 
 The final classification is one of:
     "direct"      — operating presence, JVs, services, current OFAC license
@@ -64,7 +71,7 @@ from pathlib import Path
 from typing import Optional
 
 from src.config import settings
-from src.data.curated_venezuela_exposure import CuratedExposure, get_curated, known_subsidiary_terms
+from src.data.curated_cuba_exposure import CuratedExposure, get_curated, known_subsidiary_terms
 from src.data.sp500_companies import SP500Company, find_company, list_sp500_companies, slugify_company
 
 logger = logging.getLogger(__name__)
@@ -100,7 +107,7 @@ class CorpusMention:
 
 @dataclass(frozen=True)
 class EdgarMention:
-    """A Venezuela-keyword hit in one of the company's SEC filings."""
+    """A Cuba-keyword hit in one of the company's SEC filings."""
     form: str
     filed: str
     accession_no: str
@@ -178,16 +185,16 @@ def _normalize(s: str) -> str:
 
 
 # Single-word strings that, on their own, would generate false positives
-# against OFAC names from any sector (Venezuelan towns, common surnames,
+# against OFAC names from any sector (Cuban municipios, common surnames,
 # generic corporate words). When a company's short name reduces to one
 # of these, we skip the OFAC pass to avoid garbage matches.
 _SDN_BLOCK_TERMS: frozenset[str] = frozenset({
-    "general", "international", "company", "corp", "venezuela",
-    "national", "global", "industries", "americas", "petroleum",
-    "energy", "bank", "capital", "communications", "service",
-    "services", "group", "holdings", "trust", "first", "united",
-    "american", "western", "eastern", "pacific", "atlantic", "south",
-    "north",
+    "general", "international", "company", "corp", "cuba", "cuban",
+    "havana", "habana", "national", "global", "industries", "americas",
+    "petroleum", "energy", "bank", "capital", "communications",
+    "service", "services", "group", "holdings", "trust", "first",
+    "united", "american", "western", "eastern", "pacific", "atlantic",
+    "south", "north", "caribbean",
 })
 
 
@@ -225,7 +232,7 @@ def _scan_sdn_for_term(term: str, *, source_label: str, min_chars: int = 4) -> l
             out.append(SDNMatch(
                 name=p.display_name,
                 bucket=p.bucket,
-                program=p.program or "Venezuela-related",
+                program=p.program or "Cuba-related",
                 profile_url=p.url_path,
                 matched_term=source_label,
                 score=score,
@@ -384,13 +391,13 @@ def _fetch_edgar_mentions(company: SP500Company, *, network: bool, limit: int = 
         return [], 0, False
 
     try:
-        from src.analysis.edgar_search import search_company_venezuela_filings
+        from src.analysis.edgar_search import search_company_cuba_filings
     except Exception as exc:
         logger.warning("edgar_search import failed: %s", exc)
         return [], 0, False
 
     try:
-        raw_hits = search_company_venezuela_filings(
+        raw_hits = search_company_cuba_filings(
             company_name=company.short_name,
             cik=cik or None,
             limit=limit,
@@ -454,75 +461,80 @@ def _classify(
         first = sdn_matches[0]
         headline = (
             f"{name} is connected to an OFAC-blocked entity ({first.name}) "
-            "on the Venezuela SDN list."
+            "on the Cuba SDN program or Cuba Restricted List."
         )
         summary = (
-            f"Caracas Research detected {len(sdn_matches)} match"
+            f"Cuban Insights detected {len(sdn_matches)} match"
             f"{'es' if len(sdn_matches) != 1 else ''} between {name} or its "
             "operating subsidiaries and the US Treasury Office of Foreign Assets "
-            "Control (OFAC) Specially Designated Nationals (SDN) list under the "
-            "Venezuela sanctions program. Match is by name overlap and may be "
-            "coincidental; verify before relying on it for compliance decisions."
+            "Control (OFAC) Specially Designated Nationals (SDN) list / State "
+            "Department Cuba Restricted List under the Cuba sanctions program. "
+            "Match is by name overlap and may be coincidental; verify before "
+            "relying on it for compliance decisions."
         )
         return level, headline, summary
 
     if edgar_mentions:
         # Filing disclosure is medium-strong; default to "indirect"
-        # unless they're filing 10-Ks talking about Venezuela operations.
+        # unless they're filing 10-Ks talking about Cuba operations.
         forms = {m.form for m in edgar_mentions}
         level = "indirect" if forms & {"10-K", "20-F"} else "historical"
         headline = (
-            f"{name} has disclosed Venezuela-related items in {len(edgar_mentions)} "
+            f"{name} has disclosed Cuba-related items in {len(edgar_mentions)} "
             f"recent SEC filing{'s' if len(edgar_mentions) != 1 else ''}."
         )
         summary = (
             f"{name} has filed {len(edgar_mentions)} recent SEC document"
             f"{'s' if len(edgar_mentions) != 1 else ''} ({', '.join(sorted(forms))}) "
-            "containing Venezuela / PdVSA / CITGO references. This is the company's "
-            "own disclosure and is the strongest evidence of material exposure short "
-            "of an OFAC designation. See the SEC filings section below for excerpts."
+            "containing Cuba / CACR / ETECSA / ALIMPORT / Helms-Burton references. "
+            "This is the company's own disclosure and is the strongest evidence of "
+            "material exposure short of an OFAC designation. See the SEC filings "
+            "section below for excerpts."
         )
         return level, headline, summary
 
     if corpus_mentions:
         level = "historical"
         headline = (
-            f"No active sanctions or filings link {name} to Venezuela today, "
+            f"No active sanctions or filings link {name} to Cuba today, "
             "but the company appears in our news corpus."
         )
         summary = (
-            f"Caracas Research has indexed {len(corpus_mentions)} analyzed news "
+            f"Cuban Insights has indexed {len(corpus_mentions)} analyzed news "
             "article" + ("s" if len(corpus_mentions) != 1 else "") +
-            f" or Federal Register notice mentioning {name} alongside Venezuelan context. "
+            f" or Federal Register notice mentioning {name} alongside Cuban context. "
             "Most S&P 500 companies in this bucket have only incidental exposure; review "
             "the citations below to judge materiality."
         )
         return level, headline, summary
 
-    # No signals at all — the most common, and the answer the analyst
-    # actually wants. We frame it as a positive "no exposure on the
-    # public record" so the page still answers the search query.
+    # No signals at all — and for Cuba this is the OVERWHELMING majority
+    # of S&P 500 companies, because the embargo prohibits most US-person
+    # dealings with the island. We frame it as a positive "no exposure
+    # on the public record" so the page still answers the search query.
     level = "unknown"
-    headline = f"{name} has no Venezuela exposure on the public record."
+    headline = f"{name} has no Cuba exposure on the public record."
     summary = (
         f"As of this scan, {name} (NYSE/NASDAQ: {company.ticker}) has no entries "
-        "on the OFAC Venezuela SDN list, no Venezuela-related disclosures we have "
-        "indexed in its recent SEC filings, and no Caracas-corpus news mentions. "
-        "This is consistent with no operational, financial, or compliance exposure "
-        "to Venezuela. Always re-verify against primary sources before relying on "
-        "this as a compliance answer."
+        "on the OFAC Cuba SDN program or the State Department Cuba Restricted "
+        "List, no Cuba-related disclosures we have indexed in its recent SEC "
+        "filings, and no Cuban-Insights-corpus news mentions. This is consistent "
+        "with no operational, financial, or compliance exposure to Cuba — the "
+        "default outcome under the Cuban Assets Control Regulations (CACR). "
+        "Always re-verify against primary sources before relying on this as a "
+        "compliance answer."
     )
     return level, headline, summary
 
 
 def _curated_headline(name: str, level: str) -> str:
     table = {
-        "direct":     f"{name} has direct Venezuela exposure documented on the public record.",
-        "indirect":   f"{name} has indirect Venezuela exposure via subsidiaries or counterparties.",
-        "historical": f"{name} has historical Venezuela exposure that has been wound down or written off.",
-        "none":       f"{name} has no current Venezuela exposure on the public record.",
+        "direct":     f"{name} has direct Cuba exposure documented on the public record.",
+        "indirect":   f"{name} has indirect Cuba exposure via subsidiaries or counterparties.",
+        "historical": f"{name} has historical Cuba exposure that has been wound down or written off.",
+        "none":       f"{name} has no current Cuba exposure on the public record.",
     }
-    return table.get(level, f"{name} appears on the Caracas Research Venezuela exposure register.")
+    return table.get(level, f"{name} appears on the Cuban Insights Cuba exposure register.")
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -603,7 +615,7 @@ class CompanyIndexRow:
 
     @property
     def url_path(self) -> str:
-        return f"/companies/{self.slug}/venezuela-exposure"
+        return f"/companies/{self.slug}/cuba-exposure"
 
 
 def list_company_index_rows(*, include_sdn_scan: bool = True) -> list[CompanyIndexRow]:
@@ -645,7 +657,7 @@ def companies_for_sitemap() -> list[dict]:
         out.append({
             "ticker": c.ticker,
             "slug": c.slug,
-            "url_path": f"/companies/{c.slug}/venezuela-exposure",
+            "url_path": f"/companies/{c.slug}/cuba-exposure",
         })
     return out
 

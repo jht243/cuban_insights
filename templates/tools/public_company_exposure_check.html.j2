@@ -1,15 +1,16 @@
 {#
-  /tools/public-company-venezuela-exposure-check
+  /tools/public-company-cuba-exposure-check
 
   Interactive lookup. The user types a company name (or ticker), we
   resolve it against the S&P 500 list, build the exposure report
   in-process, and either (a) preview the answer with a deep-link to
-  the canonical /companies/<slug>/venezuela-exposure page, or (b) tell
+  the canonical /companies/<slug>/cuba-exposure page, or (b) tell
   them we don't have that ticker indexed and offer the OFAC SDN
   checker as a generic fallback.
 #}
 {% extends "_base.html.j2" %}
 {% from "_cluster_nav.html.j2" import cluster_nav %}
+{% from "_related_tools.html.j2" import related_tools_nav %}
 
 {% block head_extra %}
 <style>
@@ -56,37 +57,34 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
     <a href="/tools">Tools</a><span>/</span>
-    <span>Public Company Venezuela Exposure Check</span>
+    <span>Public Company Cuba Exposure Check</span>
   </nav>
 
   <header style="margin: 16px 0 20px;">
     <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
-      Free compliance tool · Backed by OFAC + SEC EDGAR + the Caracas Research corpus
+      Free compliance tool · Backed by OFAC + SEC EDGAR + the Cuban Insights corpus
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Public Company Venezuela Exposure Check
+      Public Company Cuba Exposure Check
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Type any S&amp;P 500 company name or ticker. We check the OFAC
-      Venezuela SDN list, the company's recent SEC filings, and our
-      Federal Register / news corpus, and return a single actionable
-      answer with citation links.
+      Type any S&amp;P 500 name or ticker for a single answer on Cuba exposure &mdash; OFAC SDN, the CRL, recent SEC filings (incl. Helms-Burton Title III), and news, all in one place.
     </p>
   </header>
 
-  <form class="tool-form" method="get" action="/tools/public-company-venezuela-exposure-check">
-    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. Chevron, Apple, JPM, BLK" autofocus required>
+  <form class="tool-form" method="get" action="/tools/public-company-cuba-exposure-check">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. Marriott, Carnival, AAL, MELI" autofocus required>
     <button type="submit">Check exposure</button>
   </form>
 
   <div class="examples">
     Try:
-    <a href="?q=chevron">Chevron</a>
-    <a href="?q=halliburton">Halliburton</a>
-    <a href="?q=goldman">Goldman Sachs</a>
+    <a href="?q=marriott">Marriott</a>
+    <a href="?q=carnival">Carnival</a>
+    <a href="?q=american airlines">American Airlines</a>
     <a href="?q=AAPL">Apple</a>
-    <a href="?q=simon property">Simon Property</a>
-    <a href="?q=franklin resources">Franklin Resources</a>
+    <a href="?q=western union">Western Union</a>
+    <a href="?q=meli">MercadoLibre</a>
   </div>
 
   {% if query %}
@@ -123,8 +121,8 @@
         </div>
         {% endif %}
 
-        <a class="cta" href="/companies/{{ report.company.slug }}/venezuela-exposure">
-          See the full {{ report.company.short_name }} Venezuela exposure profile →
+        <a class="cta" href="/companies/{{ report.company.slug }}/cuba-exposure">
+          See the full {{ report.company.short_name }} Cuba exposure profile →
         </a>
       </article>
     {% else %}
@@ -132,16 +130,16 @@
         <strong>{{ query }}</strong> isn't on our S&amp;P 500 register
         (we publish one page per S&amp;P 500 ticker — about 500 names).
         Try the broader
-        <a href="/tools/ofac-venezuela-sanctions-checker?q={{ query|urlencode }}">OFAC sanctions checker</a>
+        <a href="/tools/ofac-cuba-sanctions-checker?q={{ query|urlencode }}">OFAC sanctions checker</a>
         for a name-only screen, or check the
-        <a href="https://efts.sec.gov/LATEST/search-index?q=%22{{ query|urlencode }}%22+Venezuela" rel="nofollow">SEC EDGAR full-text search</a>.
+        <a href="https://efts.sec.gov/LATEST/search-index?q=%22{{ query|urlencode }}%22+Cuba" rel="nofollow">SEC EDGAR full-text search</a>.
       </div>
     {% endif %}
   {% endif %}
 
   {% if popular %}
   <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 8px;">
-    Most-checked S&amp;P 500 Venezuela exposure pages
+    Most-checked S&amp;P 500 Cuba exposure pages
   </h2>
   <ul class="quick-list">
     {% for p in popular %}
@@ -154,19 +152,10 @@
   {% endif %}
 
   <div class="disclaimer">
-    <strong>Important:</strong> This tool combines fuzzy SDN matching, SEC
-    EDGAR full-text search, and our internal news corpus. It does NOT
-    perform full ownership-chain analysis (the OFAC 50% Rule), check
-    non-SDN sectoral lists, or substitute for a vetted commercial
-    sanctions-screening provider. For high-stakes counterparties,
-    retain qualified sanctions counsel.
+    <strong>Important:</strong> Combines fuzzy SDN matching, EDGAR full-text search, and our news corpus. Does NOT run the OFAC 50% Rule ownership chain or substitute for vetted commercial screening. Retain sanctions counsel on high-stakes counterparties.
   </div>
 
-  <p style="font-size:12px; color:var(--sr-gray-text); margin-bottom:32px;">
-    See related: <a href="/companies">browse the full S&amp;P 500 Venezuela exposure register</a> ·
-    <a href="/tools/ofac-venezuela-sanctions-checker">name-only OFAC screening</a> ·
-    <a href="/tools/ofac-venezuela-general-licenses">general license lookup</a>.
-  </p>
+  {{ related_tools_nav(related_tools_ctx) }}
 
   {{ cluster_nav(cluster_ctx) }}
 </section>

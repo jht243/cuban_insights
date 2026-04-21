@@ -18,7 +18,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a>
     <span>›</span>
-    <a href="/sanctions-tracker">OFAC Venezuela Sanctions</a>
+    <a href="/sanctions-tracker">OFAC Cuba Sanctions</a>
     <span>›</span>
     <a href="/sanctions/{{ profile.bucket }}">{{ profile.bucket|capitalize }}</a>
     <span>›</span>
@@ -37,9 +37,9 @@
       {% endif %}
       <h1>{{ profile.display_name }}</h1>
       <p class="subtitle">
-        OFAC Venezuela Sanctions Profile —
+        OFAC Cuba Sanctions Profile —
         {{ profile.category_singular|capitalize }} listed under
-        {{ profile.program or 'Venezuela-related sanctions' }}
+        {{ profile.program or 'Cuba-related sanctions' }}
       </p>
       <div class="meta">
         <span><strong>Status:</strong> Active SDN designation</span>
@@ -127,7 +127,7 @@
       <h2>Other sanctioned individuals with the same surname</h2>
       <p>
         These individuals share the surname <em>{{ profile.raw_name.split(',')[0]|title }}</em>
-        and are also listed on OFAC's Venezuela-related SDN. The relationship is
+        and are also listed on OFAC's Cuba-related SDN. The relationship is
         inferred from naming convention only — not from any explicit OFAC family
         designation — but the cluster is a useful diligence signal.
       </p>
@@ -180,32 +180,32 @@
 
       <h2>Useful tools and explainers</h2>
       <ul>
-        <li><a href="/tools/ofac-venezuela-sanctions-checker">Search the full Venezuela SDN list</a> — paste any name to see if it's currently designated.</li>
-        <li><a href="/tools/ofac-venezuela-general-licenses">OFAC General Licenses for Venezuela</a> — the active GLs that authorize otherwise-prohibited transactions.</li>
-        <li><a href="/explainers/what-are-ofac-sanctions-on-venezuela">What are OFAC sanctions on Venezuela? (plain-English guide)</a></li>
+        <li><a href="/tools/ofac-cuba-sanctions-checker">Search the full Cuba SDN list</a> — paste any name to see if it's currently designated.</li>
+        <li><a href="/tools/ofac-cuba-general-licenses">OFAC General Licenses for Cuba (CACR §515.560–.578)</a> — the active GLs that authorize otherwise-prohibited transactions.</li>
+        <li><a href="/explainers/what-are-ofac-sanctions-on-cuba">What are OFAC sanctions on Cuba? (plain-English guide)</a></li>
         <li><a href="{{ profile.sector_url_path }}">All currently sanctioned {{ profile.sector_label|lower }}</a> — the sector cohort {{ profile.display_name }} is part of.</li>
-        <li><a href="/sanctions/by-sector">OFAC Venezuela SDN list by sector</a> — pivot the full corpus by military, economic, diplomatic, or governance.</li>
-        <li><a href="/sanctions-tracker">Browse all {{ stats.total }} active Venezuela-program SDN designations</a></li>
+        <li><a href="/sanctions/by-sector">OFAC Cuba SDN list by sector</a> — pivot the full corpus by military, economic, diplomatic, or governance.</li>
+        <li><a href="/sanctions-tracker">Browse all {{ stats.total }} active Cuba-program SDN designations</a></li>
       </ul>
     </div>
 
     {# Sector backlink — bridges the sanctions cluster to the investment
        cluster when the program code maps cleanly to a sector page.
-       e.g. an EO 13850 designation (gold sector) gets a link into
-       /sectors/mining; readers researching a sanctioned individual can
-       jump to the sector context with one click, and Google sees the
-       descriptive cross-cluster anchor. #}
+       e.g. a GAESA-linked entity designation (state-enterprise sector)
+       gets a link into /sectors/state-enterprise; readers researching a
+       sanctioned individual can jump to the sector context with one click,
+       and Google sees the descriptive cross-cluster anchor. #}
     {% if sector_link %}
     <div class="source-citation" style="background:#eef2f7;border-left-color:#002b5e;">
       <strong>{{ profile.display_name }}</strong> was designated under {{ profile.program }},
-      a Venezuela-sector program. For sector-level context — regulatory framework,
+      a Cuba-sector program. For sector-level context — regulatory framework,
       OFAC pathways, and current deal flow — see
       <a href="{{ sector_link.path }}"><strong>{{ sector_link.anchor }}</strong></a>.
     </div>
     {% endif %}
 
     <div class="related">
-      <h3>Other {{ profile.bucket }} on the Venezuela SDN list</h3>
+      <h3>Other {{ profile.bucket }} on the Cuba SDN list</h3>
       <ul>
         {% for sib in siblings %}
         <li><a href="{{ sib.url_path }}">{{ sib.display_name }}</a> <small>— {{ sib.program }}</small></li>

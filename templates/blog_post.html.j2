@@ -22,8 +22,8 @@
       <span><strong>Published</strong> {{ post.published_date.strftime('%B %d, %Y') }}</span>
       {% if post.reading_minutes %}<span><strong>Read</strong> {{ post.reading_minutes }} min</span>{% endif %}
       {% if post.word_count %}<span>{{ post.word_count }} words</span>{% endif %}
-      <span><strong>By</strong> Caracas Research</span>
-      <span style="margin-left:auto;">{{ share_button('https://caracasresearch.com/briefing/' ~ post.slug, post.title) }}</span>
+      <span><strong>By</strong> Cuban Insights</span>
+      <span style="margin-left:auto;">{{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post.title) }}</span>
     </div>
   </header>
 
@@ -45,13 +45,13 @@
     <strong>Primary source:</strong>
     <a href="{{ post.canonical_source_url }}" rel="nofollow noopener" target="_blank">{{ post.canonical_source_url }}</a>
     — referenced for fact-checking; this analysis is independent commentary by the
-    Caracas Research editorial team.
+    Cuban Insights editorial team.
   </div>
   {% endif %}
 
   <div style="display:flex; align-items:center; gap:14px; margin: 24px 0 8px; padding: 14px 0; border-top: 1px solid var(--sr-gray-light);">
     <span style="font-size:13px; color: var(--sr-gray-text);">Found this useful?</span>
-    {{ share_button('https://caracasresearch.com/briefing/' ~ post.slug, post.title, label='Share analysis') }}
+    {{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post.title, label='Share analysis') }}
   </div>
 
   {% if related %}

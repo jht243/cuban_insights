@@ -20,7 +20,7 @@ import os
 import sys
 from datetime import datetime
 
-os.environ.setdefault("SITE_URL", "https://caracasresearch.com")
+os.environ.setdefault("SITE_URL", "https://cubaninsights.com")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -38,15 +38,16 @@ STATIC_PATHS: tuple[str, ...] = (
     "/",
     "/briefing",
     "/sanctions-tracker",
-    "/invest-in-venezuela",
+    "/invest-in-cuba",
     "/tools",
-    "/tools/caracas-safety-by-neighborhood",
-    "/tools/venezuela-visa-requirements",
-    "/tools/venezuela-investment-roi-calculator",
-    "/tools/bolivar-usd-exchange-rate",
-    "/tools/ofac-venezuela-sanctions-checker",
-    "/tools/ofac-venezuela-general-licenses",
-    "/tools/public-company-venezuela-exposure-check",
+    "/tools/havana-safety-by-neighborhood",
+    "/tools/cuba-visa-requirements",
+    "/tools/cuba-investment-roi-calculator",
+    "/tools/eltoque-trmi-rate",
+    "/tools/ofac-cuba-sanctions-checker",
+    "/tools/ofac-cuba-general-licenses",
+    "/tools/public-company-cuba-exposure-check",
+    "/tools/sec-edgar-cuba-impairment-search",
     "/explainers",
     "/travel",
     "/calendar",
@@ -87,9 +88,10 @@ def collect_urls() -> list[tuple[str, str, int | None]]:
     finally:
         db.close()
 
-    # Per-SDN profile pages — every OFAC Venezuela-program designation
-    # is its own indexable URL. We submit them all so Bing/Yandex
-    # discover the corpus immediately rather than waiting on link-walking.
+    # Per-SDN profile pages — every OFAC Cuba-program designation
+    # (CACR / Cuba Restricted List / EO 13818 Magnitsky on Cubans) is
+    # its own indexable URL. We submit them all so Bing/Yandex discover
+    # the corpus immediately rather than waiting on link-walking.
     try:
         from src.data.sdn_profiles import list_all_profiles
         for p in list_all_profiles():
@@ -97,7 +99,7 @@ def collect_urls() -> list[tuple[str, str, int | None]]:
     except Exception as exc:
         print(f"WARN: could not enumerate SDN profiles for IndexNow: {exc}")
 
-    # Per-company Venezuela-exposure pages — one per S&P 500 ticker.
+    # Per-company Cuba-exposure pages — one per S&P 500 ticker.
     # Same rationale as SDN profiles: long-tail SEO bet that only pays
     # off if Bing/Yandex see the URLs early. Use the dedicated helper
     # so this stays in lock-step with /sitemap.xml.

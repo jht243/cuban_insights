@@ -25,8 +25,8 @@
     <div class="meta">
       <span><strong>Last updated</strong> {{ page.last_generated_at.strftime('%B %d, %Y') }}</span>
       {% if page.word_count %}<span>{{ page.word_count }}-word guide</span>{% endif %}
-      <span><strong>Editor</strong> Caracas Research</span>
-      <span style="margin-left:auto;">{{ share_button('https://caracasresearch.com' ~ page.canonical_path, page.title) }}</span>
+      <span><strong>Editor</strong> Cuban Insights</span>
+      <span style="margin-left:auto;">{{ share_button('https://cubaninsights.com' ~ page.canonical_path, page.title) }}</span>
     </div>
   </header>
 
@@ -55,8 +55,8 @@
   </div>
 
   {# Cross-cluster bridge: when a sector page maps cleanly to one or
-     more OFAC programs (gold sector → EO 13850, gov't block → EO 13884
-     etc.), surface the actual sanctioned actors in that sector with
+     more OFAC programs (GAESA / state-enterprise block → CACR + Cuba
+     Restricted List, etc.), surface the actual sanctioned actors in that sector with
      deep links into the per-name SDN profile pages. This both helps
      readers (sector context → who's actually sanctioned in it) AND
      gives Google a rich, descriptive set of internal links from the
@@ -79,7 +79,7 @@
       {% endfor %}
     </ul>
     <p style="margin-top:14px;font-size:14px;">
-      <a href="/sanctions-tracker"><strong>Browse all OFAC Venezuela-program designations →</strong></a>
+      <a href="/sanctions-tracker"><strong>Browse all OFAC Cuba-program designations →</strong></a>
     </p>
   </section>
   {% endif %}

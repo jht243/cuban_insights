@@ -8,7 +8,7 @@ Reads the service-account JSON from one of:
   GOOGLE_INDEXING_SA_FILE        (env var, path to JSON file)
 
 Then mints an access token and POSTs a single URL_UPDATED notification
-for the URL passed via --url (default: https://caracasresearch.com/).
+for the URL passed via --url (default: https://cubaninsights.com/).
 
 Exit codes:
     0  success
@@ -75,7 +75,7 @@ def main() -> None:
     parser.add_argument("--key-file", help="Path to the service-account JSON key file")
     parser.add_argument(
         "--url",
-        default="https://caracasresearch.com/",
+        default="https://cubaninsights.com/",
         help="URL to send a URL_UPDATED notification for",
     )
     parser.add_argument(

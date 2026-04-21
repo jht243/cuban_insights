@@ -1,14 +1,14 @@
 {#
-  /tools/sec-edgar-venezuela-impairment-search
+  /tools/sec-edgar-cuba-impairment-search
 
-  Pre-canned SEC EDGAR full-text search for Venezuela / PDVSA / impairment
-  / contingent-liability disclosures across S&P 500 filers.
+  Pre-canned SEC EDGAR full-text search for Cuba / Helms-Burton / CACR /
+  impairment / contingent-liability disclosures across S&P 500 filers.
 
   This is the tool wrapping for the same engine that powers the
-  per-company "Venezuela exposure" landing pages. It targets the
-  high-intent GSC query "sec edgar venezuela or sanctions or contingent
-  liabilities or impairment or pdvsa" which currently lands users on
-  generic /companies pages with poor relevance.
+  per-company "Cuba exposure" landing pages. It targets the
+  high-intent GSC query "sec edgar cuba or sanctions or contingent
+  liabilities or impairment or helms-burton" which currently lands users
+  on generic /companies pages with poor relevance.
 
   Sections (this order mirrors the JSON-LD breadcrumb):
     1. Hero + custom-search box (free-text → company landing page).
@@ -18,6 +18,7 @@
 #}
 {% extends "_base.html.j2" %}
 {% from "_cluster_nav.html.j2" import cluster_nav %}
+{% from "_related_tools.html.j2" import related_tools_nav %}
 
 {% block head_extra %}
 <style>
@@ -67,7 +68,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
     <a href="/tools">Tools</a><span>/</span>
-    <span>SEC EDGAR Venezuela / PDVSA / Impairment Search</span>
+    <span>SEC EDGAR Cuba / Helms-Burton / Impairment Search</span>
   </nav>
 
   <header style="margin: 16px 0 20px;">
@@ -75,58 +76,31 @@
       Compliance &amp; research tool · Updated {{ today_human }}
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      SEC EDGAR Venezuela &amp; PDVSA Disclosure Search
+      SEC EDGAR Cuba &amp; Helms-Burton Disclosure Search
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Pre-canned full-text searches across the SEC EDGAR corpus for any
-      mention of Venezuela, PDVSA, CITGO, impairment charges, contingent
-      liabilities, or sanctions exposure in 10-K, 20-F, 10-Q, and 8-K
-      filings.
+      One-click EDGAR full-text searches for Cuba, Helms-Burton Title III, CACR, GAESA, impairment, and contingent-liability disclosures across 10-K, 20-F, 10-Q, and 8-K filings.
     </p>
   </header>
 
-  <div class="edgar-hero">
-    <h2>What this does</h2>
-    <p>
-      SEC EDGAR's full-text search is free and powerful but the UI is
-      hostile to the questions analysts actually ask. This tool packages
-      seven of the most common Venezuela-research queries — written by
-      someone who has spent too many hours in <code>efts.sec.gov</code> —
-      so you can launch them with one click, with the right form filter
-      and date window already applied.
-    </p>
-    <p>
-      Each preset opens directly on EDGAR. If you want a sourced,
-      pre-analysed answer for a specific S&amp;P 500 ticker instead, type
-      the company below — we'll route you to its Venezuela-exposure
-      profile page (OFAC SDN match, EDGAR scan, news corpus, all in one
-      place).
-    </p>
-  </div>
-
   {# ── Custom company lookup ─────────────────────────────────────── #}
   <h2 id="company-lookup">Look up a specific S&amp;P 500 company</h2>
-  <p style="font-size:14px;color:var(--sr-dark-text);">
-    Type a name (e.g. <em>Chevron</em>, <em>Halliburton</em>) or ticker
-    (<em>CVX</em>, <em>HAL</em>, <em>SLB</em>). We resolve to the
-    canonical Venezuela-exposure profile for that ticker, which already
-    includes the EDGAR full-text scan results inline.
+  <p style="font-size:14px;color:var(--sr-dark-text); margin: 4px 0 8px;">
+    Type a name or ticker &mdash; we&rsquo;ll route you to its full Cuba-exposure profile (OFAC + EDGAR + news in one place).
   </p>
   <form method="get"
-        action="/tools/public-company-venezuela-exposure-check"
+        action="/tools/public-company-cuba-exposure-check"
         class="edgar-search">
     <input type="text" name="q"
-           placeholder="Chevron, Halliburton, CVX, SLB, HAL…"
+           placeholder="Marriott, Carnival, MAR, CCL, AAL…"
            autocomplete="off" required />
     <button type="submit">Open exposure profile →</button>
   </form>
 
   {# ── Pre-canned EDGAR search presets ───────────────────────────── #}
   <h2 id="presets">Pre-canned EDGAR research queries</h2>
-  <p style="font-size:14px;color:var(--sr-dark-text);">
-    Each card below opens an SEC EDGAR full-text search with the query,
-    form types, and date window already filled in. You can edit any of
-    them on EDGAR's UI once it loads.
+  <p style="font-size:14px;color:var(--sr-dark-text); margin: 4px 0 14px;">
+    Each card opens EDGAR with the query, form types, and date window pre-filled.
   </p>
 
   <div class="preset-grid">
@@ -148,13 +122,9 @@
 
   {# ── Curated quick-jump: known disclosers ──────────────────────── #}
   {% if disclosers %}
-  <h2 id="known-disclosers">Curated S&amp;P 500 companies known to disclose Venezuela</h2>
-  <p style="font-size:14px;color:var(--sr-dark-text);">
-    These {{ disclosers|length }} S&amp;P 500 tickers have a documented,
-    hand-curated Venezuela exposure on the Caracas Research register —
-    direct operations, indirect subsidiary exposure, or historical
-    impairments. Each row links to the full Venezuela-exposure profile
-    and to a pre-canned EDGAR search filtered to that company's CIK.
+  <h2 id="known-disclosers">Curated S&amp;P 500 companies known to disclose Cuba</h2>
+  <p style="font-size:14px;color:var(--sr-dark-text); margin: 4px 0 12px;">
+    {{ disclosers|length }} S&amp;P 500 tickers with documented Cuba exposure &mdash; direct ops, indirect subs, Helms-Burton Title III defendants, or historical impairments.
   </p>
 
   <table class="disclosers">
@@ -186,20 +156,13 @@
   </table>
 
   <p style="font-size:14px;">
-    <a href="/companies"><strong>Browse the full S&amp;P 500 Venezuela exposure register →</strong></a>
+    <a href="/companies"><strong>Browse the full S&amp;P 500 Cuba exposure register →</strong></a>
   </p>
   {% endif %}
 
   {# ── Methodology / disclaimer ──────────────────────────────────── #}
   <div class="disclaimer">
-    <strong>Methodology &amp; disclaimer.</strong>
-    All preset queries deeplink into the SEC's official
-    <code>efts.sec.gov</code> full-text search; we don't proxy or
-    intercept the request. The curated company list is maintained by
-    Caracas Research analysts and reviewed quarterly. Results from
-    EDGAR are not legal or compliance advice — verify the underlying
-    filing and consult qualified sanctions counsel before relying on a
-    disclosure for a transaction.
+    <strong>Methodology:</strong> All presets deeplink to the SEC&rsquo;s official <code>efts.sec.gov</code>; we don&rsquo;t proxy. The curated list is reviewed quarterly. EDGAR results are not legal advice &mdash; verify the underlying filing before relying on a disclosure.
   </div>
 
   {# ── FAQ (also rendered as FAQPage JSON-LD in the head) ────────── #}
@@ -214,6 +177,8 @@
     {% endfor %}
   </section>
   {% endif %}
+
+  {{ related_tools_nav(related_tools_ctx) }}
 
   {{ cluster_nav(cluster_ctx) }}
 </section>

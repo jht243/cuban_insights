@@ -5,7 +5,7 @@ Each daily Investor Tearsheet PDF is deposited as a public IA item at
 archive.org/details/{identifier}. IA items get indexed by Google and
 (after IA's own crawl cycle) by Google Scholar — over time this builds
 a permanent, search-engine-discoverable corpus of dated research notes
-that all link back to caracasresearch.com.
+that all link back to cubaninsights.com.
 
 Authentication uses the S3-like API keys generated at
 https://archive.org/account/s3.php; both INTERNET_ARCHIVE_ACCESS_KEY
@@ -31,7 +31,7 @@ from src.config import settings
 logger = logging.getLogger(__name__)
 
 
-_ITEM_PREFIX = "caracas-research-daily-tearsheet"
+_ITEM_PREFIX = "cuban-insights-daily-tearsheet"
 _DETAILS_URL = "https://archive.org/details/{identifier}"
 _DOWNLOAD_URL = "https://archive.org/download/{identifier}/{filename}"
 
@@ -58,7 +58,7 @@ def identifier_for_date(d: date) -> str:
 
     IA identifiers must be unique site-wide, lowercase, alphanumeric
     plus hyphens/underscores/periods, 5-100 chars. Including the brand
-    namespace (`caracas-research-…`) keeps it human-readable AND avoids
+    namespace (`cuban-insights-…`) keeps it human-readable AND avoids
     collisions with other accounts."""
     return f"{_ITEM_PREFIX}-{d.strftime('%Y-%m-%d')}"
 
@@ -70,37 +70,39 @@ def _build_metadata(d: date) -> dict:
     return {
         "collection": settings.internet_archive_collection,
         "mediatype": "texts",
-        "title": f"Caracas Research — Daily Venezuela Investor Tearsheet — {nice_date}",
-        "creator": "Caracas Research",
-        "publisher": "Caracas Research",
+        "title": f"Cuban Insights — Daily Cuba Investor Tearsheet — {nice_date}",
+        "creator": "Cuban Insights",
+        "publisher": "Cuban Insights",
         "date": d.isoformat(),
         "language": "eng",
         "subject": [
-            "Venezuela",
+            "Cuba",
             "investment",
             "sanctions",
             "OFAC",
-            "BCV",
-            "emerging markets",
-            "Latin America",
-            "country risk",
+            "CACR",
+            "Helms-Burton",
+            "Mariel ZED",
+            "MIPYMES",
             "tearsheet",
-            "research note",
+            "elTOQUE TRMI",
+            "BCC",
         ],
         "description": (
             f"One-page research note for international investors covering "
-            f"Venezuela on {nice_date}. Includes: BCV official + parallel "
-            f"FX rates and parallel premium, US travel advisory level, "
-            f"the day's top development with full investor takeaway, the "
-            f"6-bar Investment Climate Scorecard (sanctions trajectory, "
-            f"diplomatic progress, legal framework, political stability, "
-            f"property rights, macro stability), and any high-relevance "
-            f"calendar events in the next 14 days. Sources: BCV (live "
-            f"scrape), OFAC SDN, US State Department, Federal Register, "
-            f"GDELT, Asamblea Nacional. Full daily briefing and methodology "
-            f"at https://caracasresearch.com."
+            f"Cuba on {nice_date}. Includes: the elTOQUE TRMI informal "
+            f"CUP/USD rate vs the BCC official rate (with spread), OFAC "
+            f"SDN Cuba program designations and Cuba Restricted List "
+            f"updates, Helms-Burton Title III lawsuits and settlements, "
+            f"MIPYME policy moves and Mariel ZED approvals, the US State "
+            f"Department travel-advisory level for Cuba, and upcoming "
+            f"OFAC general-license renewals plus ANPP / Council of State "
+            f"calendar items in the next 14 days. Sources: elTOQUE (live "
+            f"scrape), BCC, OFAC SDN, US State Department, Cuban Gaceta "
+            f"Oficial, ANPP, Granma/Cubadebate corpus. Full daily briefing "
+            f"and methodology at https://cubaninsights.com."
         ),
-        "rights": "Caracas Research — free to share with attribution.",
+        "rights": "Cuban Insights — free to share with attribution.",
     }
 
 

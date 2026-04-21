@@ -64,10 +64,8 @@ extra_metadata field carries ``attribution`` so any downstream
 generator (newsletter, blog post, OG image) can render it without
 hard-coding the string.
 
-Replaces / cross-refs
----------------------
-- New surface area; Venezuela had no equivalent (DolarToday occupied
-  a similar niche but was scraped not API'd).
+Cross-refs
+----------
 - Complements ``BCCScraper`` (official rates). The two together let
   the report compute the spread, which is the actual story.
 - Maps to ``SourceType.ELTOQUE_RATE``.

@@ -16,8 +16,8 @@
       Sources & Methodology
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:18px;">
-      Every briefing on Caracas Research is derived from primary
-      Venezuelan-government, US-government, and international monitoring
+      Every briefing on Cuban Insights is derived from primary
+      Cuban-government, US-government, and international monitoring
       sources — refreshed twice daily, with full provenance kept for each
       data point.
     </p>
@@ -53,11 +53,11 @@
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin:32px 0 12px;">How we use these sources</h2>
   <p>Each scrape run pulls fresh content from the sources above, deduplicates against what we've already seen, and runs the resulting items through a multi-stage filter:</p>
   <ol style="margin:12px 0 16px 24px;">
-    <li><strong>Keyword pre-filter</strong> drops items that don't mention Venezuela-relevant entities, sectors, programs, or named officials. About 70% of incoming items get dropped at this step.</li>
+    <li><strong>Keyword pre-filter</strong> drops items that don't mention Cuba-relevant entities, sectors, programs, or named officials. About 70% of incoming items get dropped at this step.</li>
     <li><strong>Tone score</strong> from GDELT (where applicable) is used to prioritise items that read as either materially negative or materially positive — neutral wire copy is deprioritized.</li>
     <li><strong>LLM analysis</strong> assigns a 1-10 investor-relevance score, an English headline, sector tags, sentiment, and an investor takeaway. Items scoring below 5 are not published. The analyzer runs <em>only</em> on items that survive the first two filters, which keeps daily LLM cost under $5.</li>
     <li><strong>Long-form analysis</strong> (the <a href="/briefing">/briefing</a> posts) is generated for items scoring 5+ using GPT-4o.</li>
-    <li><strong>Pillar and sector pages</strong> (<a href="/invest-in-venezuela">/invest-in-venezuela</a> and <a href="/sectors/mining">/sectors/*</a>) are regenerated weekly using the GPT-5 family for higher-quality evergreen prose.</li>
+    <li><strong>Pillar and sector pages</strong> (<a href="/invest-in-cuba">/invest-in-cuba</a> and <a href="/sectors/mining">/sectors/*</a>) are regenerated weekly using the GPT-5 family for higher-quality evergreen prose.</li>
   </ol>
 
   <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); margin:32px 0 12px;">Editorial standards</h2>

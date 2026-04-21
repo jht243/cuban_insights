@@ -2,7 +2,7 @@
 
 Daily investor briefing for Cuba. Scrapes official Cuban government sources, the OFAC SDN list, the US Federal Register (CACR notices), El Toque's parallel-rate feed, and curated international press; runs an LLM analyst pass; and publishes evergreen landing pages plus a single static daily `report.html` to a public site.
 
-> **Status:** mid-migration from `Caracas Research` (Venezuela Investment Journal). The architecture, distribution machinery, SEO topology, and DB schema all carry over verbatim. Source coverage and curated content are being repointed at Cuba — see [`MIGRATION.md`](MIGRATION.md) for the live status of every component.
+> **Status:** Cuba-native. The architecture, distribution machinery, SEO topology, and DB schema were forked from the predecessor `Caracas Research` (Venezuela Investment Journal) project; all source coverage, curated content, scrapers, prompts, and SEO surface area now point at Cuba. The `MIGRATION.md` file records what was repointed and what was retired.
 
 > **Live site:** the Render web service serves the latest generated `report.html` from Supabase Storage.
 > **Refresh schedule:** twice daily via two Render cron jobs (see §8).
@@ -25,22 +25,23 @@ If the live site looks empty, it is **almost always** because the scrapers found
 
 ## 2. Data Sources (Cuba)
 
-Source coverage is being repointed off the Venezuela equivalents. Until the migration is complete, the modules retain their Venezuela-era names; see [`MIGRATION.md`](MIGRATION.md) for the per-source rewrite status.
+Every active scraper points at a Cuban source. The legacy Venezuelan modules (`bcv.py`, `gazette.py`, `assembly.py`) remain on disk as pure backstops for historical-redirect routes only — they are not wired into the daily pipeline or the backfill script.
 
-| Source | Type | Replaces (VE-era) | Notes |
-|--------|------|-------------------|-------|
-| **Gaceta Oficial de la República de Cuba** (`gacetaoficial.gob.cu`) | Official (govt) | `gazette.py::TuGacetaScraper` (Venezuela) | Yearly listing pages; Spanish OCR. |
-| **Asamblea Nacional del Poder Popular** (`parlamentocubano.gob.cu`) + Granma | Official (govt) | `assembly.py` (Venezuela Asamblea) | Granma fills gaps in legislative coverage. |
-| **Banco Central de Cuba** (`bc.gob.cu`) — official CUP/USD reference rate | Official (govt) | `bcv.py` (BCV official side) | Often DNS-blocked from cloud IPs; will need a proxy. |
-| **El Toque informal CUP/MLC/USD rate** (`eltoque.com`) | Tier 1 press | _(no Venezuela equivalent)_ | The most-watched FX number on the island. **Non-negotiable.** |
-| **MINREX press releases** (`minrex.gob.cu`) | Official (govt) | _(new — no Venezuela equivalent)_ | Foreign-ministry posture. |
-| **ONEI macro stats** (`onei.gob.cu`) | Official (govt) | _(new — no Venezuela equivalent)_ | Annual but high-signal. |
-| **OFAC SDN List** | Official (US Treasury) | _(unchanged)_ | Filter narrows from `VENEZUELA-*` programs to `CUBA` and any CACR-related codes. |
-| **OFAC CACR (§515) updates** | Official (US Treasury) | _(new — separate from SDN)_ | The Cuba-specific regulatory body. |
-| **US Federal Register** | Official (US govt) | _(unchanged scraper)_ | Keyword filter narrowed to Cuba / CACR / Helms-Burton. |
-| **US State Dept Travel Advisory** | Official | _(unchanged scraper)_ | Repointed at the Cuba advisory page. |
-| **GDELT** (international press wire) | News aggregator | _(unchanged scraper)_ | Query keywords swapped to Cuba terms. Often rate-limited from Render IPs. |
-| **EU sanctions list** | Official (EU) | _(new — no Venezuela equivalent)_ | Cuba is unique in having both US (CACR) and EU (PDCA-era) frameworks worth tracking. |
+| Source | Type | Module | Notes |
+|--------|------|--------|-------|
+| **Gaceta Oficial de la República de Cuba** (`gacetaoficial.gob.cu`) | Official (govt) | `src/scraper/gaceta_oficial_cu.py` | Yearly listing pages; sumario-text only (no PDF download surface). |
+| **Asamblea Nacional del Poder Popular** (`parlamentocubano.gob.cu`) + Granma legislative coverage | Official (govt) | `src/scraper/asamblea_nacional_cu.py` | Granma fills gaps in legislative coverage. |
+| **Banco Central de Cuba** (`bc.gob.cu`) — official CUP/USD reference rate | Official (govt) | `src/scraper/bcc.py` | JSON API (`api.bc.gob.cu`); occasionally DNS-blocked from cloud IPs. |
+| **elTOQUE TRMI** — informal CUP / MLC / USD rate (`eltoque.com`) | Tier 1 press | `src/scraper/eltoque.py` | The most-watched FX number on the island. ToS requires visible attribution. **Non-negotiable.** |
+| **MINREX press releases** (`minrex.gob.cu`) | Official (govt) | `src/scraper/minrex.py` | Foreign-ministry posture. |
+| **ONEI macro stats** (`onei.gob.cu`) | Official (govt) | `src/scraper/onei.py` | Annual but high-signal. |
+| **OFAC SDN List** | Official (US Treasury) | `src/scraper/ofac_sdn.py` | Filtered to the `CUBA` program plus EO 13818 (Magnitsky) designations on Cuban officials. |
+| **State Dept Cuba Restricted List** (CRL) | Official (US State) | `src/scraper/state_dept_crl.py` | §515.209 prohibited-counterparty list (GAESA et al.); distinct from the SDN. |
+| **State Dept Cuba Prohibited Accommodations List** (CPAL) | Official (US State) | `src/scraper/state_dept_cpal.py` | §515.210 hotel-blacklist; powers the company-exposure tooling. |
+| **US Federal Register** | Official (US govt) | `src/scraper/federal_register.py` | OFAC-agency scoped, `cuba` keyword filter (Helms-Burton / CACR / Cuba Restricted List notices). |
+| **US State Dept Travel Advisory** | Official | `src/scraper/travel_advisory.py` | Pinned to the Cuba advisory page. |
+| **Cuban press RSS** (Granma, Cubadebate, OnCuba, 14ymedio, Diario de Cuba, Havana Times) | Tier-1 / state press | `src/scraper/rss.py` | Per-outlet credibility tier preserved on `ExternalArticleEntry.source_name`. |
+| **GDELT** (international press wire) | News aggregator | `src/scraper/gdelt.py` | Cuba-only query keywords; often rate-limited from Render IPs. |
 
 ---
 
@@ -185,7 +186,7 @@ If you change these constants, expect cost to scale linearly.
 `render.yaml` defines three services:
 
 - `cuban-insights` (web) — `gunicorn server:app`, health check at `/health`.
-- `cij-daily-pipeline` (cron) — `python run_daily.py`, schedule `0 15,22 * * *` UTC (10:00 / 17:00 Bogotá / Havana standard).
+- `cij-daily-pipeline` (cron) — `python run_daily.py`, schedule `0 15,22 * * *` UTC (10:00 / 17:00 Havana standard, 11:00 / 18:00 during Cuban DST).
 - `cij-weekly-climate` (cron) — `python -c 'from src.climate import run_weekly_climate_refresh; run_weekly_climate_refresh()'`, schedule `0 14 * * 1` UTC (09:00 Havana standard, Mondays).
 
 All services share env vars including `DATABASE_URL`, `SUPABASE_*`, `OPENAI_API_KEY`, `BUTTONDOWN_API_KEY`. **`SUPABASE_SERVICE_KEY` is only needed by the cron** (web only reads the public bucket).
@@ -201,7 +202,7 @@ curl -X POST "https://api.render.com/v1/services/$CRON_ID/jobs" \
 
 ---
 
-## 9. Common Pitfalls (lessons learned from the VE era)
+## 9. Common Pitfalls (lessons learned, including from the VE-era predecessor)
 
 1. **Wrong Supabase pooler hostname.** New projects are on `aws-1-us-east-1.pooler.supabase.com`, not `aws-0-`. Symptom: `FATAL: Tenant or user not found`.
 2. **SQLAlchemy enum mismatch.** Postgres enums are lowercase (`gdelt`); SQLAlchemy was sending `GDELT`. `src/models.py` patches this with `_enum_values()` — do not bypass.
@@ -241,5 +242,5 @@ run_backfill.py            # Backfill historical dates (see §6)
 server.py                  # Flask web entrypoint
 render.yaml                # Render service definitions
 alembic/                   # DB migrations
-MIGRATION.md               # Live status of the Caracas Research → Cuban Insights migration
+MIGRATION.md               # Record of the Caracas Research → Cuban Insights repointing
 ```

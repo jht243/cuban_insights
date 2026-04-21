@@ -20,7 +20,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a>
     <span>›</span>
-    <a href="/sanctions-tracker">OFAC Venezuela Sanctions</a>
+    <a href="/sanctions-tracker">OFAC Cuba Sanctions</a>
     <span>›</span>
     <a href="/sanctions/by-sector">By sector</a>
     <span>›</span>
@@ -32,16 +32,16 @@
       <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:var(--sr-red); font-weight:700;">
         Live tracker · {{ today_human }} · {{ profiles|length }} active designations
       </div>
-      <h1>OFAC Venezuela SDN — Currently Sanctioned {{ sector_label }} ({{ profiles|length }})</h1>
+      <h1>OFAC Cuba SDN — Currently Sanctioned {{ sector_label }} ({{ profiles|length }})</h1>
       <p class="subtitle">
         Every {{ sector_label|lower }} on the US Treasury OFAC SDN List under
-        Venezuela-related sanctions programs. Each name links to a permanent
+        Cuba-related sanctions programs. Each name links to a permanent
         profile with biographical data, OFAC program code, and source link.
       </p>
       <div class="meta">
         <span><strong>Source:</strong> US Treasury OFAC SDN List</span>
-        <span><strong>Refreshed:</strong> twice daily (10am &amp; 5pm Medellín)</span>
-        <span><strong>Programs covered:</strong> VENEZUELA, EO 13692, EO 13850, EO 13884</span>
+        <span><strong>Refreshed:</strong> twice daily (10am &amp; 5pm ET)</span>
+        <span><strong>Programs covered:</strong> CUBA (CACR, 31 CFR Part 515), Cuba Restricted List (State Dept), Helms-Burton</span>
       </div>
     </header>
 
@@ -74,7 +74,7 @@
         {% for p in items %}
         <li>
           <a href="{{ p.url_path }}">{{ p.display_name }}</a>
-          <small>— {{ p.program or 'VENEZUELA' }} ·
+          <small>— {{ p.program or 'CUBA' }} ·
             {{ p.category_singular }}{% if p.parsed.dob %} · DOB {{ p.parsed.dob }}{% elif p.parsed.imo %} · IMO {{ p.parsed.imo }}{% elif p.parsed.aircraft_tail %} · Tail {{ p.parsed.aircraft_tail }}{% endif %}</small>
         </li>
         {% endfor %}
@@ -86,12 +86,12 @@
 
       <h2>Why this view exists</h2>
       <p>
-        OFAC publishes the Venezuela SDN list grouped only by entity type
-        (individuals / entities / vessels / aircraft) and by executive order.
+        OFAC publishes the Cuba SDN list grouped only by entity type
+        (individuals / entities / vessels / aircraft) and by sanctions program.
         Compliance, M&amp;A, and journalist research workflows usually want a
-        sector-pivoted view — "who are the currently-sanctioned military
-        officials?" or "which Venezuelan banks are blocked?" — which neither
-        OFAC nor most trackers offer. We compute the sector for every
+        sector-pivoted view — "who are the currently-sanctioned FAR/MININT
+        officials?" or "which GAESA-affiliated entities are blocked?" — which
+        neither OFAC nor most trackers offer. We compute the sector for every
         designation from its OFAC remarks plus a curated overrides table; see
         the <a href="/sanctions/by-sector">sector pillar page</a> for the full
         methodology.
@@ -100,9 +100,9 @@
       <h2>Verifying these designations</h2>
       <ul>
         <li><a href="https://sanctions-search.ofac.treasury.gov/" rel="nofollow">OFAC official Sanctions Search</a> — primary source for live screening</li>
-        <li><a href="/tools/ofac-venezuela-sanctions-checker">Our search tool</a> — paste any name to see if it's currently designated</li>
-        <li><a href="/tools/ofac-venezuela-general-licenses">Active OFAC General Licenses for Venezuela</a></li>
-        <li><a href="/explainers/what-are-ofac-sanctions-on-venezuela">What are OFAC sanctions on Venezuela? (plain-English guide)</a></li>
+        <li><a href="/tools/ofac-cuba-sanctions-checker">Our search tool</a> — paste any name to see if it's currently designated</li>
+        <li><a href="/tools/ofac-cuba-general-licenses">Active OFAC General Licenses for Cuba (CACR §515.560–.578)</a></li>
+        <li><a href="/explainers/what-are-ofac-sanctions-on-cuba">What are OFAC sanctions on Cuba? (plain-English guide)</a></li>
       </ul>
     </div>
   </article>

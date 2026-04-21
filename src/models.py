@@ -273,7 +273,7 @@ class BlogPost(Base):
 
 class LandingPage(Base):
     """
-    Evergreen landing pages — the pillar /invest-in-venezuela, the
+    Evergreen landing pages — the pillar /invest-in-cuba, the
     sector pages, the explainers. Generated less frequently than blog
     posts (e.g. weekly) and with the premium LLM model. Stored as
     pre-rendered HTML so the request path stays cheap.

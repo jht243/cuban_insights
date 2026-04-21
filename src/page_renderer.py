@@ -79,7 +79,7 @@ def render_blog_post(post, *, related: list | None = None) -> str:
         "og_type": "article",
         "published_iso": _iso(post.published_date),
         "modified_iso": _iso(post.updated_at or post.created_at or post.published_date),
-        "section": (post.primary_sector or "Venezuela investment").replace("_", " ").title(),
+        "section": (post.primary_sector or "Cuba investment").replace("_", " ").title(),
         "article_tags": keywords[:10],
     }
 
@@ -143,12 +143,13 @@ def render_blog_index(posts: Iterable) -> str:
     posts_list = list(posts)
 
     seo = {
-        "title": "Venezuelan investment & sanctions analysis — long-form briefings",
+        "title": "Cuba investment, embargo & sanctions analysis — long-form briefings",
         "description": (
-            "Long-form analysis of OFAC sanctions, Asamblea Nacional legislation, "
-            "Gaceta Oficial decrees, and sector capital flows. Published twice daily."
+            "Long-form analysis of the US embargo (CACR), OFAC general licenses, "
+            "Cuban Asamblea Nacional legislation, Gaceta Oficial decrees, "
+            "Mariel ZEDM deal flow, and sector capital. Published twice daily."
         ),
-        "keywords": "invest in Venezuela, OFAC Venezuela analysis, Caracas investment briefing, Venezuelan sectors",
+        "keywords": "invest in Cuba, OFAC Cuba analysis, Cuba embargo, Helms-Burton, Mariel ZEDM, Havana investment briefing, Cuban sectors",
         "canonical": canonical,
         "site_name": settings.site_name,
         "site_url": base,
@@ -161,7 +162,7 @@ def render_blog_index(posts: Iterable) -> str:
 
     item_list = {
         "@type": "ItemList",
-        "name": "Venezuelan investment briefings",
+        "name": "Cuba investment briefings",
         "itemListOrder": "https://schema.org/ItemListOrderDescending",
         "numberOfItems": len(posts_list),
         "itemListElement": [
@@ -204,7 +205,7 @@ def _sdn_actors_for_sector(sector_slug: str, *, limit: int = 10) -> list:
     those programs (capped at `limit`, prioritising individuals).
 
     Returns an empty list for sectors with no program mapping (e.g.
-    /sectors/agriculture isn't bound to a Venezuela-program EO), in
+    /sectors/agriculture isn't bound to a Cuba-program EO), in
     which case the template skips the section. This means we only
     surface the cross-cluster section when it carries real signal.
     """
@@ -269,7 +270,7 @@ def render_landing_page(page, *, recent_briefings: list | None = None) -> str:
     ]
     if page.page_type == "sector":
         breadcrumbs_items.append(
-            {"@type": "ListItem", "position": 2, "name": "Invest in Venezuela", "item": f"{base}/invest-in-venezuela"}
+            {"@type": "ListItem", "position": 2, "name": "Invest in Cuba", "item": f"{base}/invest-in-cuba"}
         )
         breadcrumbs_items.append(
             {"@type": "ListItem", "position": 3, "name": page.title, "item": canonical}
@@ -344,14 +345,15 @@ def render_blog_feed_xml(posts: Iterable) -> str:
 
     parts = ['<?xml version="1.0" encoding="UTF-8"?>']
     parts.append('<feed xmlns="http://www.w3.org/2005/Atom">')
-    parts.append(f"<title>{_x(settings.site_name)} — Venezuelan investment analysis</title>")
+    parts.append(f"<title>{_x(settings.site_name)} — Cuba investment analysis</title>")
     parts.append(f'<link href="{base}/briefing/feed.xml" rel="self" type="application/atom+xml"/>')
     parts.append(f'<link href="{base}/briefing" rel="alternate" type="text/html"/>')
     parts.append(f"<id>{base}/briefing</id>")
     parts.append(f"<updated>{updated_iso}</updated>")
     parts.append(
-        "<subtitle>OFAC sanctions, Asamblea Nacional legislation, sector capital "
-        "flows — twice-daily Venezuelan investment briefings.</subtitle>"
+        "<subtitle>OFAC sanctions, US embargo (CACR), Cuban Asamblea Nacional "
+        "legislation, Mariel ZEDM deal flow, and sector capital — "
+        "twice-daily Cuba investment briefings.</subtitle>"
     )
     parts.append(
         "<author><name>{name}</name><uri>{base}/</uri></author>".format(

@@ -28,7 +28,7 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
     <span>OFAC General License Lookup</span>
   </nav>
 
@@ -37,30 +37,30 @@
       Compliance tool · Updated when OFAC publishes
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      OFAC Venezuela General License Lookup
+      OFAC Cuba General License Lookup (CACR §515.560–.578)
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Searchable reference for the active OFAC general licences governing
-      transactions with PdVSA, Chevron, CITGO, sovereign debt, gold-sector
-      entities, and other Venezuela-related counterparties.
+      Searchable reference for every active CACR general license &mdash; the 12 travel categories, plus telecom, remittances, financial services, and informational materials.
     </p>
   </header>
 
-  <div class="tool-intro">
-    <h2>What is an OFAC general license?</h2>
-    <p>An OFAC general license authorises specific categories of transaction that would otherwise be prohibited by US sanctions, without each party having to apply for an individual specific license. For Venezuela, the most-watched general licences cover Chevron's lifting of crude (GL 41), the wind-down of operations involving newly designated entities (GL 45 family), and the protection of CITGO downstream operations (GL 7C). Use this tool to find the license you need; always read the full OFAC text before relying on it.</p>
-  </div>
+  <details class="show-more">
+    <summary><span class="label-closed">What is an OFAC general license, and which one do I need?</span><span class="label-open">Hide</span></summary>
+    <div class="show-more__body">
+      An OFAC general license pre-authorises specific transaction categories that would otherwise be prohibited by US sanctions, so each party doesn&rsquo;t have to apply individually. For Cuba, they live in 31 CFR Part 515 itself &mdash; mostly at §§515.560–515.578, which set out the 12 permitted travel categories. The most-used by US business travellers is <strong>§515.574 &ldquo;Support for the Cuban People,&rdquo;</strong> which underpins most legitimate engagement with MIPYMES, paladares, and casas particulares. Always read the full CACR text before relying on a license.
+    </div>
+  </details>
 
   <div class="gl-search">
-    <input type="text" id="gl-q" placeholder="Search by GL number, sector, counterparty…" aria-label="Search">
+    <input type="text" id="gl-q" placeholder="Search by §, category, counterparty…" aria-label="Search">
     <select id="gl-scope" aria-label="Filter by scope">
       <option value="">All scopes</option>
-      <option value="oil-gas">Oil &amp; gas</option>
-      <option value="energy">Energy</option>
-      <option value="debt">Debt / securities</option>
-      <option value="mining">Mining / gold</option>
-      <option value="legal">Legal / settlement</option>
-      <option value="wind-down">Wind-down</option>
+      <option value="travel">Travel</option>
+      <option value="remittances">Remittances</option>
+      <option value="telecom">Telecom / internet</option>
+      <option value="financial">Financial services</option>
+      <option value="humanitarian">Humanitarian</option>
+      <option value="informational">Informational materials</option>
     </select>
   </div>
 
@@ -84,18 +84,8 @@
   </div>
 
   <div class="disclaimer">
-    <strong>Important:</strong> This tool is a navigation aid. OFAC general license terms,
-    expirations, and reporting requirements change frequently — sometimes
-    intra-week. Always confirm authorisation by reading the full OFAC text
-    linked in each card and consider seeking sanctions counsel for borderline
-    transactions. Nothing on this site constitutes legal advice.
+    <strong>Important:</strong> Navigation aid only. CACR provisions and the State Department CRL change with administrations &mdash; sometimes intra-week. Always confirm by reading the full 31 CFR Part 515 text linked in each card. Not legal advice.
   </div>
-
-  <p style="font-size:12px; color:var(--sr-gray-text); margin-bottom:32px;">
-    See related: <a href="/sanctions-tracker">OFAC Venezuela sanctions tracker</a> ·
-    <a href="/invest-in-venezuela">how to invest in Venezuela</a> ·
-    <a href="/briefing">latest sanctions briefings</a>.
-  </p>
 
   <script>
     (function() {
@@ -117,6 +107,9 @@
       scope.addEventListener('change', apply);
     })();
   </script>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
 
   {% from "_cluster_nav.html.j2" import cluster_nav %}
   {{ cluster_nav(cluster_ctx) }}

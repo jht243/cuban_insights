@@ -27,7 +27,7 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
     <span>OFAC Sanctions Exposure Checker</span>
   </nav>
 
@@ -36,39 +36,34 @@
       Compliance tool · Real-time check against {{ total_sdn }} SDN designations
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      OFAC Venezuela Sanctions Exposure Checker
+      OFAC Cuba Sanctions Exposure Checker
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Type the name of an individual, company, vessel, IMO number, aircraft tail
-      number, or Venezuelan cédula. We search every Venezuela-related entry on
-      the OFAC Specially Designated Nationals (SDN) list and surface fuzzy
-      matches you should investigate before transacting.
+      Search any name, vessel, IMO number, aircraft tail number, or Cuban national ID against every Cuba-related OFAC SDN entry. Fuzzy matching surfaces near-misses you should investigate before transacting.
     </p>
   </header>
 
-  <form class="checker-form" method="get" action="/tools/ofac-venezuela-sanctions-checker">
-    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. PDVSA, Maduro, IMO 9432660, YV2954, V-1234567" autofocus required>
+  <form class="checker-form" method="get" action="/tools/ofac-cuba-sanctions-checker">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. GAESA, Gaviota, Habaguanex, IMO 9432660, CU-T1234" autofocus required>
     <button type="submit">Check exposure</button>
   </form>
 
   <div class="examples">
     Try:
-    <a href="?q=pdvsa">PDVSA</a>
-    <a href="?q=cardon">Cardon</a>
-    <a href="?q=YV2954">YV2954 (aircraft)</a>
-    <a href="?q=9432660">IMO 9432660</a>
-    <a href="?q=maduro">Maduro</a>
+    <a href="?q=gaesa">GAESA</a>
+    <a href="?q=gaviota">Gaviota</a>
+    <a href="?q=habaguanex">Habaguanex</a>
+    <a href="?q=fincimex">FINCIMEX</a>
+    <a href="?q=cubanacan">Cubanacán</a>
   </div>
 
   {% if query %}
     {% if matches and matches|length > 0 %}
     <div class="result-banner match">
-      <h3>{{ matches|length }} potential match{% if matches|length != 1 %}es{% endif %} found</h3>
-      <p>Review each match below carefully. Always verify with the underlying OFAC entry before making any compliance decision.</p>
+      <h3>{{ matches|length }} potential match{% if matches|length != 1 %}es{% endif %} for &ldquo;{{ query }}&rdquo;</h3>
     </div>
     {% for m in matches %}
     <article class="match-card">
-      <span class="score">{{ m.score }}% match</span>
       <div class="name">{{ m.name }}</div>
       <div class="meta">
         <strong>Type:</strong> {{ m.type }} ·
@@ -79,27 +74,18 @@
     {% endfor %}
     {% else %}
     <div class="result-banner clear">
-      <h3>No matches found</h3>
-      <p>No entry on the Venezuela-related OFAC SDN list matched <strong>{{ query }}</strong>. This is not a substitute for a full OFAC compliance check — variant spellings, aliases, and ownership chains may still trigger sanctions exposure. Re-run with alternative spellings or browse the <a href="/sanctions-tracker">full SDN tracker</a>.</p>
+      <h3>No SDN match for &ldquo;{{ query }}&rdquo;</h3>
+      <p>Cross-check the <a href="/tools/cuba-restricted-list-checker">CRL</a> and the <a href="/tools/cuba-prohibited-hotels-checker">CPAL</a> &mdash; a clean SDN screen alone is not enough.</p>
     </div>
     {% endif %}
   {% endif %}
 
   <div class="disclaimer">
-    <strong>Important:</strong> This tool searches our cached copy of the OFAC SDN
-    list filtered for Venezuela-related programs. It uses a fuzzy match against
-    name, alias, IMO, tail number, cédula, and remarks fields, but it does NOT
-    perform full ownership-chain analysis (the OFAC 50% Rule), check non-SDN
-    sectoral lists, or substitute for a vetted commercial sanctions-screening
-    provider. For high-stakes counterparties, retain qualified sanctions
-    counsel.
+    <strong>Important:</strong> Fuzzy match against our cached snapshot of the Cuba-related OFAC SDN list. This tool does NOT run the OFAC 50% Rule ownership chain or check the State Department CRL. Not a substitute for vetted commercial screening or sanctions counsel on high-stakes counterparties.
   </div>
 
-  <p style="font-size:12px; color:var(--sr-gray-text); margin-bottom:32px;">
-    See related: <a href="/sanctions-tracker">browse the full SDN list</a> ·
-    <a href="/tools/ofac-venezuela-general-licenses">general license lookup</a> ·
-    <a href="/sectors/sanctions">Venezuela sanctions sector page</a>.
-  </p>
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
 
   {% from "_cluster_nav.html.j2" import cluster_nav %}
   {{ cluster_nav(cluster_ctx) }}

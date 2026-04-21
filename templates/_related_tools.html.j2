@@ -1,0 +1,130 @@
+{#
+  "Other tools" strip — rendered at the bottom of every tool page,
+  above the topic-cluster nav. Always 3 curated sibling tools so the
+  reader has an obvious next utility to try.
+
+  This is intentionally separate from the cluster nav. Cluster nav
+  surfaces topical content (explainers, sector pages, hub pages).
+  This one surfaces other interactive tools — different reading
+  intent ("I want to do another lookup") deserves its own affordance.
+
+  Inputs (passed via Jinja `related_tools_ctx` dict):
+      related_tools_ctx.tools = list[dict]
+          Each item: { path, name, tagline }
+          Empty list => macro renders nothing.
+
+  NOTE: the dict key is `tools`, not `items` — Jinja attribute lookup
+  resolves `.items` to the dict's built-in method first.
+#}
+{% macro related_tools_nav(ctx) -%}
+{% if ctx and ctx.tools %}
+<aside class="other-tools" aria-labelledby="other-tools-title">
+  <header class="other-tools__head">
+    <p class="other-tools__eyebrow">Other tools</p>
+    <h2 id="other-tools-title" class="other-tools__title">Useful next utilities</h2>
+  </header>
+  <ul class="other-tools__grid">
+    {% for tool in ctx.tools %}
+    <li>
+      <a href="{{ tool.path }}" class="other-tools__card">
+        <span class="other-tools__card-name">{{ tool.name }}</span>
+        <span class="other-tools__card-tagline">{{ tool.tagline }}</span>
+        <span class="other-tools__card-cta" aria-hidden="true">Open tool &rarr;</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</aside>
+{% endif %}
+{%- endmacro %}
+
+{#
+  Inline CSS — included once at the top of _base.html.j2 so every page
+  inherits styles even if a specific template forgets the import.
+#}
+{% macro related_tools_nav_css() -%}
+<style>
+  .other-tools {
+    margin: 48px 0 16px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+  .other-tools__head {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .other-tools__eyebrow {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: #002b5e;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .other-tools__title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 20px;
+    color: #001f44;
+    margin: 0;
+    line-height: 1.25;
+  }
+  .other-tools__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .other-tools__grid li { margin: 0; }
+  .other-tools__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid #d6dde6;
+    border-left: 3px solid #002b5e;
+    border-radius: 4px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .other-tools__card:hover {
+    border-color: #cc0000;
+    border-left-color: #cc0000;
+    box-shadow: 0 2px 8px rgba(0, 31, 68, 0.08);
+    transform: translateY(-1px);
+  }
+  .other-tools__card-name {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #001f44;
+    line-height: 1.3;
+  }
+  .other-tools__card:hover .other-tools__card-name { color: #cc0000; }
+  .other-tools__card-tagline {
+    font-size: 12.5px;
+    color: #495057;
+    margin-top: 6px;
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+  .other-tools__card-cta {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #002b5e;
+    margin-top: 12px;
+  }
+  @media (max-width: 720px) {
+    .other-tools__grid { grid-template-columns: 1fr; }
+  }
+</style>
+{%- endmacro %}

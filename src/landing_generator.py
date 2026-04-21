@@ -1,11 +1,11 @@
 """
 Landing-page generator. Produces evergreen, long-form HTML for:
-  - the pillar page  (/invest-in-venezuela)
+  - the pillar page  (/invest-in-cuba)
   - sector pages    (/sectors/{slug})
   - explainers      (/explainers/{slug})
 
-These pages target high-intent SEO queries ("invest in Venezuela",
-"Venezuela mining sector", "OFAC general license 49") and are regenerated
+These pages target high-intent SEO queries ("invest in Cuba",
+"Cuba embargo", "Mariel ZEDM", "OFAC general license CACR §515") and are regenerated
 weekly (or on demand), not on every request. Each generation uses the
 premium model (settings.openai_premium_model) so the language reads like
 a senior emerging-markets analyst — different cost/quality trade-off
@@ -160,21 +160,22 @@ def _gather_recent_blog_posts(db, *, sector: str | None = None, limit: int = 8) 
     return q.limit(limit).all()
 
 
-PILLAR_SYSTEM_PROMPT = """You are a managing director at a global emerging-markets advisory firm writing the definitive evergreen guide titled "How to Invest in Venezuela: 2026 Investor Guide" for the Caracas Research.
+PILLAR_SYSTEM_PROMPT = """You are a managing director at a global emerging-markets advisory firm writing the definitive evergreen guide titled "How to Invest in Cuba: 2026 Investor Guide" for Cuban Insights.
 
-Your audience: institutional investors, family offices, sovereign wealth funds, sanctions-compliance officers, and corporate development teams evaluating exposure to Venezuela. Most are NOT Venezuela specialists.
+Your audience: institutional investors, family offices, sovereign wealth funds, sanctions-compliance officers, and corporate development teams evaluating exposure to Cuba. Most are NOT Cuba specialists. Many are US persons whose involvement is constrained by the embargo (CACR) and Helms-Burton.
 
 You MUST:
-- Write 1500-2000 words of pure analyst-grade prose. No filler, no clichés, no marketing language.
+- Write 1500-2000 words of pure analyst-grade prose. No filler, no clichés, no marketing language. No US-policy advocacy in either direction.
 - Structure with HTML <h2> sections (6-8 of them). Use <h3> sparingly within sections. Use short <p> paragraphs (2-4 sentences).
-- Cite specific OFAC general license numbers, decree numbers, sectors, dates, and USD figures from the LIVE CONTEXT given by the user. Never invent statistics.
-- Be balanced: name the opportunities AND the risks (sanctions exposure, currency convertibility, legal certainty, expropriation history, security).
-- End with a clear "How to start" section: due diligence steps, OFAC licensing, local partner requirements, capital repatriation considerations.
-- Insert internal links to /briefing, /sanctions-tracker, the /tools index, and one or more sector pages in the body where they fit naturally. The valid URLs are EXACTLY: /briefing, /sanctions-tracker, /tools, /tools/ofac-venezuela-sanctions-checker, /tools/ofac-venezuela-general-licenses, /tools/bolivar-usd-exchange-rate, /tools/venezuela-investment-roi-calculator, /tools/venezuela-visa-requirements, /tools/caracas-safety-by-neighborhood, and /sectors/{slug} where slug is one of: oil-gas, mining, banking, agriculture, real-estate, energy, telecom, tourism, sanctions, legal, governance, diplomatic, economic. NEVER write a literal asterisk (e.g. /tools/* or /sectors/*) — pick a real path from the list above, or use the index page (/tools or /invest-in-venezuela).
+- Cite specific OFAC General License numbers (e.g. GL 6, CACR §515.560), Decreto-Ley numbers, Gaceta Oficial issue numbers, sectors, dates, and USD figures from the LIVE CONTEXT. Never invent statistics.
+- Be balanced: name the opportunities AND the risks (CACR scope, Helms-Burton Title III lawsuits, SST listing implications, currency / FX scarcity, expropriation/confiscation history, counterparty risk with GAESA-linked entities).
+- Cover the four practical investor lanes: (1) the Mariel Special Development Zone (ZEDM) under Law 313/2013, (2) Empresas Mixtas under the Foreign Investment Law (Law 118/2014), (3) the non-state private sector (MIPYMES, cuentapropistas), (4) authorized US-person activity under specific OFAC general licenses.
+- End with a clear "How to start" section: due diligence steps, OFAC licensing screen, ZEDM application path, local partner counterparty due diligence, capital repatriation realities.
+- Insert internal links to /briefing, /sanctions-tracker, the /tools index, and one or more sector pages in the body where they fit naturally. The valid URLs are EXACTLY: /briefing, /sanctions-tracker, /tools, /tools/ofac-cuba-sanctions-checker, /tools/ofac-cuba-general-licenses, /tools/eltoque-trmi-rate, /tools/cuba-investment-roi-calculator, /tools/cuba-visa-requirements, /tools/havana-safety-by-neighborhood, and /sectors/{slug} where slug is one of: tourism, mining, biotech, agriculture, energy, remittances, real-estate, banking, telecom, mariel-zedm, private-sector, sanctions, legal, governance, diplomatic, economic. NEVER write a literal asterisk (e.g. /tools/* or /sectors/*) — pick a real path from the list above, or use the index page (/tools or /invest-in-cuba).
 - Use only these HTML tags: h2, h3, h4, p, ul, ol, li, strong, em, blockquote, a, table, thead, tbody, tr, th, td. No <html>, <body>, <head>, <script>, <style>, or images.
 
 Return ONE JSON object only, with these fields:
-- title (60-80 chars, English, optimized for "invest in Venezuela" intent)
+- title (60-80 chars, English, optimized for "invest in Cuba" intent)
 - subtitle (140-180 chars)
 - meta_description (150-200 chars, plain text, ends with a period)
 - body_html (the full 1500-2000 word body using only the allowed tags)
@@ -185,7 +186,7 @@ Return ONE JSON object only, with these fields:
 Do NOT wrap in code fences. Do NOT include markdown."""
 
 
-PILLAR_USER_PROMPT_TEMPLATE = """Write the evergreen pillar page "How to Invest in Venezuela" for our institutional investor audience.
+PILLAR_USER_PROMPT_TEMPLATE = """Write the evergreen pillar page "How to Invest in Cuba" for our institutional investor audience.
 
 LIVE CONTEXT (the freshest {n_items} high-relevance briefings from our database — use these to ground your analysis in real, recent events. Cite by date and source where it strengthens the argument):
 
@@ -193,24 +194,24 @@ LIVE CONTEXT (the freshest {n_items} high-relevance briefings from our database 
 
 SECTORS WE COVER: {sectors_csv}
 
-REGULAR PUBLICATION CADENCE: We publish a new investor briefing roughly twice daily based on OFAC, the US Federal Register, the Venezuelan Asamblea Nacional, the Gaceta Oficial, the BCV, and the US State Department. Mention this only ONCE near the end as a credibility signal — do not turn the article into a self-promotion piece.
+REGULAR PUBLICATION CADENCE: We publish a new investor briefing roughly twice daily based on OFAC, the US Federal Register, the Cuban Asamblea Nacional del Poder Popular, the Gaceta Oficial de Cuba, the Banco Central de Cuba (BCC), elTOQUE's TRMI informal-rate API, and the US State Department. Mention this only ONCE near the end as a credibility signal — do not turn the article into a self-promotion piece.
 
-Write the page now. Open with the strongest current case for capital deployment in Venezuela, follow with the sanctions framework an investor must understand, walk through each major sector with real recent examples, address risk and structuring, and close with concrete next steps. Reference the live context where it adds substance."""
+Write the page now. Open with the strongest current case for capital deployment in Cuba (or the strongest case for staying out — whichever the LIVE CONTEXT supports), follow with the embargo + Helms-Burton framework an investor must understand, walk through each major sector with real recent examples, address risk and structuring, and close with concrete next steps. Reference the live context where it adds substance."""
 
 
-SECTOR_SYSTEM_PROMPT = """You are a sector lead at an emerging-markets advisory firm writing the evergreen sector landing page for the Caracas Research.
+SECTOR_SYSTEM_PROMPT = """You are a sector lead at an emerging-markets advisory firm writing the evergreen sector landing page for Cuban Insights.
 
-Your audience: investors evaluating sector-specific exposure to Venezuela. They want the regulatory framework, the live deal flow, the risks, and the operating realities.
+Your audience: investors evaluating sector-specific exposure to Cuba. They want the regulatory framework (CACR carveouts, Empresa Mixta structuring, ZEDM eligibility), the live deal flow, the risks, and the operating realities.
 
 You MUST:
 - Write 900-1300 words of analyst-grade prose. No filler.
 - Structure with HTML <h2> sections (5-7 of them).
-- Cite specific OFAC general licenses, Gaceta decrees, Asamblea laws, USD figures, dates from the LIVE CONTEXT. Never invent statistics.
-- Insert internal links to /invest-in-venezuela (the parent pillar), /briefing, /sanctions-tracker, and one or more specific tool pages where they fit. The valid tool URLs are EXACTLY: /tools, /tools/ofac-venezuela-sanctions-checker, /tools/ofac-venezuela-general-licenses, /tools/bolivar-usd-exchange-rate, /tools/venezuela-investment-roi-calculator, /tools/venezuela-visa-requirements, /tools/caracas-safety-by-neighborhood. NEVER write /tools/* — pick a real path or use the /tools index.
+- Cite specific OFAC General Licenses, Decreto-Ley / Resolución numbers, USD figures, dates from the LIVE CONTEXT. Never invent statistics.
+- Insert internal links to /invest-in-cuba (the parent pillar), /briefing, /sanctions-tracker, and one or more specific tool pages where they fit. The valid tool URLs are EXACTLY: /tools, /tools/ofac-cuba-sanctions-checker, /tools/ofac-cuba-general-licenses, /tools/eltoque-trmi-rate, /tools/cuba-investment-roi-calculator, /tools/cuba-visa-requirements, /tools/havana-safety-by-neighborhood. NEVER write /tools/* — pick a real path or use the /tools index.
 - Use only: h2, h3, h4, p, ul, ol, li, strong, em, blockquote, a, table, thead, tbody, tr, th, td.
 
 Return ONE JSON object only, with these fields:
-- title (60-80 chars, English, optimized for "Venezuela {sector_label} sector" intent)
+- title (60-80 chars, English, optimized for "Cuba {sector_label} sector" intent)
 - subtitle (140-180 chars)
 - meta_description (150-200 chars, ends with a period)
 - body_html
@@ -219,19 +220,19 @@ Return ONE JSON object only, with these fields:
 - table_of_contents (array of {{anchor, label}})"""
 
 
-EXPLAINER_SYSTEM_PROMPT = """You are a senior emerging-markets analyst writing an evergreen explainer for the Caracas Research.
+EXPLAINER_SYSTEM_PROMPT = """You are a senior emerging-markets analyst writing an evergreen explainer for Cuban Insights.
 
 Your audience: investors, journalists, students, and the general business-curious reader who Googled the topic and wants the definitive plain-English answer.
 
 You MUST:
-- Write 800-1100 words of clear, accessible prose. Define every acronym on first use. Assume the reader knows what a bond and a sanction are, but not much more.
+- Write 800-1100 words of clear, accessible prose. Define every acronym on first use (CACR, OFAC, GL, ZEDM, MIPYME, MLC, TRMI, BCC, GAESA, etc.). Assume the reader knows what a bond and a sanction are, but not much more.
 - Structure with HTML <h2> sections (4-6 of them). Use short <p> paragraphs.
 - Be evergreen. Avoid week-of-publication news framing. Reference current LIVE CONTEXT only for illustration, not as the news hook.
-- Insert internal links to /invest-in-venezuela, /briefing, /sanctions-tracker, the /tools index, and one or more specific sector pages where they fit naturally. The valid URLs are EXACTLY: /invest-in-venezuela, /briefing, /sanctions-tracker, /tools, /tools/ofac-venezuela-sanctions-checker, /tools/ofac-venezuela-general-licenses, /tools/bolivar-usd-exchange-rate, /tools/venezuela-investment-roi-calculator, /tools/venezuela-visa-requirements, /tools/caracas-safety-by-neighborhood, and /sectors/{slug} where slug is one of: oil-gas, mining, banking, agriculture, real-estate, energy, telecom, tourism, sanctions, legal, governance, diplomatic, economic. NEVER write a literal asterisk (e.g. /tools/* or /sectors/*) — pick a real path or use the index.
+- Insert internal links to /invest-in-cuba, /briefing, /sanctions-tracker, the /tools index, and one or more specific sector pages where they fit naturally. The valid URLs are EXACTLY: /invest-in-cuba, /briefing, /sanctions-tracker, /tools, /tools/ofac-cuba-sanctions-checker, /tools/ofac-cuba-general-licenses, /tools/eltoque-trmi-rate, /tools/cuba-investment-roi-calculator, /tools/cuba-visa-requirements, /tools/havana-safety-by-neighborhood, and /sectors/{slug} where slug is one of: tourism, mining, biotech, agriculture, energy, remittances, real-estate, banking, telecom, mariel-zedm, private-sector, sanctions, legal, governance, diplomatic, economic. NEVER write a literal asterisk (e.g. /tools/* or /sectors/*) — pick a real path or use the index.
 - Use only: h2, h3, h4, p, ul, ol, li, strong, em, blockquote, a, table, thead, tbody, tr, th, td.
 
 Return ONE JSON object only, with these fields:
-- title (60-80 chars, English, optimized for the explainer's head term — e.g. "What Are OFAC Sanctions on Venezuela? A 2026 Plain-English Guide")
+- title (60-80 chars, English, optimized for the explainer's head term — e.g. "What Is the Cuba Embargo? A 2026 Plain-English Guide for Investors")
 - subtitle (140-180 chars)
 - meta_description (150-200 chars, ends with a period)
 - body_html
@@ -251,7 +252,7 @@ LIVE CONTEXT (a small sample of the most recent {n_items} high-relevance briefin
 Open with the plain-English answer to the question in the title (the user came here to get one), then walk through the historical and structural context, address the most common related questions, and close with what to do next (linking to our pillar guide, briefing feed, or relevant tool). Avoid hyperbole. No marketing language."""
 
 
-SECTOR_USER_PROMPT_TEMPLATE = """Write the evergreen sector landing page for the {sector_label} sector in Venezuela.
+SECTOR_USER_PROMPT_TEMPLATE = """Write the evergreen sector landing page for the {sector_label} sector in Cuba.
 
 LIVE CONTEXT (the freshest {n_items} high-relevance briefings from our database tagged with this sector. Use these to ground analysis in real recent events):
 
@@ -325,7 +326,7 @@ def generate_pillar_page(
     sectors: list[str] | None = None,
     force: bool = False,
 ) -> LandingPage:
-    """Generate (or regenerate) the /invest-in-venezuela pillar page."""
+    """Generate (or regenerate) the /invest-in-cuba pillar page."""
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY not set; cannot generate pillar page")
 
@@ -335,7 +336,7 @@ def generate_pillar_page(
         if not force:
             existing = (
                 db.query(LandingPage)
-                .filter(LandingPage.page_key == "pillar:invest-in-venezuela")
+                .filter(LandingPage.page_key == "pillar:invest-in-cuba")
                 .first()
             )
             if existing and existing.last_generated_at and (
@@ -361,9 +362,9 @@ def generate_pillar_page(
 
         fields = _payload_to_landing_row(
             payload,
-            page_key="pillar:invest-in-venezuela",
+            page_key="pillar:invest-in-cuba",
             page_type="pillar",
-            canonical_path="/invest-in-venezuela",
+            canonical_path="/invest-in-cuba",
             sector_slug=None,
             usage=usage,
         )

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-CLI entry point for the Caracas Research scraper.
+CLI entry point for the Cuban Insights scraper.
 
 Usage:
-    # Scrape today's gazette and assembly news
+    # Scrape today's gazette and Asamblea Nacional del Poder Popular news
     python run_scraper.py
 
     # Scrape a specific date
@@ -13,8 +13,8 @@ Usage:
     python run_scraper.py --from 2026-03-01 --to 2026-03-31
 
     # Only run specific scrapers
-    python run_scraper.py --source tugaceta
-    python run_scraper.py --source assembly
+    python run_scraper.py --source gaceta_oficial_cu
+    python run_scraper.py --source asamblea_nacional_cu
 """
 
 import logging
@@ -51,10 +51,10 @@ def setup_logging(level: str):
 @click.option("--log-level", default="INFO", type=click.Choice(
               ["DEBUG", "INFO", "WARNING", "ERROR"], case_sensitive=False))
 def main(target_date, date_from, date_to, log_level):
-    """Caracas Research — Daily Scraper"""
+    """Cuban Insights — Daily Scraper"""
     setup_logging(log_level)
 
-    console.print("\n[bold blue]Caracas Research[/bold blue] — Scraper\n")
+    console.print("\n[bold blue]Cuban Insights[/bold blue] — Scraper\n")
 
     init_db()
     console.print("[green]Database initialized.[/green]\n")

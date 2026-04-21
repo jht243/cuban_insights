@@ -13,7 +13,7 @@ import os
 import re
 import sys
 
-os.environ.setdefault("SITE_URL", "https://caracasresearch.com")
+os.environ.setdefault("SITE_URL", "https://cubaninsights.com")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
@@ -30,12 +30,12 @@ FIXES: list[tuple[str, str, str]] = [
      "/sectors/realestate -> /sectors/real-estate"),
     # Bare /sectors/ index doesn't exist; route the user to the parent pillar.
     (r'href="/sectors/?"',
-     'href="/invest-in-venezuela"',
-     "/sectors/ -> /invest-in-venezuela"),
+     'href="/invest-in-cuba"',
+     "/sectors/ -> /invest-in-cuba"),
     # Literal placeholders the LLM didn't expand.
     (r'href="/sectors/\*"',
-     'href="/invest-in-venezuela"',
-     "/sectors/* -> /invest-in-venezuela"),
+     'href="/invest-in-cuba"',
+     "/sectors/* -> /invest-in-cuba"),
     (r'href="/tools/\*"',
      'href="/tools"',
      "/tools/* -> /tools"),

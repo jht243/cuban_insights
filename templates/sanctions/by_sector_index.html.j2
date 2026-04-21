@@ -45,7 +45,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a>
     <span>›</span>
-    <a href="/sanctions-tracker">OFAC Venezuela Sanctions</a>
+    <a href="/sanctions-tracker">OFAC Cuba Sanctions</a>
     <span>›</span>
     <strong>By sector</strong>
   </nav>
@@ -55,30 +55,31 @@
       <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:var(--sr-red); font-weight:700;">
         Live tracker · Refreshed twice daily from US Treasury
       </div>
-      <h1>OFAC Venezuela SDN List by Sector — Currently Sanctioned Military, Economic, Diplomatic &amp; Governance Officials</h1>
+      <h1>OFAC Cuba SDN List by Sector — Currently Sanctioned Military, Economic, Diplomatic &amp; Governance Officials</h1>
       <p class="subtitle">
-        All {{ stats.total }} active OFAC Venezuela-program designations grouped by the sector they
-        operate in: armed forces, financial &amp; oil-sector actors, foreign-affairs officials,
-        and political &amp; judicial figures. Each name links to a permanent profile with OFAC
-        program code, designation date, and biographical data.
+        All {{ stats.total }} active OFAC Cuba-program designations grouped by the sector they
+        operate in: FAR/MINFAR/MININT and security forces; GAESA, state enterprises and
+        financial actors; MINREX and diplomatic officials; and Council of State, ANPP, PCC
+        and TSP figures. Each name links to a permanent profile with OFAC program code,
+        designation date, and biographical data.
       </p>
       <div class="freshness-row">
         <span><strong>Last classified:</strong> {{ today_human }}</span>
         <span><strong>Source:</strong> US Treasury OFAC SDN List</span>
-        <span><strong>Programs covered:</strong> VENEZUELA, EO 13692, EO 13850, EO 13884</span>
+        <span><strong>Programs covered:</strong> CUBA (CACR, 31 CFR Part 515), Cuba Restricted List, Helms-Burton</span>
       </div>
     </header>
 
     <div class="body">
       <p>
-        OFAC's official SDN listing groups Venezuela-related designations only by entity
+        OFAC's official SDN listing groups Cuba-related designations only by entity
         type (<a href="/sanctions/individuals">individuals</a>,
         <a href="/sanctions/entities">entities</a>,
         <a href="/sanctions/vessels">vessels</a>,
-        <a href="/sanctions/aircraft">aircraft</a>) and by executive order — neither view
+        <a href="/sanctions/aircraft">aircraft</a>) and by sanctions program — neither view
         answers the most common compliance question, which is <em>"who are the
-        currently-sanctioned military officials?"</em> or <em>"which Venezuelan banks
-        are on the SDN list?"</em>. The four cards below answer that pivot.
+        currently-sanctioned FAR/MININT officials?"</em> or <em>"which GAESA-linked
+        entities are on the SDN list?"</em>. The four cards below answer that pivot.
       </p>
 
       <div class="sector-grid">
@@ -94,7 +95,7 @@
             {% for p in s.top_names %}
             <li>
               <a href="{{ p.url_path }}">{{ p.display_name }}</a>
-              <small style="color:var(--sr-gray-text); margin-left:6px;">— {{ p.program or 'Venezuela' }}</small>
+              <small style="color:var(--sr-gray-text); margin-left:6px;">— {{ p.program or 'Cuba' }}</small>
             </li>
             {% endfor %}
           </ul>
@@ -107,11 +108,11 @@
       <h2>How we classify each designation</h2>
       <p>
         Sector membership is computed from the OFAC remarks blob (which sometimes
-        carries a job title like <em>"Minister of Defense"</em> or <em>"Bolivarian
-        National Guard"</em>) and a curated overrides table for high-profile
+        carries a job title like <em>"Minister of Interior"</em> or <em>"GAESA
+        subsidiary"</em>) and a curated overrides table for high-profile
         designations whose role is not in the SDN listing itself. Every profile
         belongs to exactly one sector — see the
-        <a href="https://github.com/jonathanteplitsky/venezuela-investment-journal/blob/main/src/data/sdn_profiles.py" rel="nofollow">classifier source</a>
+        <a href="https://github.com/jht243/cuban_insights/blob/main/src/data/sdn_profiles.py" rel="nofollow">classifier source</a>
         if you want to inspect the keyword rules. For the OFAC-canonical view by
         entity type, use the <a href="/sanctions-tracker">sanctions tracker</a>.
       </p>
@@ -122,8 +123,8 @@
         <li><a href="/sanctions/entities">All {{ stats.entities }} sanctioned entities and companies (A–Z)</a></li>
         <li><a href="/sanctions/vessels">All {{ stats.vessels }} blocked vessels</a></li>
         <li><a href="/sanctions/aircraft">All {{ stats.aircraft }} blocked aircraft</a></li>
-        <li><a href="/tools/ofac-venezuela-sanctions-checker">Search any name against the live SDN list</a></li>
-        <li><a href="/tools/ofac-venezuela-general-licenses">Active OFAC General Licenses for Venezuela</a></li>
+        <li><a href="/tools/ofac-cuba-sanctions-checker">Search any name against the live SDN list</a></li>
+        <li><a href="/tools/ofac-cuba-general-licenses">Active OFAC General Licenses for Cuba (CACR §515.560–.578)</a></li>
       </ul>
     </div>
   </article>

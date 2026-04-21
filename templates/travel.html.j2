@@ -96,8 +96,8 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
-    <span>Travel to Venezuela</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
+    <span>Travel to Cuba</span>
   </nav>
 
   <div class="page-share-row">
@@ -106,11 +106,14 @@
 
   <header class="travel-hero">
     <div class="kicker">Travel hub · Updated {{ updated_label }}</div>
-    <h1>Travel to Venezuela: Caracas Operational Briefing</h1>
+    <h1>Travel to Cuba: Havana Operational Briefing</h1>
     <p class="lead">
-      Embassies, hotels, restaurants, hospitals, transport, security firms,
-      money, comms, and the pre-trip and on-the-ground checklists for
-      foreign business travellers, journalists and NGO staff visiting Caracas.
+      Embassies, hotels and casas particulares, paladares, hospitals
+      (Cira García, CIMEQ), transport, Asistur 24/7 assistance, money
+      (no US-issued cards, MLC, CUP, USD cash), comms (ETECSA / eSIM /
+      D'Viajeros), CACR general-license posture, and the pre-trip and
+      on-the-ground checklists for foreign business travellers, journalists
+      and NGO staff visiting Havana.
     </p>
   </header>
 
@@ -160,21 +163,25 @@
 
   <div id="emergency-card" class="register-callout" style="border-left-color: var(--sr-red); background: #fdf3f2; border-color: #f1c5c0;">
     <div class="kicker">Do this second &middot; Free &middot; Print one A4 page</div>
-    <h2>Print the Caracas Emergency Card to fold into your passport</h2>
+    <h2>Print the Havana Emergency Card to fold into your passport</h2>
     <p>
       A bilingual one-page card designed for the moment your phone is dead
-      or stolen and you have no internet. The Spanish side has hospital and
-      embassy addresses a taxi driver can read, big phone numbers a stranger
-      can dial, and your blood type, allergies and home contact in clear
+      or stolen and you have no internet (a routine occurrence in Cuba
+      during apagones). The Spanish side has Cira García clinic and embassy
+      addresses a taxi driver can read, the Asistur 24/7 line and PNR / SIUM
+      ambulance numbers a stranger can dial, and your blood type, allergies,
+      Cuban-law travel-insurance policy number and home contact in clear
       type. Pick your embassy in the dropdown and the card auto-personalizes
       to show only that one. A second throwaway sheet prints with a
-      pre-departure checklist (photocopy passport, hide emergency cash, set
-      up Zelle, register with your embassy &hellip;).
+      pre-departure checklist (photocopy passport, USD/EUR cash in small
+      bills, Cuba Tourist Card, mandatory Cuban-law travel insurance,
+      D'Viajeros customs form, ETECSA eSIM or top-up, register with your
+      embassy &hellip;).
     </p>
     <div class="register-grid" style="grid-template-columns: 1fr;">
       <a href="/travel/emergency-card" style="border-color: var(--sr-red);">
         <span class="country" style="color: var(--sr-red);">Open the card</span>
-        <span class="program">Personalize &amp; print the Caracas Emergency Card &rarr;</span>
+        <span class="program">Personalize &amp; print the Havana Emergency Card &rarr;</span>
         <span class="blurb">Type your details in the browser &mdash; they&rsquo;re saved locally so you can re-print without re-typing. Designed to print as one A4 sheet plus an optional throwaway prep page.</span>
       </a>
     </div>
@@ -187,7 +194,7 @@
       <span style="color: var(--sr-gray-text);"> &mdash; do this first</span>
     </p>
     <p style="margin: 0 0 8px; font-size: 14px;">
-      <a href="#emergency-card" style="color: var(--sr-red); font-weight: 700;">&#9755; Print the Caracas Emergency Card</a>
+      <a href="#emergency-card" style="color: var(--sr-red); font-weight: 700;">&#9755; Print the Havana Emergency Card</a>
       <span style="color: var(--sr-gray-text);"> &mdash; do this second</span>
     </p>
     <ol>
@@ -207,19 +214,21 @@
 
   <div class="pillbar">
     <a href="/travel/emergency-card">Printable emergency card &rarr;</a>
-    <a href="/tools/venezuela-visa-requirements">Visa &amp; entry tool &rarr;</a>
-    <a href="/tools/caracas-safety-by-neighborhood">Caracas safety map &rarr;</a>
-    <a href="/tools/bolivar-usd-exchange-rate">Live BCV &amp; parallel rate &rarr;</a>
+    <a href="/tools/cuba-visa-requirements">Cuba Tourist Card &amp; entry tool &rarr;</a>
+    <a href="/tools/havana-safety-by-neighborhood">Havana safety map &rarr;</a>
+    <a href="/tools/eltoque-trmi-rate">elTOQUE TRMI CUP/USD rate &rarr;</a>
+    <a href="/tools/ofac-cuba-general-licenses">CACR general licenses &rarr;</a>
     <a href="/sanctions-tracker">OFAC sanctions tracker &rarr;</a>
   </div>
 
   {# ======================================================================= #}
   <section id="embassies" class="sec">
-    <h2>1. Embassies &amp; consulates in Caracas</h2>
+    <h2>1. Embassies &amp; consulates in Havana</h2>
     <p class="sec-lead">
       Register with your embassy <em>before</em> you fly via your foreign
       ministry's traveller-registration system (US: STEP; UK: FCDO; Canada:
-      ROCA). All numbers below are in international dialling format.
+      ROCA). Most foreign missions cluster in Miramar (Playa) and Vedado.
+      All numbers below are in international dialling format.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="2" id="embassies-grid">
       {% for e in embassies %}
@@ -246,12 +255,18 @@
 
   {# ======================================================================= #}
   <section id="hotels" class="sec">
-    <h2>2. Where to stay</h2>
+    <h2>2. Where to stay &mdash; hotels &amp; casas particulares</h2>
     <p class="sec-lead">
-      The hotels below are international or long-established Venezuelan
-      properties in safer neighbourhoods (Las Mercedes, La Castellana,
-      Altamira, El Rosal, Chuao). Their concierges arrange airport transfers,
-      which is the single most important logistics call you make on this trip.
+      The properties below are a mix of international-brand hotels, long-
+      established Cuban hotels (most in the GAESA / Gaviota / Habaguanex
+      orbit &mdash; CACR sanctions implications below) and licensed
+      <em>casas particulares</em> in safer neighbourhoods (Vedado, Miramar
+      (Playa), Habana Vieja, Nuevo Vedado). For US persons travelling under
+      the §515.574 "Support for the Cuban People" general license, casas
+      particulares and private paladares are the compliant default; large
+      state-owned hotels on the Cuba Restricted List are not. Concierges
+      and casa hosts can arrange airport transfers, which is the single
+      most important logistics call you make on this trip.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="4" id="hotels-grid">
       {% for h in hotels %}
@@ -276,12 +291,15 @@
 
   {# ======================================================================= #}
   <section id="restaurants" class="sec">
-    <h2>3. Where to eat</h2>
+    <h2>3. Where to eat &mdash; paladares &amp; restaurants</h2>
     <p class="sec-lead">
-      All entries are well-established restaurants in safer central-east
-      neighbourhoods. Reservations are advised for dinner; valet parking
-      is the norm. We deliberately do not list late-night venues outside
-      these zones.
+      All entries are well-established <em>paladares</em> (private,
+      MIPYME-licensed restaurants) and a few state restaurants in
+      Vedado, Miramar and Habana Vieja. Reservations are essential
+      (paladares are small and fill fast); cash USD or EUR is the
+      reliable form of payment because <strong>US-issued credit and
+      debit cards do not work anywhere in Cuba</strong>. For §515.574
+      compliance, prioritise paladares over state-run venues.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="4" id="restaurants-grid">
       {% for r in restaurants %}
@@ -307,9 +325,16 @@
   <section id="medical" class="sec">
     <h2>4. Hospitals &amp; medical providers</h2>
     <p class="sec-lead">
-      Public hospitals are heavily under-resourced and visitors should plan
-      around the private clinics below. Confirm direct billing with your
-      travel-medical insurer (e.g. International SOS) before you fly.
+      Cuba <strong>requires every foreign visitor to hold a Cuban-law
+      travel-insurance policy</strong> at port of entry &mdash; immigration
+      will spot-check. Most travellers buy through Asistur on arrival or
+      have a Cuban-recognised policy from home. For foreigners, the default
+      facility in Havana is the <strong>Cira García Central Clinic</strong>
+      (Miramar) under the Servicios Médicos Cubanos / CSMC network; CIMEQ
+      handles complex cases. Public Cuban hospitals will treat foreigners
+      but typically refer to Cira García. Confirm direct billing with your
+      international travel-medical insurer (International SOS, Cigna Global)
+      before you fly.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="2" id="medical-grid">
       {% for m in medical %}
@@ -335,10 +360,13 @@
   <section id="transport" class="sec">
     <h2>5. Ground transport &amp; drivers</h2>
     <p class="sec-lead">
-      <strong>The single most important rule:</strong> never take a street
-      taxi, especially not at SVMI airport. Always pre-arrange transport.
-      The default option for almost every business traveller is to book the
-      airport transfer through the hotel's reservation desk before flying.
+      <strong>The single most important rule:</strong> pre-arrange your
+      José Martí (HAV) airport transfer through your hotel or casa
+      particular before flying. Cuba does not have ride-hail apps;
+      <em>almendrones</em> (collective Lada taxis), <em>cocotaxis</em> and
+      private taxis (Cubataxi, Taxis Cuba) are the on-the-ground options.
+      Carry small USD or EUR cash for fares &mdash; meters are rarely used
+      and you must agree the price before getting in.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="2" id="transport-grid">
       {% for t in transport %}
@@ -362,13 +390,18 @@
 
   {# ======================================================================= #}
   <section id="security" class="sec">
-    <h2>6. Corporate security advisory</h2>
+    <h2>6. Corporate security &amp; assistance</h2>
     <p class="sec-lead">
-      For protective services in Caracas (executive transport with vetted
-      drivers, residential security, journey management, evacuation), engage
-      one of the established international security firms below rather than
-      contracting a local protective-services vendor cold. They maintain the
-      vetted local relationships you need.
+      Cuba has comparatively low violent-crime rates by regional standards;
+      the dominant risks are petty theft and pickpocketing in tourist
+      zones (Habana Vieja, Vedado, Varadero), <em>jinetero</em> hustles,
+      power outages (apagones), structural collapses in Habana Vieja and
+      Centro Habana, and Atlantic hurricane season (June&ndash;November).
+      The default in-country assistance provider for foreign visitors is
+      <strong>Asistur S.A.</strong> (24/7 medical, legal, repatriation,
+      insurance liaison). For executive protection or journey management,
+      engage an established international security firm that maintains
+      vetted Cuban relationships rather than contracting a local vendor cold.
     </p>
     <div class="card-grid cols-2 section-collapsed" data-limit="2" id="security-grid">
       {% for s in security %}
@@ -392,10 +425,17 @@
 
   {# ======================================================================= #}
   <section id="comms" class="sec">
-    <h2>7. Communications &amp; SIM cards</h2>
+    <h2>7. Communications, ETECSA &amp; eSIMs</h2>
     <p class="sec-lead">
-      Cellular roaming on US carriers is unreliable; plan around an eSIM
-      activated before you board, plus a VPN configured in advance.
+      Cuba's sole telecoms operator is <strong>ETECSA</strong> (state
+      monopoly). US-carrier roaming is unreliable and US-billed eSIMs sit
+      in a CACR / OFAC grey area; many travellers use a non-US eSIM
+      provider activated before you fly, or buy a Cuban tourist SIM /
+      data plan from ETECSA on arrival. Wi-Fi is available in most hotels
+      and ETECSA hotspots but is metered and slow. Several news and
+      messaging sites are blocked or throttled &mdash; configure a VPN at
+      home before you leave (and note that even possessing a VPN can be
+      questioned at the border).
     </p>
     <ul class="checklist section-collapsed" data-limit="2" id="comms-list">
       {% for c in communications %}
@@ -419,10 +459,20 @@
 
   {# ======================================================================= #}
   <section id="money" class="sec">
-    <h2>8. Money &amp; banking</h2>
+    <h2>8. Money, MLC &amp; banking</h2>
     <p class="sec-lead">
-      Caracas runs on US dollar cash and informal Zelle transfers. Bring
-      small denominations and don't rely on ATMs.
+      <strong>US-issued credit and debit cards do not work in Cuba</strong>
+      (Visa, Mastercard, Amex are all blocked because of CACR
+      correspondent-banking restrictions). Bring physical USD or EUR cash
+      in small, clean, recent-series notes &mdash; budget for the trip
+      end-to-end. Convert at CADECA (state currency exchange) into CUP for
+      day-to-day spend; the informal CUP/USD rate (tracked by the
+      <a href="/tools/eltoque-trmi-rate">elTOQUE TRMI</a>) is many
+      multiples above the BCC official rate. <strong>MLC</strong>
+      (<em>Moneda Libremente Convertible</em>) is a hard-currency token
+      used in MLC-only retail outlets and is loaded onto a Cuban Banco
+      Metropolitano / FINCIMEX-issued card; non-residents typically don't
+      need it.
     </p>
     <ul class="checklist section-collapsed" data-limit="2" id="money-list">
       {% for m in money %}
@@ -541,18 +591,19 @@
 
   <div style="margin-top: 40px; padding: 18px; background: var(--sr-gray-bg); border-radius: 4px;">
     <p style="font-size: 14px; color: var(--sr-dark-text); margin: 0;">
-      <strong>Heading to Venezuela?</strong>
-      Subscribe to the Caracas Research daily briefing for sanctions, FX,
-      legal and political updates that affect your trip and your business
-      in Venezuela. <a href="/#signup" style="font-weight: 600;">Get the daily briefing &rarr;</a>
+      <strong>Heading to Cuba?</strong>
+      Subscribe to the Cuban Insights daily briefing for CACR, Helms-Burton,
+      MLC / CUP, hurricane and political updates that affect your trip and
+      your business in Cuba. <a href="/#signup" style="font-weight: 600;">Get the daily briefing &rarr;</a>
     </p>
   </div>
 
   <p style="font-size: 12px; color: var(--sr-gray-text); margin: 24px 0;">
-    Sources: US State Department Travel Advisory and OSAC Caracas Crime &amp;
-    Safety Report; UK FCDO Foreign Travel Advice; MPPRE consular directory;
-    embassy and hotel websites cited above. Information is for planning
-    purposes only and does not constitute travel, legal or security advice.
+    Sources: US State Department Travel Advisory and OSAC Havana Crime &amp;
+    Safety Report; UK FCDO Foreign Travel Advice; MINREX consular directory;
+    INSMET hurricane bulletins; Asistur, Cira García and embassy websites
+    cited above. Information is for planning purposes only and does not
+    constitute travel, legal or security advice.
   </p>
 
 </section>

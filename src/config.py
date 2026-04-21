@@ -21,20 +21,20 @@ class Settings(BaseSettings):
     tesseract_cmd: str = "tesseract"
     tesseract_lang: str = "spa"
 
-    # Source URLs — Cuba sources. The scraper modules still implement the
-    # Venezuela-era logic; they will be rewritten in a follow-up phase to
-    # consume these endpoints. See MIGRATION.md.
+    # Source URLs — Cuba sources consumed by the active scraper modules
+    # (src.scraper.gaceta_oficial_cu, asamblea_nacional_cu, minrex, onei,
+    # bcc, eltoque). See docs/scraper_research.md for endpoint research.
     gazette_official_url: str = "https://www.gacetaoficial.gob.cu"
-    # Mirror placeholder — there is no direct Cuba equivalent of TuGaceta
-    # yet. Kept for backwards-compatibility with the existing scraper
-    # configuration surface; the scraper itself will be repointed at a
-    # CU mirror or dropped.
+    # Reserved for a possible third-party Cuban-gazette mirror. No mirror
+    # is currently authoritative, so it points at the official site for
+    # backwards-compatibility with the legacy scraper configuration
+    # surface.
     gazette_tugaceta_url: str = "https://www.gacetaoficial.gob.cu"
     assembly_url: str = "https://www.parlamentocubano.gob.cu"
-    # Cuba does not publish a Tribunal Supremo gazette analogous to
-    # Venezuela's TSJ. Repointed at the Tribunal Supremo Popular landing
-    # page; the scraper will be retired or replaced in the migration.
-    tsj_url: str = "http://www.tsp.gob.cu"
+    # Tribunal Supremo Popular landing page. Cuba does not publish a
+    # dedicated case-law gazette; the TSP page is monitored for
+    # institutional announcements only.
+    tsp_url: str = "http://www.tsp.gob.cu"
     # El Toque informal-rate tracker — the most-watched FX number on the
     # island. Surfaced via the authenticated dev API at tasas.eltoque.com
     # (HTML scraping of eltoque.com itself is prohibited by their ToS).

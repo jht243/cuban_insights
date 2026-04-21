@@ -6,8 +6,7 @@ The BCC publishes its daily reference rates as JSON via the public
 (probed live during the source-research pass; see
 docs/scraper_research.md). Using the API instead of scraping
 www.bc.gob.cu HTML eliminates the need for headless browsers, OCR, or
-proxy infrastructure — a significant simplification over the
-Venezuela-era BCV scraper this module replaces.
+proxy infrastructure.
 
 Each currency on the BCC API has THREE rates:
 

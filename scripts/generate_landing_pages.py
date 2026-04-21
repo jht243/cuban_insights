@@ -26,53 +26,71 @@ if str(ROOT) not in sys.path:
 
 EXPLAINERS = [
     {
-        "slug": "what-are-ofac-sanctions-on-venezuela",
-        "title": "What Are OFAC Sanctions on Venezuela? A Plain-English Guide",
-        "intent": "what are OFAC sanctions on Venezuela / how do US sanctions on Venezuela work",
+        "slug": "what-are-ofac-sanctions-on-cuba",
+        "title": "What Are OFAC Sanctions on Cuba? A Plain-English Guide to the Embargo",
+        "intent": "what are OFAC sanctions on Cuba / how does the US embargo on Cuba work / CACR 31 CFR 515 explained",
     },
     {
-        "slug": "what-is-the-banco-central-de-venezuela",
-        "title": "What Is the Banco Central de Venezuela (BCV)? A 2026 Guide",
-        "intent": "what is the BCV / Banco Central de Venezuela explained",
+        "slug": "helms-burton-title-iii",
+        "title": "Helms-Burton Title III Explained: Confiscated-Property Lawsuits Against US-Listed Companies",
+        "intent": "Helms-Burton Title III / LIBERTAD Act Title III lawsuits / trafficking in confiscated Cuban property",
     },
     {
-        "slug": "venezuelan-bolivar-explained",
-        "title": "The Venezuelan Bolívar Explained: History, Devaluations, and Today's Rate",
-        "intent": "what is the bolivar / why has the bolivar devalued",
+        "slug": "cuba-restricted-list",
+        "title": "The Cuba Restricted List Explained: GAESA, CIMEX, Gaviota and the §515.209 Prohibition",
+        "intent": "Cuba Restricted List / State Department prohibited counterparty list / §515.209",
     },
     {
-        "slug": "how-to-buy-venezuelan-bonds",
-        "title": "How to Buy Venezuelan Sovereign and PDVSA Bonds in 2026",
-        "intent": "how to buy Venezuelan bonds / PDVSA bond investing",
+        "slug": "what-is-the-banco-central-de-cuba",
+        "title": "What Is the Banco Central de Cuba (BCC)? A 2026 Guide for Foreign Investors",
+        "intent": "what is the BCC / Banco Central de Cuba explained / Cuba official exchange rate",
     },
     {
-        "slug": "doing-business-in-caracas",
-        "title": "Doing Business in Caracas: An Operating Manual for Foreign Investors",
-        "intent": "doing business in Caracas / Caracas business etiquette / how to set up a company in Venezuela",
+        "slug": "cuban-mlc-explained",
+        "title": "Cuba's MLC Virtual Currency Explained: What MLC Is, How Stores Work, Repatriation Risk",
+        "intent": "what is MLC Cuba / moneda libremente convertible / MLC stores Cuba",
+    },
+    {
+        "slug": "cup-cuc-tarea-ordenamiento",
+        "title": "Tarea Ordenamiento (Jan 2021): The CUP/CUC Unification and What It Broke",
+        "intent": "Tarea Ordenamiento Cuba / CUP CUC unification / Cuban monetary reform 2021",
+    },
+    {
+        "slug": "empresa-mixta-foreign-investment-law",
+        "title": "Empresa Mixta and Cuba's Foreign Investment Law (Ley 118): Joint-Venture Mechanics",
+        "intent": "empresa mixta Cuba / Ley 118 foreign investment / Cuban joint venture structure",
+    },
+    {
+        "slug": "doing-business-in-havana",
+        "title": "Doing Business in Havana: An Operating Manual for Foreign Investors",
+        "intent": "doing business in Havana / Cuba business etiquette / how to set up a company in Cuba",
     },
 ]
 
 
 DEFAULT_SECTORS = [
+    "tourism",
+    "biotech",
     "mining",
-    "diplomatic",
-    "governance",
+    "telecom",
+    "agriculture",
+    "remittances",
+    "real-estate",
+    "mariel-zedm",
+    "private-sector",
+    "energy",
+    "banking",
     "sanctions",
     "legal",
-    "real-estate",
-    "energy",
-    "oil-gas",
-    "banking",
+    "governance",
     "economic",
-    "agriculture",
-    "telecom",
-    "tourism",
+    "diplomatic",
 ]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--pillar", action="store_true", help="Generate the /invest-in-venezuela pillar page")
+    parser.add_argument("--pillar", action="store_true", help="Generate the /invest-in-cuba pillar page")
     parser.add_argument("--sector", type=str, default=None, help="Generate one /sectors/{slug} page")
     parser.add_argument("--all-sectors", action="store_true", help="Generate all sector pages")
     parser.add_argument("--explainer", type=str, default=None, help="Generate one /explainers/{slug} page")

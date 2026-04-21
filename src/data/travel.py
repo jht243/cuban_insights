@@ -1,31 +1,41 @@
 """
-Static curated dataset for the Caracas Research Travel hub.
+Static curated dataset for the Cuban Insights Travel hub.
 
 Audience: foreign business travellers, journalists, researchers, NGO and
-diplomatic staff visiting Caracas. Most international leisure travel to
-Venezuela is discouraged by the US State Department (Level 3) and other
-foreign ministries; this hub assumes the reader has already decided to
-travel and needs operational logistics.
+diplomatic staff visiting Havana. Most US-based business travel to Cuba
+is governed by the OFAC Cuban Assets Control Regulations (CACR) general-
+license categories — this hub assumes the reader has already chosen a
+qualifying category (typically "Support for the Cuban People" or
+"Educational/People-to-People") and needs operational logistics.
 
 Authoritative / source-of-truth references used to compile this dataset:
-- US State Department Travel Advisory & OSAC Caracas crime reports
-  https://travel.state.gov/.../venezuela-travel-advisory.html
-  https://www.osac.gov/Country/Venezuela
-- UK FCDO Foreign Travel Advice for Venezuela
-  https://www.gov.uk/foreign-travel-advice/venezuela
-- MPPRE (Cancillería) embassy directory
-  https://mppre.gob.ve/
+- US State Department Travel Advisory & OSAC Havana crime reports
+  https://travel.state.gov/.../cuba-travel-advisory.html
+  https://www.osac.gov/Country/Cuba
+- UK FCDO Foreign Travel Advice for Cuba
+  https://www.gov.uk/foreign-travel-advice/cuba
+- Canadian Government — Cuba travel advice
+  https://travel.gc.ca/destinations/cuba
+- MINREX (Cancillería de Cuba) consular directory
+  https://www.minrex.gob.cu/
 - Embassy phone & address records published on each mission's official
   website (cross-checked against EmbassyPages and IATA timatic records).
-- Public listings from the major hotel groups (Marriott, IHG, Pestana,
-  Hampton, Eurobuilding) and TripAdvisor / Caracas restaurant guides.
+- State Department's Cuba Restricted List (31 CFR § 515.209) — the
+  blocked-properties list that determines which Havana hotels US persons
+  may not stay in.
+- Public listings from the major hotel groups (Meliá, Iberostar,
+  Memories Resorts, NH, Kempinski) and TripAdvisor / Lonely Planet
+  Havana guides.
 
 IMPORTANT FRAMING (mirrored on the live page):
-We do not personally vet hotels, drivers, restaurants, or security firms.
-Entries reflect operations and reputation as known to the international
-business-travel community at time of publication. Conditions change
-quickly in Venezuela; always reconfirm a service is operating, current
-pricing, and current security posture before relying on it.
+We do not personally vet hotels, drivers, casas particulares, restaurants
+or assistance providers. Entries reflect operations and reputation as
+known to the international business-travel and OFAC-compliance community
+at time of publication. Conditions on the island change quickly —
+particularly around fuel, electricity, and US-permitted transactions —
+so always reconfirm a service is operating, the current pricing, the
+current Cuba Restricted List status, and the current security posture
+before relying on it.
 """
 
 from __future__ import annotations
@@ -35,23 +45,26 @@ from __future__ import annotations
 # 1) Travel advisory snapshot (also overridden live by the State Dept scraper)
 # ----------------------------------------------------------------------------
 TRAVEL_ADVISORY_SUMMARY = {
-    "level": 3,
-    "label": "Reconsider Travel",
-    "issued": "March 19, 2026",
+    "level": 2,
+    "label": "Exercise Increased Caution",
+    "issued": "2026 (current State Department posting)",
     "summary": (
-        "On 19 March 2026 the US State Department downgraded Venezuela from "
-        "Level 4 (Do Not Travel) to Level 3 (Reconsider Travel), removing "
-        "the Wrongful Detention indicator while keeping Level 4 status on "
-        "the border states of Apure, Barinas, Táchira and Zulia. Crime, "
-        "civil unrest, poor health infrastructure and the risk of arbitrary "
-        "enforcement remain elevated. The US Embassy in Caracas formally "
-        "reopened on March 30, 2026 after a seven-year closure; emergency "
-        "consular support for US citizens is now available locally, while "
-        "routine passport and visa services continue to be handled by the "
-        "Venezuela Affairs Unit at US Embassy Bogotá until the consular "
-        "section reopens."
+        "The US State Department maintains Cuba at Level 2 (Exercise "
+        "Increased Caution) due to anomalous health incidents reported "
+        "by US government personnel (\"Havana Syndrome\"), petty crime "
+        "targeting tourists, and severe shortages of food, medicine, "
+        "fuel, and basic goods that have intensified during the 2024–"
+        "2026 economic crisis. The defining compliance constraint for "
+        "US travellers is NOT the advisory level but the Cuban Assets "
+        "Control Regulations (CACR, 31 CFR Part 515): every US person "
+        "must travel under one of the 12 OFAC general-license "
+        "categories and avoid all transactions with entities on the "
+        "State Department's Cuba Restricted List (31 CFR § 515.209). "
+        "The US Embassy in Havana provides emergency consular "
+        "support; routine non-immigrant visa services for Cuban "
+        "nationals were partially restored in 2023."
     ),
-    "primary_url": "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html",
+    "primary_url": "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cuba-travel-advisory.html",
 }
 
 
@@ -60,8 +73,8 @@ TRAVEL_ADVISORY_SUMMARY = {
 # ----------------------------------------------------------------------------
 # Free, government-operated traveller-registration systems. Once enrolled,
 # the foreign ministry can (a) contact you in a crisis (mass evacuation,
-# family emergency, natural disaster), and (b) push real-time security
-# alerts to your phone or email during the trip. This is the single most
+# family emergency, hurricane), and (b) push real-time security alerts
+# to your phone or email during the trip. This is the single most
 # important pre-departure action after booking your flight — costs
 # nothing, takes about five minutes.
 EMBASSY_REGISTRATION_PROGRAMS: list[dict] = [
@@ -70,28 +83,28 @@ EMBASSY_REGISTRATION_PROGRAMS: list[dict] = [
         "program": "STEP",
         "long_name": "Smart Traveler Enrollment Program",
         "url": "https://step.state.gov/",
-        "blurb": "Run by the US State Department. Enrol your trip and your contact info; receive State Department alerts and become locatable in a crisis.",
+        "blurb": "Run by the US State Department. Enrol your trip and your contact info; receive State Department alerts and become locatable in a crisis. Especially important for Cuba given the limited US consular footprint and hurricane-season risk.",
     },
     {
         "country": "United Kingdom",
         "program": "GOV.UK email alerts",
         "long_name": "FCDO Foreign Travel Advice subscription",
-        "url": "https://www.gov.uk/foreign-travel-advice/venezuela",
-        "blurb": "The FCDO retired LOCATE in 2013; the modern equivalent is to subscribe to email/SMS alerts on the Venezuela travel-advice page.",
+        "url": "https://www.gov.uk/foreign-travel-advice/cuba",
+        "blurb": "The FCDO retired LOCATE in 2013; the modern equivalent is to subscribe to email/SMS alerts on the Cuba travel-advice page.",
     },
     {
         "country": "Canada",
         "program": "ROCA",
         "long_name": "Registration of Canadians Abroad",
         "url": "https://travel.gc.ca/travelling/registration",
-        "blurb": "Free service from Global Affairs Canada. Lets the embassy contact you and family in an emergency.",
+        "blurb": "Free service from Global Affairs Canada. Particularly relevant given Canada's status as Cuba's largest source-tourism market — the Canadian Embassy in Havana will use this to reach you in an emergency.",
     },
     {
         "country": "Australia",
         "program": "Smartraveller",
         "long_name": "DFAT Smartraveller subscriptions",
-        "url": "https://www.smartraveller.gov.au/destinations/americas/venezuela",
-        "blurb": "Subscribe to email/SMS updates for the Venezuela advisory; DFAT will use your registered details to reach you in a consular crisis.",
+        "url": "https://www.smartraveller.gov.au/destinations/americas/cuba",
+        "blurb": "Subscribe to email/SMS updates for the Cuba advisory; DFAT will use your registered details to reach you in a consular crisis. Australia's nearest mission is in Mexico City.",
     },
     {
         "country": "Germany",
@@ -119,14 +132,14 @@ EMBASSY_REGISTRATION_PROGRAMS: list[dict] = [
         "program": "Registro de Viajeros",
         "long_name": "Spanish consular traveller register",
         "url": "https://registroviajeros.exteriores.gob.es/",
-        "blurb": "MAEC's free pre-travel registration for Spanish nationals.",
+        "blurb": "MAEC's free pre-travel registration for Spanish nationals. Especially important for the large Spanish-Cuban dual-national community.",
     },
     {
         "country": "Netherlands",
         "program": "BZ Information Service",
         "long_name": "Travel advice subscription + 24/7 contact centre",
-        "url": "https://www.nederlandwereldwijd.nl/reisadvies/venezuela",
-        "blurb": "Subscribe to Venezuela travel-advice updates; BZ's 24/7 contact centre (+31 247 247 247) is the Dutch consular crisis line.",
+        "url": "https://www.nederlandwereldwijd.nl/reisadvies/cuba",
+        "blurb": "Subscribe to Cuba travel-advice updates; BZ's 24/7 contact centre (+31 247 247 247) is the Dutch consular crisis line.",
     },
     {
         "country": "Switzerland",
@@ -139,141 +152,133 @@ EMBASSY_REGISTRATION_PROGRAMS: list[dict] = [
 
 
 # ----------------------------------------------------------------------------
-# 2) Embassies & consulates in Caracas
+# 2) Embassies & consulates in Havana
 # ----------------------------------------------------------------------------
-# Phone numbers are listed in international format. Caracas country code is
-# +58, city code (212) for landlines, mobile prefixes start with +58 4xx.
-# Each entry has a `notes` field where we flag closed missions, virtual
-# coverage from other capitals, or anything else a traveller needs to know
-# before showing up at the door.
+# Phone numbers are listed in international format. Cuba country code is
+# +53; Havana city code is (7) for landlines; mobile prefixes start with
+# +53 5xx (ETECSA's Cubacel network). Embassies are concentrated in two
+# districts: most diplomatic missions sit in Miramar (Playa
+# municipality) — the canonical "embassy district" — with a few historic
+# missions in Vedado.
 EMBASSIES: list[dict] = [
     {
         "country": "United States",
-        "city": "Caracas (reopened March 30, 2026)",
-        "address": "Calle F con Calle Suapure, Urb. Colinas de Valle Arriba, Caracas",
-        "phone": "+1 202 501-4444 (international)",
-        "after_hours": "1-888-407-4747 (US/Canada toll-free) · +1 202 501-4444 (intl)",
-        "email": "ACSBogota@state.gov",
-        "website": "https://ve.usembassy.gov/",
+        "city": "Havana",
+        "address": "Calzada entre L y M, Vedado, Habana 10400",
+        "phone": "+53 7 839-4100",
+        "after_hours": "+53 7 839-4100 (24h emergency line) · 1-888-407-4747 (US/Canada toll-free)",
+        "email": "ACShavana@state.gov",
+        "website": "https://cu.usembassy.gov/",
         "notes": (
-            "The US Embassy in Caracas formally resumed operations on "
-            "March 30, 2026 after a seven-year closure, led by Chargé "
-            "d'Affaires Laura F. Dogu. The consular section is still "
-            "under restoration — routine passport and visa services are "
-            "not yet provided in Caracas and continue to be handled by the "
-            "Venezuela Affairs Unit at US Embassy Bogotá. Emergency consular "
-            "support for US citizens in Venezuela is now available locally."
+            "Reopened in 2015, scaled back significantly after the "
+            "2017 \"Havana Syndrome\" health incidents drove a near-"
+            "total drawdown of US personnel. Limited routine consular "
+            "services for non-immigrant visas resumed in 2023; "
+            "immigrant-visa processing for Cuban nationals continues "
+            "to be split between Havana and the US Embassy in "
+            "Georgetown, Guyana. Provides 24/7 emergency consular "
+            "services to US citizens in Cuba."
         ),
     },
     {
         "country": "United Kingdom",
-        "city": "Caracas",
-        "address": "Torre La Castellana, Piso 11, Av. Eugenio Mendoza con Calle Urdaneta, La Castellana, Caracas 1060",
-        "phone": "+58 212 263-8411",
-        "after_hours": "+58 212 263-8411 (24h emergency line)",
-        "email": "consularenquiries.caracas@fcdo.gov.uk",
-        "website": "https://www.gov.uk/world/organisations/british-embassy-venezuela",
-        "notes": "Active mission; consular services for UK nationals.",
+        "city": "Havana",
+        "address": "Calle 34, No. 702, esquina a 7ma Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 214-2200",
+        "after_hours": "+53 7 214-2200 (24h emergency line)",
+        "email": "embajadabritanica.lahabana@fcdo.gov.uk",
+        "website": "https://www.gov.uk/world/organisations/british-embassy-cuba",
+        "notes": "Active mission in Miramar; full consular services for UK nationals; provides notarial services for UK investors.",
     },
     {
         "country": "Spain",
-        "city": "Caracas",
-        "address": "Av. Mohedano con calle Los Chaguaramos, Quinta Marmolejo, La Castellana, Caracas",
-        "phone": "+58 212 263-2855",
-        "after_hours": "+58 414 320-3214",
-        "email": "emb.caracas@maec.es",
-        "website": "https://www.exteriores.gob.es/embajadas/caracas",
-        "notes": "Largest European mission in Caracas; significant Spanish national community.",
+        "city": "Havana",
+        "address": "Cárcel No. 51, esquina a Zulueta, Habana Vieja, Habana",
+        "phone": "+53 7 866-8025",
+        "after_hours": "+53 5 280-3500 (consular emergency mobile)",
+        "email": "emb.lahabana@maec.es",
+        "website": "https://www.exteriores.gob.es/embajadas/lahabana",
+        "notes": "Largest European mission in Havana; serves the very large Spanish-Cuban dual-national community ('Ley de Memoria Democrática' descent rights). Located in Habana Vieja.",
     },
     {
         "country": "France",
-        "city": "Caracas",
-        "address": "Calle Madrid con Av. Trinidad, Las Mercedes, Caracas 1080",
-        "phone": "+58 212 909-6500",
-        "after_hours": "+58 414 270-4747",
-        "email": "consulat.caracas-amba@diplomatie.gouv.fr",
-        "website": "https://ve.ambafrance.org/",
-        "notes": "Active embassy with full consular section.",
+        "city": "Havana",
+        "address": "Calle 14, No. 312, entre 3ra y 5ta Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 201-3131",
+        "after_hours": "+33 1 53 59 11 00 (Quai d'Orsay 24/7 crisis centre)",
+        "email": "service.consulaire.havane-amba@diplomatie.gouv.fr",
+        "website": "https://cu.ambafrance.org/",
+        "notes": "Active embassy with full consular section in the Miramar diplomatic corridor.",
     },
     {
         "country": "Germany",
-        "city": "Caracas",
-        "address": "Av. Eugenio Mendoza, Edificio Torre La Castellana, Piso 10, La Castellana, Caracas",
-        "phone": "+58 212 261-0181",
-        "after_hours": "+58 414 322-8030",
-        "email": "info@cara.diplo.de",
-        "website": "https://caracas.diplo.de/",
-        "notes": "Operating with reduced staff; routine services available by appointment.",
+        "city": "Havana",
+        "address": "Calle 13, No. 652, esquina a Calle B, Vedado, Habana",
+        "phone": "+53 7 833-2569",
+        "after_hours": "+49 30 5000-2000 (Auswärtiges Amt 24/7 crisis line)",
+        "email": "info@havanna.diplo.de",
+        "website": "https://havanna.diplo.de/",
+        "notes": "Active mission; routine services available by appointment.",
     },
     {
         "country": "Italy",
-        "city": "Caracas",
-        "address": "Calle Sorocaima, Quinta Mi Reposo, El Rosal, Caracas",
-        "phone": "+58 212 952-7311",
-        "after_hours": "+58 414 246-7424",
-        "email": "ambasciata.caracas@esteri.it",
-        "website": "https://ambcaracas.esteri.it/",
-        "notes": "Active; serves the large Italo-Venezuelan community.",
+        "city": "Havana",
+        "address": "5ta Avenida, No. 4006, entre 40 y 42, Miramar, Playa, Habana",
+        "phone": "+53 7 204-5615",
+        "after_hours": "+39 06 36225 (Unità di Crisi Roma)",
+        "email": "ambasciata.havana@esteri.it",
+        "website": "https://amblavana.esteri.it/",
+        "notes": "Active embassy in the Miramar diplomatic corridor.",
     },
     {
         "country": "Canada",
-        "city": "Caracas",
-        "address": "Av. Francisco de Miranda con Av. Sur Altamira, Edificio Centro Altamira, Piso 7, Altamira, Caracas",
-        "phone": "+58 212 600-3000",
+        "city": "Havana",
+        "address": "Calle 30, No. 518, esquina a 7ma Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 204-2516",
         "after_hours": "+1 613 996-8885 (Ottawa Emergency Watch)",
-        "email": "crcas@international.gc.ca",
-        "website": "https://www.international.gc.ca/country-pays/venezuela/index.aspx?lang=eng",
-        "notes": "Operating with reduced services; emergency consular help also via Ottawa Emergency Watch and Response Centre 24/7.",
-    },
-    {
-        "country": "Brazil",
-        "city": "Caracas",
-        "address": "Calle Los Chaguaramos con Av. Mohedano, La Castellana, Caracas",
-        "phone": "+58 212 261-4481",
-        "after_hours": "+58 414 273-1212",
-        "email": "brasemb.caracas@itamaraty.gov.br",
-        "website": "http://caracas.itamaraty.gov.br/",
-        "notes": "Active full embassy; key regional partner.",
-    },
-    {
-        "country": "Colombia",
-        "city": "Caracas",
-        "address": "Segunda Av. de Campo Alegre con Av. Francisco de Miranda, Caracas",
-        "phone": "+58 212 216-9100",
-        "after_hours": "+57 601 326-1300 (Bogotá emergency line)",
-        "email": "ecaracas@cancilleria.gov.co",
-        "website": "https://caracas.consulado.gov.co/",
-        "notes": "Reopened after the 2022 normalization of Venezuela-Colombia ties.",
+        "email": "havan@international.gc.ca",
+        "website": "https://www.international.gc.ca/country-pays/cuba/index.aspx?lang=eng",
+        "notes": "Full embassy in Miramar; serves Cuba's largest source-tourism market and consular services for Canadians injured / hospitalised at the beach resorts (Varadero, Cayo Coco, Cayo Santa María).",
     },
     {
         "country": "Mexico",
-        "city": "Caracas",
-        "address": "Av. Principal de La Castellana con calle Carlos Fariñas, Edificio Forum La Castellana, Piso 7, Caracas",
-        "phone": "+58 212 263-2622",
-        "after_hours": "+58 414 211-8100",
-        "email": "embmexven@embamexven.org",
-        "website": "https://embamex.sre.gob.mx/venezuela/",
-        "notes": "Operating; consular services for Mexican nationals.",
+        "city": "Havana",
+        "address": "Calle 12, No. 518, esquina a 7ma Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 204-2553",
+        "after_hours": "+52 55 3686-5100 (SRE Mexico City)",
+        "email": "embamexcuba@sre.gob.mx",
+        "website": "https://embamex.sre.gob.mx/cuba/",
+        "notes": "Active embassy; key consular point for Mexican nationals and for Mexico's role as default lateral routing hub for Cuba-related trade.",
+    },
+    {
+        "country": "Brazil",
+        "city": "Havana",
+        "address": "Calle 16, No. 503, entre 5ta y 7ma Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 204-2139",
+        "after_hours": "+55 61 2030-1000 (Itamaraty Brasília)",
+        "email": "habana@itamaraty.gov.br",
+        "website": "http://habana.itamaraty.gov.br/",
+        "notes": "Active full embassy; key regional partner.",
     },
     {
         "country": "Netherlands",
-        "city": "Caracas",
-        "address": "Av. San Juan Bosco con 3ra Transversal, Torre Credival, Piso 11, Altamira, Caracas",
-        "phone": "+58 212 276-9300",
+        "city": "Havana",
+        "address": "Calle 8, No. 307, entre 3ra y 5ta Avenida, Miramar, Playa, Habana",
+        "phone": "+53 7 204-2511",
         "after_hours": "+31 247 247 247 (24/7 BZ Contact Centre, Netherlands)",
-        "email": "car@minbuza.nl",
-        "website": "https://www.netherlandsandyou.nl/web/venezuela-en",
-        "notes": "Active; also serves Dutch citizens transiting from Aruba/Curaçao/Bonaire.",
+        "email": "hav@minbuza.nl",
+        "website": "https://www.netherlandsworldwide.nl/countries/cuba",
+        "notes": "Active; also serves Dutch citizens transiting from Aruba/Curaçao/Bonaire — a common arrival vector.",
     },
     {
         "country": "Switzerland",
-        "city": "Caracas",
-        "address": "Centro Letonia, Torre ING Bank, Piso 15, Av. Eugenio Mendoza, La Castellana, Caracas",
-        "phone": "+58 212 267-9585",
+        "city": "Havana",
+        "address": "5ta Avenida, No. 2005, entre 20 y 22, Miramar, Playa, Habana",
+        "phone": "+53 7 204-2611",
         "after_hours": "+41 800 24-7 365 (Helpline EDA, Bern)",
-        "email": "caracas@eda.admin.ch",
-        "website": "https://www.eda.admin.ch/caracas",
-        "notes": "Active embassy.",
+        "email": "havanna@eda.admin.ch",
+        "website": "https://www.eda.admin.ch/havanna",
+        "notes": "Active embassy; from 1961 to 2015 the Swiss mission also served as the US Interests Section in Havana — a deep institutional memory of the bilateral.",
     },
 ]
 
@@ -281,82 +286,134 @@ EMBASSIES: list[dict] = [
 # ----------------------------------------------------------------------------
 # 3) Hotels frequently used by international business travellers
 # ----------------------------------------------------------------------------
-# Selection criteria: international brand or long-established Venezuelan
-# brand operating continuously, located in safer zones (Las Mercedes,
-# La Castellana, Altamira, El Rosal, Chacao), with concierge desks that
+# Selection criteria: international brand or long-established Cuban
+# brand operating continuously, located in safer zones (Miramar /
+# Playa, Vedado, Habana Vieja core), with concierge desks that
 # routinely handle airport transfers and corporate-traveller logistics.
+#
+# CRITICAL US-COMPLIANCE FLAG: Many of Havana's branded hotels operate
+# under joint-venture agreements with Cubanacán / Gaviota / GAESA and
+# appear on the State Department's Cuba Restricted List (31 CFR §
+# 515.209) — which prohibits US-person transactions. We tag each hotel
+# with `cuba_restricted_list` so US travellers can self-screen. This
+# list changes — always cross-check with the live State Department PDF
+# at https://www.state.gov/cuba-restricted-list/ before booking.
 HOTELS: list[dict] = [
     {
-        "name": "JW Marriott Hotel Caracas",
-        "neighborhood": "El Rosal (Chacao)",
+        "name": "Meliá Habana",
+        "neighborhood": "Miramar (Playa)",
         "tier": "5★ international",
-        "phone": "+58 212 957-2222",
-        "address": "Av. Venezuela, El Rosal, Caracas 1060",
-        "url": "https://www.marriott.com/en-us/hotels/ccsjw-jw-marriott-hotel-caracas/overview/",
-        "why_listed": "Marriott-managed; central business location; concierge handles secure airport transfers.",
+        "phone": "+53 7 204-8500",
+        "address": "3ra Avenida entre 76 y 80, Miramar, Playa, Habana",
+        "url": "https://www.melia.com/en/hotels/cuba/havana/melia-habana/",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Spanish Meliá brand; default conference hotel for the foreign-investor "
+            "and diplomatic circuit in Miramar. Operated under JV with Cubanacán. "
+            "Listed on the Cuba Restricted List — NOT bookable by US persons."
+        ),
     },
     {
-        "name": "Renaissance Caracas La Castellana Hotel",
-        "neighborhood": "La Castellana",
+        "name": "Iberostar Selection Habana Riviera",
+        "neighborhood": "Vedado (Malecón)",
         "tier": "5★ international",
-        "phone": "+58 212 503-5000",
-        "address": "Av. Urdaneta con Av. Eugenio Mendoza, La Castellana, Caracas",
-        "url": "https://www.marriott.com/en-us/hotels/ccsbr-renaissance-caracas-la-castellana-hotel/overview/",
-        "why_listed": "Marriott Renaissance flagship; near most foreign embassies and corporate offices.",
+        "phone": "+53 7 836-4051",
+        "address": "Paseo y Malecón, Vedado, Habana",
+        "url": "https://www.iberostar.com/en/hotels/havana/iberostar-selection-habana-riviera/",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Restored Meyer Lansky-era landmark on the Malecón; Iberostar brand "
+            "operated under JV with the Cuban government. Listed on the Cuba "
+            "Restricted List — NOT bookable by US persons."
+        ),
     },
     {
-        "name": "Pestana Caracas Premium City & Conference Hotel",
-        "neighborhood": "El Rosal",
-        "tier": "4★ international",
-        "phone": "+58 212 771-8011",
-        "address": "Av. Francisco de Miranda con Av. Principal de El Bosque, El Rosal, Caracas",
-        "url": "https://www.pestana.com/en/hotel/pestana-caracas",
-        "why_listed": "Portuguese Pestana group; conference facilities used by foreign chambers of commerce.",
+        "name": "Kempinski Hotel Manzana La Habana",
+        "neighborhood": "Habana Vieja (next to the Capitolio)",
+        "tier": "5★ international",
+        "phone": "+53 7 869-9100",
+        "address": "Calle San Rafael, entre Monserrate y Zulueta, Habana Vieja",
+        "url": "https://www.kempinski.com/en/hotel-manzana-la-habana/",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Historic Manzana de Gómez building; first European luxury operator in "
+            "Habana Vieja. Operated under contract with Gaviota. Listed on the "
+            "Cuba Restricted List — NOT bookable by US persons."
+        ),
     },
     {
-        "name": "Eurobuilding Hotel & Suites Caracas",
-        "neighborhood": "Chuao",
-        "tier": "5★ local-international",
-        "phone": "+58 212 902-1111",
-        "address": "Final Calle La Guairita, Chuao, Caracas",
-        "url": "https://www.eurobuilding.com.ve/",
-        "why_listed": "Largest convention hotel in Caracas; common venue for delegations and trade missions.",
-    },
-    {
-        "name": "Hotel Tamanaco InterContinental",
-        "neighborhood": "Las Mercedes",
+        "name": "Hotel Nacional de Cuba",
+        "neighborhood": "Vedado (Malecón)",
         "tier": "5★ historic",
-        "phone": "+58 212 909-7111",
-        "address": "Av. Principal de Las Mercedes, Caracas",
-        "url": "https://www.ihg.com/intercontinental/hotels/us/en/caracas/ccsha/hoteldetail",
-        "why_listed": "Historic IHG-flagged property in safer Las Mercedes; gardens and pool inside a walled compound.",
+        "phone": "+53 7 836-3564",
+        "address": "Calle 21 y O, Vedado, Habana",
+        "url": "https://www.hotelnacionaldecuba.com/",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Iconic 1930s landmark on the Malecón; operated by Cubanacán. Mafia-era "
+            "history (Havana Conference 1946). Listed on the Cuba Restricted List "
+            "— NOT bookable by US persons. Tour visits to the public areas, lobby "
+            "bar and Salón de la Fama remain culturally significant."
+        ),
     },
     {
-        "name": "Hampton by Hilton Caracas Las Mercedes",
-        "neighborhood": "Las Mercedes",
-        "tier": "3★ international",
-        "phone": "+58 212 905-3000",
-        "address": "Calle Madrid con Calle Mucuchies, Las Mercedes, Caracas",
-        "url": "https://www.hilton.com/en/hotels/ccslmhx-hampton-caracas-las-mercedes/",
-        "why_listed": "Hilton-flagged; lower price point in a safer zone; reliable hot water and Wi-Fi.",
-    },
-    {
-        "name": "Embassy Suites by Hilton Caracas",
-        "neighborhood": "Valle Arriba",
+        "name": "Memories Miramar Habana",
+        "neighborhood": "Miramar (Playa)",
         "tier": "4★ international",
-        "phone": "+58 212 902-1100",
-        "address": "Final Av. Principal de Valle Arriba con Calle Caroata, Caracas",
-        "url": "https://www.hilton.com/en/hotels/ccseses-embassy-suites-caracas/",
-        "why_listed": "All-suite layout suited to longer stays; on-site dining; fenced-perimeter compound.",
+        "phone": "+53 7 204-3584",
+        "address": "5ta Avenida y 72, Miramar, Playa, Habana",
+        "url": "https://www.memoriesresorts.com/en/resort/memories-miramar-havana",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Operated by Sunwing's Memories Resorts brand under JV with Cubanacán. "
+            "Convention facilities; popular with Canadian business travellers. "
+            "Listed on the Cuba Restricted List — NOT bookable by US persons."
+        ),
     },
     {
-        "name": "Cayena-Caracas Hotel",
-        "neighborhood": "Las Mercedes",
-        "tier": "Boutique",
-        "phone": "+58 212 991-0395",
-        "address": "Calle Veracruz con Calle Cali, Las Mercedes, Caracas",
-        "url": "https://www.hotelcayena.com/",
-        "why_listed": "Small boutique hotel often picked by journalists and NGO staff for its quieter footprint.",
+        "name": "Hotel NH Capri La Habana",
+        "neighborhood": "Vedado",
+        "tier": "4★ international",
+        "phone": "+53 7 839-7200",
+        "address": "Calle 21, entre N y O, Vedado, Habana",
+        "url": "https://www.nh-hotels.com/hotel/nh-capri-la-habana",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Restored Capri (1957) under NH Hotel Group management. Listed on the "
+            "Cuba Restricted List — NOT bookable by US persons."
+        ),
+    },
+    {
+        "name": "Casas Particulares (private B&Bs in Vedado / Habana Vieja / Miramar)",
+        "neighborhood": "Across central Havana",
+        "tier": "Private homestay",
+        "phone": "Varies — book via Airbnb, Cuba Junky, or direct WhatsApp",
+        "address": "Multiple",
+        "url": "https://www.airbnb.com/s/Havana--Cuba/homes",
+        "cuba_restricted_list": False,
+        "why_listed": (
+            "Casas particulares are licensed private homestays operated by Cuban "
+            "MIPYMES / cuentapropistas — NOT GAESA-controlled. They are the "
+            "OFAC-compliant accommodation for US travellers under the 'Support "
+            "for the Cuban People' general license (31 CFR § 515.574), and "
+            "supporting independent Cuban entrepreneurs is itself a justifying "
+            "activity. The best Vedado / Habana Vieja / Miramar casas are "
+            "operationally comparable to a small boutique hotel."
+        ),
+    },
+    {
+        "name": "Hotel Saratoga (closed since May 2022 explosion)",
+        "neighborhood": "Habana Vieja",
+        "tier": "Closed",
+        "phone": "—",
+        "address": "Paseo del Prado, esquina a Dragones, Habana Vieja",
+        "url": "https://www.hotel-saratoga.com/",
+        "cuba_restricted_list": True,
+        "why_listed": (
+            "Listed for awareness only — the Hotel Saratoga (Gaviota / Habaguanex) "
+            "was destroyed by a gas explosion on 6 May 2022 and remains closed "
+            "for reconstruction. Listed on the Cuba Restricted List."
+        ),
     },
 ]
 
@@ -364,73 +421,92 @@ HOTELS: list[dict] = [
 # ----------------------------------------------------------------------------
 # 4) Restaurants
 # ----------------------------------------------------------------------------
-# Restricted to well-established places inside the safer central-east
-# corridor (Las Mercedes, Altamira, El Hatillo, La Castellana, Chacao).
-# We deliberately avoid recommending late-night venues outside these zones.
+# Restricted to well-established places inside the safer central
+# corridor (Miramar, Vedado, Habana Vieja core, Playa). We deliberately
+# emphasise paladares (privately-owned restaurants licensed under
+# cuentapropismo / MIPYME law) — they are independently owned, generally
+# CACR-compliant for US persons under the Support for the Cuban People
+# general license, and consistently of higher culinary quality than the
+# state-run alternatives.
 RESTAURANTS: list[dict] = [
     {
-        "name": "Alto",
-        "cuisine": "Tasting menu (Carlos García)",
-        "neighborhood": "Los Palos Grandes",
-        "phone": "+58 212 286-7849",
-        "url": "https://www.altorestaurant.com/",
-        "notes": "Best-known fine-dining room in Caracas; reservations essential weeks ahead.",
+        "name": "La Guarida",
+        "cuisine": "Cuban / fine-dining paladar",
+        "neighborhood": "Centro Habana",
+        "phone": "+53 7 866-9047",
+        "url": "https://laguarida.com/",
+        "notes": (
+            "The most internationally-known paladar in Havana, set in a "
+            "crumbling Centro Habana mansion (the Fresa y Chocolate film "
+            "location). Reservations weeks ahead. Privately owned — "
+            "OFAC-compliant for US persons under the Support for the "
+            "Cuban People general license."
+        ),
     },
     {
-        "name": "Amapola",
-        "cuisine": "Mediterranean / Spanish",
-        "neighborhood": "Las Mercedes",
-        "phone": "+58 212 991-3458",
-        "url": "https://www.instagram.com/amapola.ccs/",
-        "notes": "Polished room popular with executives; reservation recommended.",
+        "name": "El Cocinero",
+        "cuisine": "Mediterranean / Cuban paladar",
+        "neighborhood": "Vedado (next to Fábrica de Arte Cubano)",
+        "phone": "+53 7 832-2355",
+        "url": "https://elcocinerocuba.com/",
+        "notes": (
+            "Rooftop restaurant in a converted peanut-oil factory smokestack, "
+            "co-located with FAC. Default after-hours dinner spot for the "
+            "diplomatic and cultural circuit. Privately owned."
+        ),
     },
     {
-        "name": "Mokambo",
-        "cuisine": "International / brunch",
-        "neighborhood": "Las Mercedes",
-        "phone": "+58 212 993-2700",
-        "url": "https://www.instagram.com/mokambo_ccs/",
-        "notes": "Daytime / brunch favourite; safer for solo daytime meetings.",
+        "name": "La Fontana",
+        "cuisine": "Cuban / steakhouse paladar",
+        "neighborhood": "Miramar (Playa)",
+        "phone": "+53 7 202-8337",
+        "url": "https://www.facebook.com/LaFontanaHabana/",
+        "notes": "Long-running Miramar paladar; a default dinner location for foreign-business meetings. Privately owned.",
     },
     {
-        "name": "Moshi Moshi",
-        "cuisine": "Japanese / sushi",
-        "neighborhood": "Altamira / Las Mercedes",
-        "phone": "+58 212 263-9909",
-        "url": "https://www.instagram.com/moshi.moshi.ccs/",
-        "notes": "Long-standing Japanese chain with multiple safer-zone branches.",
+        "name": "Doña Eutimia",
+        "cuisine": "Traditional Cuban paladar",
+        "neighborhood": "Habana Vieja (Catedral)",
+        "phone": "+53 7 861-1332",
+        "url": "https://www.facebook.com/DonaEutimia/",
+        "notes": "Tucked in an alley off Plaza de la Catedral; canonical ropa vieja and lechón asado. Reservations essential. Privately owned.",
     },
     {
-        "name": "Catar",
-        "cuisine": "Steakhouse",
-        "neighborhood": "Las Mercedes",
-        "phone": "+58 212 991-2300",
-        "url": "https://www.instagram.com/catarrestaurante/",
-        "notes": "Regularly listed in 'best of Caracas' guides; valet parking inside compound.",
+        "name": "Río Mar",
+        "cuisine": "Seafood paladar",
+        "neighborhood": "Miramar (Playa, on the river mouth)",
+        "phone": "+53 7 209-4838",
+        "url": "https://www.facebook.com/riomarpaladar/",
+        "notes": "Riverside seafood paladar; popular with the embassy and JV-investor community. Privately owned.",
     },
     {
-        "name": "DOC by Christophe",
-        "cuisine": "French",
-        "neighborhood": "El Hatillo",
-        "phone": "+58 212 963-1265",
-        "url": "https://www.instagram.com/docbychristophe/",
-        "notes": "El Hatillo town centre; pair with daytime visit to the historic plaza.",
+        "name": "San Cristóbal Paladar",
+        "cuisine": "Cuban paladar",
+        "neighborhood": "Centro Habana",
+        "phone": "+53 7 867-9109",
+        "url": "https://www.facebook.com/SanCristobalPaladar/",
+        "notes": "Antique-stuffed dining rooms in a Centro Habana townhouse; hosted Barack Obama during his 2016 visit. Privately owned.",
     },
     {
-        "name": "La Casa Bistró",
-        "cuisine": "Bistro / Mediterranean",
-        "neighborhood": "El Hatillo",
-        "phone": "+58 212 963-7595",
-        "url": "https://www.instagram.com/lacasabistro_/",
-        "notes": "Casual; busy on weekends; good lunch option in El Hatillo.",
+        "name": "Café Laurent",
+        "cuisine": "Cuban / international paladar",
+        "neighborhood": "Vedado (penthouse)",
+        "phone": "+53 7 832-6890",
+        "url": "https://www.cafelaurent.com/",
+        "notes": "Penthouse paladar with Vedado rooftop views; reliable lunch / dinner option for solo business travellers. Privately owned.",
     },
     {
-        "name": "Avila Burger",
-        "cuisine": "Casual American / burgers",
-        "neighborhood": "Multiple branches",
-        "phone": "+58 212 941-0100",
-        "url": "https://www.instagram.com/avilaburger/",
-        "notes": "Reliable casual chain with safer-zone locations (Las Mercedes, Los Palos Grandes).",
+        "name": "Sloppy Joe's Bar (state-run)",
+        "cuisine": "American-bar / restaurant",
+        "neighborhood": "Habana Vieja (Animas y Zulueta)",
+        "phone": "+53 7 866-7157",
+        "url": "https://www.facebook.com/SloppyJoesHavana/",
+        "notes": (
+            "Restored 1917 landmark bar (closed 1965, reopened 2013) operated "
+            "by Habaguanex / Gaviota. Cultural-history value; US persons "
+            "should note this is a state-run establishment under GAESA's "
+            "tourism arm — verify current Cuba Restricted List status."
+        ),
     },
 ]
 
@@ -438,50 +514,60 @@ RESTAURANTS: list[dict] = [
 # ----------------------------------------------------------------------------
 # 5) Hospitals & medical providers commonly used by foreigners
 # ----------------------------------------------------------------------------
-# Public hospitals are heavily under-resourced. International travellers
-# typically rely on the private clinics below. Confirm whether your
-# travel-medical insurer (e.g. International SOS, Falck Global Assistance,
-# ISOS) has a direct-billing arrangement before arriving.
+# Cuba operates a two-tier health system. Public hospitals are for Cuban
+# nationals (the medical-tourism / "salud pública" system is exceptional
+# in primary care but constrained in supplies). Foreigners are routed to
+# the Servicios Médicos Cubanos (SMC) network, with the Clínica Cira
+# García in Miramar being the canonical hospital for diplomats and
+# foreign business travellers. Travel insurance covering Cuba is
+# MANDATORY under Cuban entry law — proof may be requested at
+# immigration. Most US-issued policies do NOT cover Cuba; verify
+# explicitly before departure.
 MEDICAL_PROVIDERS: list[dict] = [
     {
-        "name": "Centro Médico de Caracas",
-        "type": "Private hospital",
-        "neighborhood": "San Bernardino",
-        "phone": "+58 212 555-9111",
-        "url": "https://centromedicodecaracas.com.ve/",
-        "notes": "One of the oldest private hospitals; full ER, ICU, surgery.",
+        "name": "Clínica Central Cira García",
+        "type": "Private hospital for foreigners (SMC network)",
+        "neighborhood": "Miramar (Playa)",
+        "phone": "+53 7 204-2811",
+        "url": "https://www.smcsalud.cu/cira-garcia/",
+        "notes": "The default hospital for diplomats, foreign investors, and tourists. Full ER, ICU, surgery, dental. International billing in convertible currency.",
     },
     {
-        "name": "Clínica El Ávila",
-        "type": "Private hospital",
-        "neighborhood": "Altamira",
-        "phone": "+58 212 276-1111",
-        "url": "https://www.clinicaelavila.com/",
-        "notes": "Located in safer Altamira; commonly used by diplomats and execs.",
+        "name": "Hospital Hermanos Ameijeiras",
+        "type": "Tertiary referral hospital (SMC for foreigners)",
+        "neighborhood": "Centro Habana (Malecón)",
+        "phone": "+53 7 877-6053",
+        "url": "https://www.hospitalameijeiras.sld.cu/",
+        "notes": "Cuba's premier tertiary-care hospital; cardiology, neurology, oncology, advanced surgery. Foreigners admitted via the international patient desk.",
     },
     {
-        "name": "Centro Médico Docente La Trinidad",
-        "type": "Private hospital",
-        "neighborhood": "La Trinidad",
-        "phone": "+58 212 949-6411",
-        "url": "https://www.cmdlt.edu.ve/",
-        "notes": "Teaching hospital; modern equipment; closer to the south of the valley.",
+        "name": "Clínica Internacional Camilo Cienfuegos",
+        "type": "Private hospital for foreigners (SMC network)",
+        "neighborhood": "Vedado",
+        "phone": "+53 7 833-2811",
+        "url": "https://www.smcsalud.cu/",
+        "notes": "Vedado-based international clinic; convenient for visitors staying in Vedado hotels.",
     },
     {
-        "name": "Hospital de Clínicas Caracas",
-        "type": "Private hospital",
-        "neighborhood": "San Bernardino",
-        "phone": "+58 212 508-6111",
-        "url": "https://www.clinicaracas.com/",
-        "notes": "Full-service private hospital; international patient desk.",
+        "name": "Asistur (Asistencia al Turista)",
+        "type": "State traveller-assistance company (24/7)",
+        "neighborhood": "Habana Vieja (Paseo del Prado 254)",
+        "phone": "+53 7 866-4499 / +53 7 866-8527",
+        "url": "https://www.asistur.cu/",
+        "notes": (
+            "Cuba's state-run 24/7 traveller-assistance service. Coordinates "
+            "medical care, repatriation, lost documents, translation, and "
+            "insurance liaison. The first call for any in-country medical or "
+            "logistics emergency that doesn't require an ambulance dispatch."
+        ),
     },
     {
         "name": "International SOS",
-        "type": "Medical & security assistance",
-        "neighborhood": "Global (regional hub: Bogotá / Panama)",
+        "type": "Medical & security assistance (membership)",
+        "neighborhood": "Global (regional hub: Mexico City)",
         "phone": "+1 215 942-8478 (Philadelphia 24/7 Assistance Centre)",
         "url": "https://www.internationalsos.com/",
-        "notes": "Membership-based travel medical and security assistance; coordinates evacuation if required.",
+        "notes": "Membership-based travel medical and security assistance; coordinates evacuation if required (typically to Miami, Cancún, or Mexico City).",
     },
 ]
 
@@ -489,116 +575,142 @@ MEDICAL_PROVIDERS: list[dict] = [
 # ----------------------------------------------------------------------------
 # 6) Ground transport: airport transfers, drivers
 # ----------------------------------------------------------------------------
-# The single most important travel rule for Caracas is: do not take a
-# street taxi, especially not from Maiquetía airport. Arrange transport
-# in advance through a hotel concierge or a known operator.
+# Havana's transport situation is dominated by chronic fuel shortages
+# and an ageing fleet. The single most important rule is: pre-book your
+# airport transfer through your hotel or casa particular host. The
+# canonical airport queue at HAV Terminal 3 is reliable but the
+# language barrier and currency negotiation create friction.
 GROUND_TRANSPORT: list[dict] = [
     {
-        "name": "Hotel concierge airport transfer",
+        "name": "Hotel concierge / casa particular host airport transfer",
         "type": "Recommended default",
-        "phone": "Book via your hotel's reservation desk",
+        "phone": "Book via your hotel's reservation desk or your casa host's WhatsApp",
         "notes": (
-            "All major hotels listed above operate (or contract) marked vehicles "
-            "for the SVMI ↔ Caracas transfer. Quote your flight number on booking. "
-            "This is the single most common arrangement for inbound business travellers."
+            "All major hotels and most casas particulares can pre-arrange a "
+            "marked vehicle for the HAV ↔ Havana transfer (~25-40 min, "
+            "depending on traffic and airport gate). Quote your flight number "
+            "on booking. Default cost in 2026 is roughly USD 25-40 each way "
+            "for a standard sedan."
         ),
         "url": None,
     },
     {
-        "name": "Conviasa / aerolinea-arranged transfers",
-        "type": "Through your inbound carrier",
-        "phone": "Ask at the airline desk on arrival",
+        "name": "Cubataxi (state-run radio dispatch)",
+        "type": "State taxi company",
+        "phone": "+53 7 855-5555 (Havana radio dispatch)",
         "notes": (
-            "Some carriers (Plus Ultra, Wingo, Conviasa, Iberia premium cabins) "
-            "offer pre-arranged car transfers as part of the package. Confirm at booking."
+            "Cuba's state-run radio-dispatched taxi service. Reliable and "
+            "metered; price quoted in CUP or USD. Slower than a private "
+            "transfer but the safer default for unannounced trips."
         ),
         "url": None,
     },
     {
-        "name": "Caracas Premium Transfer (private operator)",
-        "type": "Private hire",
-        "phone": "+58 414 250-1212 (typical reservation line)",
+        "name": "Almendrón (classic-car shared taxi)",
+        "type": "Shared route taxis",
+        "phone": "Hail on the street along fixed routes",
         "notes": (
-            "Long-running Caracas-based private transfer company catering to the "
-            "diplomatic and corporate market. Always confirm pricing in USD before "
-            "departure and request a marked vehicle with corporate insurance."
+            "The iconic 1950s American-car shared taxis run fixed routes "
+            "along major Havana arteries (Vedado-Centro, Centro-Habana "
+            "Vieja, Vedado-Miramar) at fixed peso fares (typically 50–100 "
+            "CUP per leg). Useful for urban hops, NOT for the airport "
+            "or for late-night use."
         ),
         "url": None,
     },
     {
-        "name": "Yummy Rides / Ridery (apps)",
-        "type": "Local rideshare apps",
-        "phone": "App-based",
+        "name": "Cubacar / Havanautos / Rex (state-run car rental)",
+        "type": "Self-drive rental",
+        "phone": "+53 7 835-0000 (Cubacar central reservations)",
         "notes": (
-            "Two locally-popular ride-hailing apps. Lower friction inside the safer "
-            "central-east corridor for daytime point-to-point trips, but not "
-            "recommended for the airport transfer or for late-night use. Verify "
-            "the licence plate matches the app before getting in."
+            "Three state-run car-rental brands (all subsidiaries of "
+            "Transtur). Inventory and pricing are constrained — book "
+            "weeks ahead. Fuel-station availability is the binding "
+            "constraint for road trips outside Havana; queue times of 4–8 "
+            "hours have been routine since 2023. Not recommended for "
+            "first-time visitors."
         ),
-        "url": "https://www.yummysuperapp.com/",
+        "url": "https://www.cubacar-rentals.com/",
+    },
+    {
+        "name": "Yutong tour buses (Transtur / Viazul)",
+        "type": "Long-distance coach",
+        "phone": "+53 7 881-1413 (Viazul reservations)",
+        "notes": (
+            "Viazul is the foreigner-targeted long-distance bus network "
+            "covering Havana–Viñales, Havana–Trinidad, Havana–Santiago. "
+            "Books out weeks ahead in high season (Dec–Mar)."
+        ),
+        "url": "https://www.viazul.com/",
     },
 ]
 
 
 # ----------------------------------------------------------------------------
-# 7) Corporate security advisory & protective services
+# 7) Corporate security advisory & assistance providers
 # ----------------------------------------------------------------------------
-# We list internationally-recognised corporate security advisory firms
-# that have either standing operations in Venezuela or active regional
-# coverage from a nearby hub. We do NOT name local protective-services
-# vendors directly; engaging on-the-ground protective services should be
-# done via one of the firms below or via your home-country corporate
-# security office, who maintain vetted relationships.
+# Cuba does not have an active corporate kidnap or active-shooter risk
+# profile comparable to other Latin American capitals. The dominant
+# operational risks for foreign business travellers are: anomalous
+# health incidents (the unresolved "Havana Syndrome" cluster); petty
+# crime in tourist zones; severe shortages of food, medicine, fuel,
+# and electricity; and the always-present compliance overhead of
+# operating around the embargo. The list below reflects providers that
+# either operate medical and crisis assistance (the dominant need) or
+# political-risk advisory services with active Cuba coverage.
 SECURITY_FIRMS: list[dict] = [
-    {
-        "name": "Control Risks",
-        "type": "Corporate security advisory",
-        "url": "https://www.controlrisks.com/",
-        "phone": "+1 202 449-3327 (Washington DC office)",
-        "notes": (
-            "Global political-risk and security consultancy with active Venezuela "
-            "country coverage. Standard engagements include pre-travel briefings, "
-            "in-country protective services arrangement, and crisis support."
-        ),
-    },
     {
         "name": "International SOS",
         "type": "Medical + security assistance (membership)",
         "url": "https://www.internationalsos.com/",
         "phone": "+1 215 942-8478 (Philadelphia 24/7 Assistance Centre)",
         "notes": (
-            "Combined medical and security membership service. Useful baseline "
-            "for any traveller without standing corporate cover."
+            "Combined medical and security membership service with "
+            "established Cuba medical-evacuation routing (typically to "
+            "Cancún, Mexico City, or Miami). The most useful single "
+            "membership for any traveller without standing corporate "
+            "cover."
+        ),
+    },
+    {
+        "name": "Asistur",
+        "type": "Cuban state traveller-assistance (24/7)",
+        "url": "https://www.asistur.cu/",
+        "phone": "+53 7 866-4499 / +53 7 866-8527",
+        "notes": (
+            "Cuba's state-run 24/7 traveller-assistance service. The "
+            "in-country first-call for medical, logistics, and document "
+            "emergencies. Will coordinate hospital admission, payment "
+            "translation, insurance liaison, and ground transport."
+        ),
+    },
+    {
+        "name": "Control Risks",
+        "type": "Corporate political-risk advisory",
+        "url": "https://www.controlrisks.com/",
+        "phone": "+1 202 449-3327 (Washington DC office)",
+        "notes": (
+            "Global political-risk and security consultancy with active "
+            "Cuba country coverage. Standard engagements include "
+            "pre-travel briefings, OFAC compliance overlay, in-country "
+            "fixer arrangement, and crisis support."
         ),
     },
     {
         "name": "Crisis24 (Garda World)",
-        "type": "Security advisory & protective services",
+        "type": "Security advisory & assistance",
         "url": "https://crisis24.garda.com/",
         "phone": "+1 877 484-1610 (24/7 Operations Center)",
-        "notes": (
-            "Provides journey management, executive protection arrangement, and "
-            "in-country security support throughout Latin America including Venezuela."
-        ),
-    },
-    {
-        "name": "Pinkerton",
-        "type": "Security advisory & protective services",
-        "url": "https://pinkerton.com/tags/latin-america",
-        "phone": "+1 800 724-1616",
-        "notes": (
-            "Operates across Latin America; can arrange local protective-services "
-            "vendors and executive transport in Caracas on a per-engagement basis."
-        ),
+        "notes": "Provides journey management and in-country security support throughout Latin America including Cuba.",
     },
     {
         "name": "OSAC (US State Department)",
         "type": "Free public-private intelligence sharing",
-        "url": "https://www.osac.gov/Country/Venezuela",
+        "url": "https://www.osac.gov/Country/Cuba",
         "phone": "Membership via osac.gov",
         "notes": (
             "Free for any US-incorporated company. Publishes the most current "
-            "Caracas Crime & Safety Report and circulates same-day security "
+            "Havana Crime & Safety Report and circulates same-day security "
             "alerts. Read this before any trip."
         ),
     },
@@ -608,49 +720,64 @@ SECURITY_FIRMS: list[dict] = [
 # ----------------------------------------------------------------------------
 # 8) Communications: SIM cards, eSIM, internet
 # ----------------------------------------------------------------------------
+# Cuba's telecoms are an ETECSA monopoly (the state operator). Foreign
+# travellers face two structural realities: (1) ETECSA is on the State
+# Department's Cuba Restricted List for US persons, so a US person
+# buying a local SIM is a CACR compliance grey area best avoided —
+# eSIMs from non-Cuban resellers are the recommended workaround;
+# (2) home-internet penetration is low and Wi-Fi is a per-hour
+# pre-paid product almost everywhere except modern hotels.
 COMMUNICATIONS: list[dict] = [
     {
-        "topic": "Local SIM cards",
+        "topic": "Local SIM cards (Cubacel / ETECSA)",
         "detail": (
-            "Three Venezuelan carriers: Movistar (best urban 4G in Caracas), "
-            "Digitel (better in eastern Venezuela), Movilnet (state-owned, widest "
-            "rural coverage). All require local ID at activation; foreigners "
-            "should buy and activate at the carrier's official Caracas store, "
-            "not at the airport, with passport in hand."
+            "ETECSA is the state telecom monopoly. Cubacel SIMs are sold at "
+            "ETECSA offices (passport required), at HAV airport, and at "
+            "some hotels. NOTE for US persons: ETECSA appears on the State "
+            "Department's Cuba Restricted List, so direct purchase by US "
+            "persons is a CACR compliance grey area — most US-compliant "
+            "travel providers route around it via eSIM."
         ),
     },
     {
         "topic": "eSIM (recommended for short trips)",
         "detail": (
-            "Airalo and Holafly both sell Venezuela eSIM data plans that activate "
-            "before you board. Speeds are slower than a local SIM but you skip "
-            "the in-country activation step entirely. Confirm your phone is "
-            "carrier-unlocked."
+            "Airalo and Holafly both sell Cuba eSIM data plans that activate "
+            "before you board. Prices are higher than a local SIM but you "
+            "skip the in-country activation step entirely AND avoid the "
+            "ETECSA Cuba-Restricted-List issue for US persons. Confirm "
+            "your phone is carrier-unlocked and supports eSIM."
         ),
     },
     {
-        "topic": "Hotel Wi-Fi",
+        "topic": "Hotel & casa particular Wi-Fi",
         "detail": (
-            "All listed hotels offer Wi-Fi included. Speeds vary by neighbourhood; "
-            "Las Mercedes and Altamira generally have the most reliable urban "
-            "fibre. A travel router with a VPN preconfigured is a good practice."
+            "Most modern Havana hotels offer Wi-Fi included or for a per-day "
+            "fee. Casas particulares typically do not have in-room Wi-Fi; "
+            "expect to use ETECSA's NAUTA pre-paid Wi-Fi cards (sold at "
+            "ETECSA offices) at public Wi-Fi parks (the canonical example "
+            "is Parque Central, Parque Fe del Valle in Centro Habana, and "
+            "the Vedado Malecón hotspots)."
         ),
     },
     {
         "topic": "VPN",
         "detail": (
-            "Many news sites, payment platforms and some social platforms are "
-            "intermittently blocked or throttled in Venezuela. Configure a "
-            "reputable VPN (ExpressVPN, NordVPN, Mullvad, ProtonVPN) before "
-            "arrival; doing it after landing is unreliable."
+            "Many Western platforms (LinkedIn, US news outlets, some "
+            "messaging apps) are intermittently throttled or blocked on "
+            "ETECSA's network. Configure a reputable VPN (ExpressVPN, "
+            "NordVPN, Mullvad, ProtonVPN) before arrival; doing it after "
+            "landing is unreliable. WhatsApp and Signal generally work "
+            "without a VPN."
         ),
     },
     {
         "topic": "Roaming",
         "detail": (
-            "Most US carriers do not offer Venezuela roaming or only at very high "
-            "rates. Verizon and AT&T users in particular should not assume cellular "
-            "roaming will work. Plan around an eSIM or local SIM."
+            "Most US carriers do not offer Cuba roaming or only at very "
+            "high rates ($2-5/min calls, $0.50-2/MB data). Verizon, AT&T, "
+            "and T-Mobile users should NOT assume cellular roaming will "
+            "work. Plan around an eSIM or pre-paid ETECSA Wi-Fi cards."
         ),
     },
 ]
@@ -659,51 +786,87 @@ COMMUNICATIONS: list[dict] = [
 # ----------------------------------------------------------------------------
 # 9) Money & banking on the ground
 # ----------------------------------------------------------------------------
+# Cuba's monetary system is currently fractured across THREE de-facto
+# currencies: the official Cuban peso (CUP), the MLC (Moneda
+# Libremente Convertible) cards used at certain state retail outlets,
+# and US dollar / euro cash on the informal market. The official BCC
+# rate (~120 CUP/USD as of 2026) and the elTOQUE informal rate
+# (~340-400 CUP/USD) diverge widely and the elTOQUE rate is the one
+# that actually clears in private commerce. US-issued cards do NOT
+# work in Cuba — at all — under the embargo, and Cuban ATMs do not
+# dispense cash to US-issued cards.
 MONEY_AND_BANKING: list[dict] = [
     {
-        "topic": "Cash is king",
+        "topic": "Cash is mandatory (especially for US travellers)",
         "detail": (
-            "US dollar cash is widely accepted across Caracas (hotels, restaurants, "
-            "supermarkets, taxis). Bring small denominations ($1, $5, $10, $20). "
-            "Notes must be undamaged and post-2009 series — older or torn bills are "
-            "regularly refused."
+            "Bring 100% of your trip budget in cash, in advance. US-issued "
+            "credit and debit cards do NOT work in Cuba under the embargo "
+            "— no exceptions, no workarounds. Euro cash receives a slightly "
+            "better exchange rate than USD because Cuba applies a 10% "
+            "penalty on USD cash exchange. Notes must be undamaged and "
+            "post-2009 series."
         ),
     },
     {
-        "topic": "Bolívar (Bs.) cash",
+        "topic": "Cuban peso (CUP) cash",
         "detail": (
-            "Carry a small amount of Bs. cash for street-level micro-purchases and "
-            "tips. Hotel concierges can usually convert $20-50 in USD into Bs. at "
-            "the parallel rate."
+            "Carry CUP cash for street-level micro-purchases, taxi tips, "
+            "and casa particular incidentals. Exchange at CADECA bureaus "
+            "(state) at the official BCC rate, or via your casa host at the "
+            "informal rate (typically 2-3x more favourable). DO NOT exchange "
+            "back to USD on departure — it is illegal to take CUP out of Cuba."
         ),
     },
     {
-        "topic": "Card payments",
+        "topic": "Card payments (non-US issued cards)",
         "detail": (
-            "Foreign-issued credit and debit cards work inconsistently. Visa is "
-            "more reliable than Mastercard or Amex. Many merchants prefer Zelle "
-            "(US-based dollar transfer) from a US bank account; if you have a "
-            "US Zelle account, set it up before travel — it functions as the "
-            "informal default cashless rail."
+            "Non-US issued Visa and Mastercard work at some hotels, "
+            "international restaurants, and a few CADECAs. Acceptance is "
+            "inconsistent. UK, Canadian, and EU-issued cards work better "
+            "than Asian or Middle Eastern cards. American Express does not "
+            "work anywhere in Cuba (US-issued by definition)."
         ),
     },
     {
         "topic": "ATMs",
         "detail": (
-            "ATM withdrawals in Bs. are constrained by tiny daily limits and "
-            "frequent cash-out conditions. Treat ATMs as a last resort, not a "
-            "planned source of funds."
+            "ATM withdrawals work for non-US issued Visa cards in Havana "
+            "city centre but daily limits are tight (typically equivalent "
+            "of USD 100-200 in CUP) and many machines run out of cash "
+            "during high-tourist season. Treat ATMs as a contingency, not "
+            "a planned source of funds."
         ),
     },
     {
-        "topic": "Exchange rates",
+        "topic": "MLC (Moneda Libremente Convertible)",
         "detail": (
-            "Two reference rates matter: the BCV official rate (Bs./USD) and the "
-            "parallel-market rate (typically 25-35% higher). Most cash transactions "
-            "use the parallel rate. Caracas Research's homepage publishes both "
-            "rates daily — check before negotiating."
+            "Some Cuban state retail outlets (TRD Caribe, certain "
+            "supermarkets, gas stations) accept ONLY pre-loaded MLC cards "
+            "denominated in USD/EUR equivalents. Foreign visitors generally "
+            "do not need MLC cards — ignore unless your stay involves "
+            "buying groceries at a state MLC supermarket."
+        ),
+    },
+    {
+        "topic": "Informal exchange rate (elTOQUE TRMI)",
+        "detail": (
+            "The elTOQUE TRMI (Tasa de Referencia del Mercado Informal) is "
+            "the rate that actually clears in private commerce, casas "
+            "particulares, and paladares. It runs typically 2-3x the "
+            "official BCC rate. Cuban Insights publishes the daily TRMI on "
+            "the homepage — check before negotiating cash exchange."
         ),
         "url": "/",
+    },
+    {
+        "topic": "Wise / Western Union / Remitly",
+        "detail": (
+            "Western Union restored US-Cuba remittance services in 2023 "
+            "(after a Trump-era pause) and is the canonical channel for "
+            "USD remittances to Cuban families — but NOT for foreign "
+            "business travellers funding their own trips. Wise does not "
+            "support outbound transfers to Cuba."
+        ),
     },
 ]
 
@@ -713,84 +876,130 @@ MONEY_AND_BANKING: list[dict] = [
 # ----------------------------------------------------------------------------
 PRE_TRIP_CHECKLIST: list[dict] = [
     {
-        "label": "Confirm your visa status",
+        "label": "Confirm your visa / Tourist Card status",
         "detail": (
-            "Most Western nationalities (US, UK, EU) need a tourist or business "
-            "visa obtained in advance. There is no visa-on-arrival. Use our "
-            "Visa Requirements tool to check the current rules for your passport."
+            "Most nationalities (UK, EU, Canada, Mexico) need a Cuban "
+            "Tourist Card (Tarjeta del Turista) purchased through their "
+            "airline or a Cuban consulate. US persons need to qualify "
+            "under one of the 12 OFAC general-license categories AND buy "
+            "a Tourist Card. Use our Visa Requirements tool to check the "
+            "current rules for your passport."
         ),
-        "url": "/tools/venezuela-visa-requirements",
+        "url": "/tools/cuba-visa-requirements",
     },
     {
-        "label": "Verify travel insurance covers Venezuela",
+        "label": "[US persons] Document your CACR general-license category",
         "detail": (
-            "Many standard travel-insurance policies exclude Venezuela. Confirm "
-            "in writing that your policy covers (a) medical evacuation, (b) "
-            "kidnap & ransom, and (c) trip-cancellation due to civil unrest. "
-            "Consider an International SOS or Falck Global Assistance membership."
+            "Before departure, document in writing which of the 12 OFAC "
+            "general-license categories under 31 CFR § 515.560–.578 your "
+            "trip qualifies for (most commonly 'Support for the Cuban "
+            "People' under § 515.574). Build and retain a 'full-time "
+            "schedule' of qualifying activities (paladar meals, casa "
+            "particular stays, MIPYME tours, cultural visits). Retain "
+            "records for 5 years (the OFAC recordkeeping window)."
+        ),
+        "url": "/tools/ofac-cuba-sanctions-checker",
+    },
+    {
+        "label": "Verify travel insurance covers Cuba (mandatory under Cuban law)",
+        "detail": (
+            "Cuban entry law requires every traveller to hold valid "
+            "medical-travel insurance — proof may be requested at "
+            "immigration. Many US-issued policies explicitly EXCLUDE Cuba. "
+            "Confirm in writing that your policy covers (a) hospitalisation "
+            "in Cuba, (b) medical evacuation to Mexico/US, and (c) "
+            "trip-cancellation due to hurricane / civil unrest. Asistur "
+            "(Cuba's state insurer) sells a top-up policy on arrival if "
+            "your home policy doesn't qualify."
         ),
     },
     {
-        "label": "Photocopy passport, visa & insurance card",
+        "label": "Photocopy passport, Tourist Card & insurance card",
         "detail": (
-            "Carry a paper photocopy + a digital copy in encrypted cloud storage. "
-            "Leave a third copy with a contact at home. The Venezuelan National "
-            "Guard does spot-check documents at internal checkpoints."
+            "Carry a paper photocopy + a digital copy in encrypted cloud "
+            "storage. Leave a third copy with a contact at home. The PNR "
+            "spot-checks documents at hotels and airport transit zones."
         ),
+    },
+    {
+        "label": "Complete the D'Viajeros online declaration",
+        "detail": (
+            "Cuba requires every arriving traveller to complete the free "
+            "online D'Viajeros customs and health declaration within the "
+            "72 hours before arrival. The form is free at "
+            "https://dviajeros.mitrans.gob.cu/ — paid 'official' versions "
+            "are scams. Save the QR code to your phone and a printed copy."
+        ),
+        "url": "https://dviajeros.mitrans.gob.cu/",
     },
     {
         "label": "Register with your embassy",
         "detail": (
-            "Free, takes 5 minutes. Once enrolled, your government can locate "
-            "and contact you in a crisis and pushes real-time security alerts. "
-            "US: STEP. UK: GOV.UK email alerts. Canada: ROCA. Most G20 countries "
-            "operate equivalent programs — see the full list at the top of this page."
+            "Free, takes 5 minutes. Once enrolled, your government can "
+            "locate and contact you in a crisis (hurricane evacuations are "
+            "the most common scenario). US: STEP. UK: GOV.UK email alerts. "
+            "Canada: ROCA. See the full list at the top of this page."
         ),
         "url": "#register",
     },
     {
         "label": "Pre-arrange airport transfer & first night",
         "detail": (
-            "Book your inbound airport transfer in writing through your hotel "
-            "before you board. Do NOT plan to find a taxi at SVMI. The first "
-            "night's hotel should be confirmed and prepaid."
+            "Book your inbound HAV airport transfer in writing through "
+            "your hotel or casa host before you board. Confirm and prepay "
+            "the first night's accommodation."
         ),
     },
     {
-        "label": "Set up Zelle and bring USD cash",
+        "label": "Bring 100% of your trip budget in cash (USD or EUR)",
         "detail": (
-            "If you have a US bank account, activate Zelle before travel. "
-            "Bring at least $200-500 USD in small undamaged notes per week."
+            "US-issued cards do NOT work in Cuba. Even non-US cards are "
+            "inconsistently accepted. Bring euro cash if possible (no 10% "
+            "USD penalty), in small undamaged post-2009 notes. Budget "
+            "USD/EUR 100-200 per day for casa + paladar + transport."
+        ),
+    },
+    {
+        "label": "Set up an eSIM (recommended) or accept pre-paid Wi-Fi",
+        "detail": (
+            "Buy an Airalo or Holafly Cuba eSIM before departure and "
+            "activate on landing. Avoids the ETECSA Cuba-Restricted-List "
+            "issue for US persons and skips the in-country SIM activation "
+            "queue. Alternative: rely on pre-paid NAUTA Wi-Fi cards at "
+            "hotel lobbies and Wi-Fi parks."
         ),
     },
     {
         "label": "Install and test a VPN",
         "detail": (
-            "Choose ExpressVPN, NordVPN, Mullvad or ProtonVPN. Install on phone "
-            "and laptop, sign in, and confirm it works before you board."
+            "Choose ExpressVPN, NordVPN, Mullvad or ProtonVPN. Install on "
+            "phone and laptop, sign in, and confirm it works before you "
+            "board — many VPN provider sites are blocked from inside Cuba."
         ),
     },
     {
         "label": "Pre-load offline maps",
         "detail": (
-            "Download Caracas in Google Maps for offline use, plus a backup "
-            "map app (Maps.me or Organic Maps). Cell service can be patchy."
+            "Download Havana in Google Maps for offline use, plus a backup "
+            "(Maps.me or Organic Maps). Cell data is expensive and patchy."
         ),
     },
     {
-        "label": "Yellow fever vaccination certificate",
+        "label": "Hurricane-season awareness (June–November)",
         "detail": (
-            "Recommended (and sometimes required for onward travel from "
-            "Venezuela to Brazil, Suriname or Guyana). Carry the WHO yellow card."
+            "Atlantic hurricane season runs June–November and Cuba sits "
+            "directly in the path. Build a flexible flight booking, "
+            "monitor the National Hurricane Center, and have a "
+            "contingency exit plan (Cancún, Nassau, Miami)."
         ),
     },
     {
         "label": "Emergency contact card",
         "detail": (
-            "Print a pocket card with: hotel name + phone, your embassy's "
-            "after-hours line, your insurer's 24/7 number, an in-country fixer "
-            "or driver's contact, and a domestic emergency contact. In Spanish "
-            "if possible."
+            "Print a pocket card with: hotel/casa name + phone, your "
+            "embassy's after-hours line, your insurer's 24/7 number, "
+            "Asistur (+53 7 866-4499), and a domestic emergency contact. "
+            "In Spanish if possible."
         ),
     },
 ]
@@ -801,84 +1010,112 @@ PRE_TRIP_CHECKLIST: list[dict] = [
 # ----------------------------------------------------------------------------
 SAFETY_CHECKLIST: list[dict] = [
     {
-        "rule": "Stay in the central-east safer corridor",
+        "rule": "Stay in central Havana (Miramar / Vedado / Habana Vieja core)",
         "detail": (
-            "Las Mercedes, La Castellana, Altamira, El Rosal, Chacao, Los Palos "
-            "Grandes, Campo Alegre and Country Club are the safer business "
-            "neighbourhoods. Avoid Petare, Catia, 23 de Enero, El Valle, Antímano "
-            "and any informal hillside (cerro / barrio) area. Even daytime "
-            "visits to those zones should only happen with experienced local "
-            "security support."
+            "Miramar (Playa municipality), Vedado, and the restored core "
+            "of Habana Vieja are the safer business and tourism districts "
+            "and host most foreign-investor meetings, embassies, "
+            "international hospitals, and quality casas particulares. "
+            "Avoid the outer barrios after dark — Marianao, parts of "
+            "Cerro, and Diez de Octubre have higher petty-crime rates "
+            "and limited street lighting during apagones (power outages)."
         ),
     },
     {
-        "rule": "Never take a street taxi",
+        "rule": "Petty crime, not violent crime, is the dominant risk",
         "detail": (
-            "Pre-arrange every car. Express kidnapping (secuestro express) — "
-            "where a victim is forced to withdraw money from ATMs — most often "
-            "starts with an unlicensed street taxi."
+            "Havana has a notably lower violent-crime rate than other "
+            "Latin American capitals. The dominant risks for foreign "
+            "visitors are: pickpocketing on Calle Obispo and around the "
+            "Plaza de Armas, distraction theft (the fake-bird-poo scam), "
+            "short-change at CADECAs, jinetero / jinetera approaches in "
+            "tourist zones, and snatch-and-run on cameras / phones held "
+            "in hand. Stay aware, not paranoid."
         ),
     },
     {
-        "rule": "Move during daylight",
+        "rule": "Pre-book taxis through your hotel or casa host",
         "detail": (
-            "The threat profile worsens significantly after dusk. Build your "
-            "schedule so all moves between hotel ↔ meeting ↔ airport happen "
-            "between roughly 07:00 and 18:00."
+            "State Cubataxi from a hotel rank is reliable. Almendrón "
+            "shared cars on fixed routes are reliable. AVOID flagging "
+            "private cars from the street, especially at night. NEVER "
+            "accept a cab from someone who approaches you at HAV airport."
+        ),
+    },
+    {
+        "rule": "Apagón awareness (rolling power outages)",
+        "detail": (
+            "Cuba experiences daily rolling blackouts (apagones) of 4–12 "
+            "hours, sometimes longer. Carry a charged power bank, a small "
+            "headlamp, and a paper map. Hotels in central Havana run on "
+            "generator backup but elevators and air-con may stop working "
+            "outside the lobby. Refrigeration interruptions raise the "
+            "risk of foodborne illness — favour cooked-to-order paladar "
+            "meals over buffets during sustained outages."
+        ),
+    },
+    {
+        "rule": "Carry water and basic OTC medicine",
+        "detail": (
+            "Cuban pharmacies face severe shortages of basic medicines "
+            "(ibuprofen, acetaminophen, antihistamines, antibiotics, "
+            "ORS). Bring a 7-day kit: pain reliever, anti-diarrhoeal, "
+            "ORS, antihistamine, broad-spectrum antibiotic if your "
+            "doctor prescribes one, and any chronic medication in its "
+            "original packaging plus the prescription. Bottled water is "
+            "widely available but not always cold."
         ),
     },
     {
         "rule": "Low profile, low value",
         "detail": (
-            "No visible jewellery, expensive watches, branded laptop bags or "
-            "DSLR cameras in public. Keep phones in pockets, not in hands. "
-            "Tourist-photographer behaviour attracts attention."
+            "No visible jewellery, expensive watches, or DSLR cameras "
+            "swung on a strap. Keep phones in pockets when not in use. "
+            "Tourist-photographer behaviour attracts pickpocket attention "
+            "in Habana Vieja and Centro Habana — not violence, just theft."
         ),
     },
     {
-        "rule": "Carry a 'mugger's wallet'",
-        "detail": (
-            "Keep $20-40 in a decoy wallet to hand over in a robbery. Real "
-            "passport and main funds in a money belt or hotel safe."
-        ),
+        "rule": "Carry cash dispersed",
+        "detail": "Distribute cash across multiple pockets, the casa safe, and your bag. Never carry your entire bankroll on you.",
     },
     {
-        "rule": "Keep cash dispersed",
+        "rule": "Comply at PNR / customs checkpoints; do not photograph officials",
         "detail": (
-            "Distribute cash across multiple pockets, the hotel safe, and "
-            "your bag. Never carry your entire bankroll on you."
-        ),
-    },
-    {
-        "rule": "Comply at checkpoints",
-        "detail": (
-            "Venezuelan National Guard (GNB) and PNB checkpoints are common, "
-            "especially on routes to/from the airport. Be polite, present "
-            "passport + visa, do not photograph or film, and do not negotiate "
-            "or argue."
-        ),
-    },
-    {
-        "rule": "Do not photograph government, military or oil installations",
-        "detail": (
-            "Includes Miraflores, the Asamblea Nacional, military bases, PDVSA "
-            "facilities, the National Guard, and any uniformed personnel. "
-            "Photographing these can lead to detention."
+            "Cuban Policía Nacional Revolucionaria (PNR) and customs "
+            "agents may spot-check documents. Be polite, present passport "
+            "+ Tourist Card, do not photograph or film officials, and do "
+            "not negotiate. Do NOT photograph government buildings (the "
+            "Capitolio is fine; the Plaza de la Revolución is fine; "
+            "MININT, MINFAR, port and airport infrastructure are NOT)."
         ),
     },
     {
         "rule": "Avoid demonstrations and political gatherings",
         "detail": (
-            "Crowd events can turn violent with little warning. Even peaceful "
-            "marches have been broken up with tear gas. Stay clear."
+            "Public protest is rare on the island but the risk profile "
+            "spikes around politically sensitive dates (11 July anniversary, "
+            "Communist Party congresses, election cycles). Foreign "
+            "participation in any protest is a deportation risk and may "
+            "trigger immigration consequences."
         ),
     },
     {
         "rule": "Two-deep comms",
         "detail": (
-            "Share your daily itinerary with a trusted contact at home. Check "
-            "in by message at least twice a day. If you go silent, they should "
-            "know who to call (your embassy + your security firm)."
+            "Share your daily itinerary with a trusted contact at home. "
+            "Check in by message at least twice a day. If you go silent, "
+            "they should know who to call (your embassy + Asistur)."
+        ),
+    },
+    {
+        "rule": "Hurricane / tropical storm awareness",
+        "detail": (
+            "Atlantic hurricane season runs June–November; Cuba is "
+            "directly in the path. Monitor the US National Hurricane "
+            "Center and Cuba's INSMET. If a storm warning is issued "
+            "during your trip, follow your embassy's advice immediately "
+            "— evacuation flights fill up within hours."
         ),
     },
 ]
@@ -888,18 +1125,28 @@ SAFETY_CHECKLIST: list[dict] = [
 # 12) Emergency numbers
 # ----------------------------------------------------------------------------
 EMERGENCY_NUMBERS: list[dict] = [
-    {"label": "Police (PNB) — emergencies", "number": "911"},
-    {"label": "Police (PNB) — non-emergency", "number": "171"},
-    {"label": "Fire / Bomberos", "number": "171"},
-    {"label": "Ambulance (public)", "number": "911"},
-    {"label": "Civil Protection (Protección Civil)", "number": "0800-PCIVIL (0800-72-4845)"},
-    {"label": "Sebin / National Guard tip line (avoid contacting unless required)", "number": "0800-CONATEL"},
+    {"label": "Police (PNR) — emergencies", "number": "106"},
+    {"label": "Fire / Bomberos", "number": "105"},
+    {"label": "Ambulance (SIUM)", "number": "104"},
+    {"label": "Civil Defence (Defensa Civil) — hurricanes", "number": "108"},
+    {
+        "label": "Asistur — 24/7 traveller assistance",
+        "number": "+53 7 866-4499 / +53 7 866-8527",
+    },
+    {
+        "label": "Clínica Cira García (foreigners' hospital)",
+        "number": "+53 7 204-2811",
+    },
     {
         "label": "US citizens overseas emergency (24/7)",
-        "number": "+1 202 501-4444 (or via STEP enrolment)",
+        "number": "+53 7 839-4100 (US Embassy Havana) · 1-888-407-4747 (US/Canada toll-free)",
     },
     {
         "label": "UK FCDO crisis line",
         "number": "+44 20 7008-5000",
+    },
+    {
+        "label": "Canada — Ottawa Emergency Watch",
+        "number": "+1 613 996-8885",
     },
 ]

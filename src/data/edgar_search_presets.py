@@ -1,18 +1,19 @@
 """
-Pre-canned SEC EDGAR full-text search presets for Venezuela / PDVSA /
-impairment / contingent-liability research.
+Pre-canned SEC EDGAR full-text search presets for Cuba / CACR /
+Helms-Burton / Cuba Restricted List / impairment / contingent-liability
+research.
 
-These power /tools/sec-edgar-venezuela-impairment-search. The tool's
-job is to take a question that an analyst would otherwise spend 15 min
-crafting in EDGAR's awkward Lucene-flavoured search UI and turn it into
-a single click that opens a pre-built efts.sec.gov query.
+These power /tools/sec-edgar-cuba-impairment-search. The tool's job is
+to take a question that an analyst would otherwise spend 15 min crafting
+in EDGAR's awkward Lucene-flavoured search UI and turn it into a single
+click that opens a pre-built efts.sec.gov query.
 
 Why this is its own module:
-  - The presets are content. Every preset is a Venezuela-research
-    research question phrased the way a sell-side analyst would phrase
-    it ("companies that took an impairment on Venezuelan operations
-    last cycle"), and we want to be able to add / remove them without
-    touching server.py.
+  - The presets are content. Every preset is a Cuba-research question
+    phrased the way a sell-side analyst, OFAC-compliance officer, or
+    Helms-Burton plaintiff's attorney would phrase it ("companies that
+    disclosed Helms-Burton Title III lawsuit exposure"), and we want to
+    be able to add / remove them without touching server.py.
   - The query strings need to be reviewed by anyone who knows EDGAR's
     quirks. Co-locating with `src/analysis/edgar_search.py` would
     suggest they're shared with the runtime EDGAR fetcher; they're
@@ -67,108 +68,163 @@ class EdgarPreset:
 
 PRESETS: tuple[EdgarPreset, ...] = (
     EdgarPreset(
-        slug="any-venezuela-mention",
-        title="Any Venezuela / PDVSA / CITGO mention (10-K, 20-F, 10-Q)",
+        slug="any-cuba-mention",
+        title="Any Cuba / CACR / Helms-Burton / ETECSA / ALIMPORT mention (10-K, 20-F, 10-Q)",
         question=(
-            "Which public companies disclosed Venezuela, PDVSA, or CITGO "
-            "in their most recent annual or quarterly reports?"
+            "Which public companies disclosed Cuba, the Cuban Assets "
+            "Control Regulations, Helms-Burton, ETECSA, or ALIMPORT in "
+            "their most recent annual or quarterly reports?"
         ),
-        query='"Venezuela" OR "PdVSA" OR "PDVSA" OR "CITGO" OR "Caracas"',
+        query='"Cuba" OR "Cuban Assets Control Regulations" OR "Helms-Burton" OR "Helms Burton" OR "LIBERTAD Act" OR "ETECSA" OR "ALIMPORT" OR "Havana"',
         forms=("10-K", "20-F", "10-Q"),
         why=(
-            "The widest possible Venezuela disclosure net. Use this as the "
-            "starting point — every company that mentions Venezuela in an "
+            "The widest possible Cuba disclosure net. Use this as the "
+            "starting point — every company that mentions Cuba in an "
             "annual or quarterly will appear here."
         ),
     ),
     EdgarPreset(
-        slug="venezuela-impairment",
-        title="Venezuela impairment / write-down disclosures",
+        slug="helms-burton-title-iii",
+        title="Helms-Burton Title III lawsuit exposure",
+        question=(
+            "Which companies disclose ongoing or threatened Helms-Burton "
+            "Title III lawsuits over trafficking in confiscated Cuban "
+            "property?"
+        ),
+        # Title III became actionable on 2 May 2019 when the Trump
+        # administration suspended the long-running waiver. Most
+        # disclosures cite the Act, the Title, or named plaintiffs
+        # (Havana Docks Corp, Exxon Mobil, etc.).
+        query='("Helms-Burton" OR "Helms Burton" OR "LIBERTAD Act" OR "Title III") AND ("Cuba" OR "Cuban") AND ("lawsuit" OR "litigation" OR "claim*" OR "trafficking")',
+        forms=("10-K", "20-F", "10-Q", "8-K"),
+        why=(
+            "Title III suits over confiscated Cuban property unfroze in "
+            "May 2019 and have produced significant judgments against "
+            "cruise lines, hotel chains, and online travel agencies. "
+            "This preset surfaces the active defendants and any new "
+            "plaintiffs."
+        ),
+    ),
+    EdgarPreset(
+        slug="cuba-impairment",
+        title="Cuba operations impairment / write-down disclosures",
         question=(
             "Which companies have booked an impairment, write-down, or "
-            "deconsolidation tied to their Venezuelan operations?"
+            "deconsolidation tied to their Cuban operations?"
         ),
-        query='("Venezuela" OR "Venezuelan") AND ("impairment" OR "write-down" OR "writedown" OR "deconsolidat*")',
+        query='("Cuba" OR "Cuban") AND ("impairment" OR "write-down" OR "writedown" OR "deconsolidat*" OR "exit*" OR "wound down" OR "wound-down")',
         forms=("10-K", "20-F", "10-Q", "8-K"),
         why=(
-            "The historical-exposure question. Most multinationals exited "
-            "Venezuela between 2015 and 2020 via impairment charges or "
-            "deconsolidation — this surfaces those filings."
+            "Trump-era Cuba Restricted List additions and the 2019 Title "
+            "III actionability triggered a wave of impairments and exits "
+            "by cruise lines, airlines, and hotel JV partners — this "
+            "surfaces those filings."
         ),
     ),
     EdgarPreset(
-        slug="pdvsa-counterparty",
-        title="PDVSA / CITGO counterparty exposure",
+        slug="cacr-ofac-cuba",
+        title="OFAC Cuban Assets Control Regulations compliance disclosures",
         question=(
-            "Which companies disclose PDVSA or CITGO as a customer, "
-            "supplier, joint-venture partner, or off-take counterparty?"
+            "Which companies disclose CACR, Cuba general licenses, or "
+            "Cuba sanctions-compliance risk in their filings?"
         ),
-        query='("PdVSA" OR "PDVSA" OR "Petroleos de Venezuela" OR "CITGO") AND ("joint venture" OR "counterparty" OR "off-take" OR "offtake" OR "supply agreement")',
+        query='("Cuban Assets Control Regulations" OR "CACR" OR "31 CFR 515" OR "31 CFR Part 515") OR (("Cuba" OR "Cuban") AND ("OFAC" OR "general license" OR "Office of Foreign Assets Control"))',
         forms=("10-K", "20-F", "10-Q", "8-K"),
         why=(
-            "PDVSA's commercial counterparties have to disclose the "
-            "relationship under both materiality and OFAC-compliance rules. "
-            "This is the cleanest way to enumerate them."
+            "Most companies that discuss the CACR in a 10-K do so "
+            "because they have, or had, exposure they need to ring-fence "
+            "(travel-services providers, payments networks, agricultural "
+            "exporters, telecoms, pharmaceutical exporters under TSRA). "
+            "Useful for the compliance-officer-as-investor."
         ),
     ),
     EdgarPreset(
-        slug="venezuela-contingent-liability",
-        title="Venezuela contingent liabilities / arbitration disclosures",
+        slug="cuba-restricted-list-counterparty",
+        title="Cuba Restricted List / GAESA counterparty exposure",
         question=(
-            "Which companies disclose ongoing arbitration, expropriation "
-            "claims, or contingent liabilities tied to Venezuela?"
+            "Which companies disclose GAESA, ETECSA, ALIMPORT, "
+            "Cubanacán, Habaguanex, FINCIMEX, Gaviota, or other Cuba "
+            "Restricted List entities as customers, suppliers, or "
+            "joint-venture partners?"
         ),
-        query='("Venezuela" OR "Venezuelan") AND ("arbitration" OR "ICSID" OR "expropriation" OR "contingent liabilit*" OR "nationalization")',
+        query='("GAESA" OR "ETECSA" OR "ALIMPORT" OR "Cubanacan" OR "Habaguanex" OR "FINCIMEX" OR "Gaviota" OR "Cuba Restricted List") AND ("counterparty" OR "joint venture" OR "supply agreement" OR "customer" OR "supplier")',
         forms=("10-K", "20-F", "10-Q", "8-K"),
         why=(
-            "Decades of expropriation claims (ConocoPhillips, ExxonMobil, "
-            "Crystallex, etc.) are still working through ICSID and US "
-            "courts. This preset surfaces who is still litigating."
+            "GAESA-affiliated entities and the State Department's Cuba "
+            "Restricted List are the dominant compliance touchpoint for "
+            "companies operating in or selling to Cuba. This is the "
+            "cleanest way to enumerate active commercial relationships."
         ),
     ),
     EdgarPreset(
-        slug="venezuela-ofac-sanctions",
-        title="Venezuela OFAC sanctions compliance disclosures",
+        slug="cuba-sst-listing",
+        title="Cuba State Sponsor of Terrorism listing exposure",
         question=(
-            "Which companies disclose OFAC Venezuela sanctions, general "
-            "licenses, or sanctions-compliance risks in their filings?"
+            "Which companies disclose risk from Cuba's re-designation as "
+            "a State Sponsor of Terrorism (January 2021) — including ESTA, "
+            "banking, or counterparty consequences?"
         ),
-        query='("Venezuela" OR "Venezuelan") AND ("OFAC" OR "sanctions" OR "general license" OR "Office of Foreign Assets Control")',
-        forms=("10-K", "20-F", "10-Q", "8-K"),
+        query='("State Sponsor of Terrorism" OR "State Sponsors of Terrorism" OR "SST list*") AND ("Cuba" OR "Cuban")',
+        forms=("10-K", "20-F", "10-Q"),
         why=(
-            "Most companies that discuss OFAC Venezuela sanctions in a "
-            "10-K do so because they have, or had, exposure they need to "
-            "ring-fence. Useful for the compliance-officer-as-investor."
+            "Cuba's re-listing as an SST in January 2021 carries "
+            "downstream effects on correspondent banking, ESTA visa-"
+            "waiver eligibility for travellers who have visited Cuba, "
+            "and US export controls. Disclosures cluster among financial "
+            "institutions, travel platforms, and exporters."
         ),
     ),
     EdgarPreset(
-        slug="venezuela-bond-debt",
-        title="Venezuelan sovereign / PDVSA bond exposure",
+        slug="cuba-tsra-agricultural",
+        title="TSRA Cuba agricultural / pharmaceutical export disclosures",
         question=(
-            "Which funds or insurers hold (or held) Venezuelan sovereign "
-            "or PDVSA debt and disclosed it in their reports?"
+            "Which agricultural exporters, food producers, and "
+            "pharmaceutical companies disclose TSRA-authorized sales to "
+            "Cuba?"
         ),
-        query='("Venezuelan sovereign" OR "Republic of Venezuela bonds" OR "PdVSA bonds" OR "PDVSA bonds")',
-        forms=("10-K", "20-F", "N-CSR", "N-Q"),
+        query='("Trade Sanctions Reform" OR "TSRA" OR "Trade Sanctions Reform and Export Enhancement Act") AND ("Cuba" OR "Cuban")',
+        forms=("10-K", "20-F", "10-Q"),
         why=(
-            "Distressed-debt funds, EM bond funds, and insurers held "
-            "Venezuela paper through default. N-CSR and N-Q forms expose "
-            "fund-level holdings."
+            "The Trade Sanctions Reform and Export Enhancement Act (2000) "
+            "carved out a legal pathway for cash-only US agricultural "
+            "and medical exports to Cuba — primarily routed through "
+            "ALIMPORT. This surfaces the active US exporters."
         ),
     ),
     EdgarPreset(
-        slug="venezuela-citgo-collateral",
-        title="CITGO / PDV Holding share-pledge & collateral disclosures",
+        slug="cuba-cruise-airline-travel",
+        title="Cruise lines, airlines & travel-platform Cuba disclosures",
         question=(
-            "Which creditors have disclosed CITGO / PDV Holding shares as "
-            "collateral, security, or judgment satisfaction?"
+            "Which cruise lines, airlines, and online travel platforms "
+            "disclose ongoing or historical Cuba operations, exit costs, "
+            "or Helms-Burton claims?"
         ),
-        query='("CITGO" OR "PDV Holding" OR "PDVH") AND ("collateral" OR "pledge*" OR "judgment" OR "Crystallex")',
+        query='("Cuba" OR "Cuban" OR "Havana") AND ("cruise" OR "itinerary" OR "charter flight" OR "scheduled service" OR "people-to-people" OR "Support for the Cuban People")',
         forms=("10-K", "20-F", "10-Q", "8-K"),
         why=(
-            "CITGO's parent (PDVH) is the asset behind the Crystallex "
-            "Delaware auction. Bondholders, judgment creditors, and "
-            "advisers all touch it in their filings."
+            "Cruise lines (Carnival, Royal Caribbean, NCL), US carriers "
+            "(JetBlue, American, Delta, Southwest, United), and the "
+            "online travel agencies are the most-named defendants in "
+            "Title III suits brought by the Havana Docks Corp class. "
+            "This preset isolates that cohort."
+        ),
+    ),
+    EdgarPreset(
+        slug="cuba-remittance-payments",
+        title="Cuba remittance & payments-corridor disclosures",
+        question=(
+            "Which payments networks, remitters, or fintechs disclose "
+            "Cuba remittance corridor exposure (Western Union, MoneyGram, "
+            "fintech alternatives)?"
+        ),
+        query='("Cuba" OR "Cuban") AND ("remittance*" OR "money transfer" OR "FINCIMEX" OR "Western Union" OR "MoneyGram")',
+        forms=("10-K", "20-F", "10-Q", "8-K"),
+        why=(
+            "FINCIMEX is the GAESA-controlled gateway for incoming Cuba "
+            "remittances and was added to the Cuba Restricted List in "
+            "2020 — Western Union restored US-Cuba service in 2023 "
+            "via a non-FINCIMEX route. This surfaces the corridor's "
+            "active participants."
         ),
     ),
 )
@@ -187,21 +243,21 @@ def get_preset(slug: str) -> EdgarPreset | None:
 
 # ────────────────────────────────────────────────────────────────────
 # Curated "known disclosers" — the S&P 500 tickers most commonly named
-# in Venezuela-related SEC filings. Used to render a quick-link table
-# so visitors can jump straight to a company's EDGAR Venezuela history.
+# in Cuba-related SEC filings. Used to render a quick-link table so
+# visitors can jump straight to a company's EDGAR Cuba history.
 #
-# Source: the curated_venezuela_exposure map (which we already maintain
-# by hand). This avoids hardcoding the same fact in two places.
+# Source: the curated_cuba_exposure map (which we already maintain by
+# hand). This avoids hardcoding the same fact in two places.
 # ────────────────────────────────────────────────────────────────────
 
 
 def _build_company_edgar_url(*, cik: str | None, company_name: str) -> str:
-    """Pre-canned EDGAR search for ANY Venezuela mention in this
-    company's recent filings."""
+    """Pre-canned EDGAR search for ANY Cuba mention in this company's
+    recent filings."""
     end = date.today()
     start = end - timedelta(days=730)
     params = {
-        "q": '"Venezuela" OR "PdVSA" OR "PDVSA" OR "CITGO"',
+        "q": '"Cuba" OR "Cuban Assets Control Regulations" OR "Helms-Burton" OR "ETECSA" OR "ALIMPORT" OR "Havana"',
         "dateRange": "custom",
         "startdt": start.isoformat(),
         "enddt": end.isoformat(),
@@ -221,7 +277,7 @@ class CuratedDiscloser:
     short_name: str
     exposure_level: str
     one_line: str
-    profile_url: str  # /companies/<slug>/venezuela-exposure
+    profile_url: str  # /companies/<slug>/cuba-exposure
     edgar_search_url: str  # deeplink into EDGAR for this company
 
 
@@ -229,7 +285,7 @@ def list_curated_disclosers(*, max_n: int = 30) -> list[CuratedDiscloser]:
     """Return the curated S&P 500 companies that have any non-'none'
     exposure level, sorted by exposure-level severity then ticker."""
     try:
-        from src.data.curated_venezuela_exposure import _CURATED  # type: ignore
+        from src.data.curated_cuba_exposure import _CURATED  # type: ignore
         from src.data.sp500_companies import find_company
     except Exception:
         return []
@@ -250,7 +306,7 @@ def list_curated_disclosers(*, max_n: int = 30) -> list[CuratedDiscloser]:
             short_name=company.short_name,
             exposure_level=entry.exposure_level,
             one_line=first_sentence,
-            profile_url=f"/companies/{company.slug}/venezuela-exposure",
+            profile_url=f"/companies/{company.slug}/cuba-exposure",
             edgar_search_url=_build_company_edgar_url(
                 cik=company.cik, company_name=company.short_name
             ),

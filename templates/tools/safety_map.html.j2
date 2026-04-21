@@ -110,8 +110,8 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
-    <a href="/invest-in-venezuela">Invest in Venezuela</a><span>/</span>
-    <span>Caracas Neighborhood Safety Map</span>
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
+    <span>Havana Neighborhood Safety Map</span>
   </nav>
 
   <header style="margin: 16px 0 16px;">
@@ -119,13 +119,10 @@
       Travel tool · Curated, expert-reviewed
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Caracas Safety Score by Neighborhood
+      Havana Safety Score by Neighborhood
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      A first-pass safety reference for foreign investors and business
-      travellers planning a trip to Caracas. Each neighborhood has a
-      1–5 safety score, a recommended business use, and the specific
-      risks to avoid.
+      A first-pass safety reference for visitors. Each neighborhood gets a 1&ndash;5 score, a recommended business use, and the specific risks to avoid.
     </p>
   </header>
 
@@ -137,7 +134,7 @@
     <div class="legend-item"><span class="dot s1"></span> 1 — Do not enter</div>
   </div>
 
-  <div id="safety-map" role="img" aria-label="Map of Caracas with neighborhoods colored by safety score, plus hospitals, embassies, police, and the international airport"></div>
+  <div id="safety-map" role="img" aria-label="Map of Havana with neighborhoods colored by safety score, plus hospitals, embassies, police, and José Martí International Airport"></div>
   <div class="poi-legend">
     <span class="poi-legend-item"><span class="poi-marker poi-hospital" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11 3h2v8h8v2h-8v8h-2v-8H3v-2h8z"/></svg></span> Hospital</span>
     <span class="poi-legend-item"><span class="poi-marker poi-embassy" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 21V4h2v1h11l-2 4 2 4H7v8z"/></svg></span> Embassy</span>
@@ -147,7 +144,7 @@
   </div>
   <p class="map-note">
     Marker positions are approximate, illustrative anchors — not precise
-    boundaries. Click any marker for details. The Caracas embassies and
+    boundaries. Click any marker for details. The Havana embassies and
     hospitals shown here are a curated subset, not a complete directory.
   </p>
 
@@ -180,17 +177,12 @@
 
   <div class="disclaimer">
     <strong>Important:</strong> Scores reflect aggregated, expert-reviewed
-    context — not a real-time crime feed. Conditions in Caracas can change
-    quickly. Always cross-check with your home country's foreign-affairs
-    advisory, OSAC reporting, and a local security advisor before travel.
-    Nothing on this page is security advice.
+    context — not a real-time crime feed. Conditions in Havana can change
+    quickly, particularly during hurricane season (June–November) and rolling
+    blackouts. Always cross-check with your home country's foreign-affairs
+    advisory, INSMET hurricane bulletins, OSAC reporting, and a local security
+    advisor before travel. Nothing on this page is security advice.
   </div>
-
-  <p style="font-size:12px; color:var(--sr-gray-text); margin: 24px 0;">
-    See related: <a href="/tools/venezuela-visa-requirements">Venezuela visa requirements</a> ·
-    <a href="/sectors/tourism">Venezuela tourism sector</a> ·
-    <a href="/invest-in-venezuela">how to invest in Venezuela</a>.
-  </p>
 
   <script id="nbh-data" type="application/json">{{ neighborhoods | tojson }}</script>
   <script id="poi-data" type="application/json">{{ landmarks | default([]) | tojson }}</script>
@@ -246,7 +238,7 @@
 
       function initMap() {
         if (typeof L === 'undefined' || !data.length) return;
-        var center = [10.491, -66.879];
+        var center = [23.1136, -82.3666];
         map = L.map('safety-map', { scrollWheelZoom: false }).setView(center, 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 18,
@@ -363,6 +355,9 @@
       }
     })();
   </script>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
 
 </section>
 {% endblock %}

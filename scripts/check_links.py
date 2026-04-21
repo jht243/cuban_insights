@@ -20,7 +20,7 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 
-os.environ.setdefault("SITE_URL", "https://caracasresearch.com")
+os.environ.setdefault("SITE_URL", "https://cubaninsights.com")
 
 # Make `server` importable when run from repo root or scripts/.
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,7 +29,7 @@ if ROOT not in sys.path:
 
 from server import app  # noqa: E402
 
-LIVE_BASE = "https://caracasresearch.com"
+LIVE_BASE = "https://cubaninsights.com"
 
 # Routes to seed the crawl. Anything else reachable from these we'll
 # follow transitively (same-origin only).
@@ -37,7 +37,7 @@ SEED_PATHS = [
     "/",
     "/briefing",
     "/sanctions-tracker",
-    "/invest-in-venezuela",
+    "/invest-in-cuba",
     "/tools",
     "/explainers",
     "/travel",
@@ -68,7 +68,7 @@ def classify(href: str, base_path: str) -> tuple[str, str]:
         return "skip", href
     parsed = urlparse(href)
     if parsed.scheme in ("http", "https"):
-        if parsed.netloc.endswith("caracasresearch.com"):
+        if parsed.netloc.endswith("cubaninsights.com"):
             return "internal", parsed.path or "/"
         return "external", href
     # Relative or absolute path
@@ -128,7 +128,7 @@ def head_or_get(url: str, timeout: float = 10.0) -> int:
         with httpx.Client(
             follow_redirects=True,
             timeout=timeout,
-            headers={"User-Agent": "CaracasResearch-LinkCheck/1.0"},
+            headers={"User-Agent": "CubanInsights-LinkCheck/1.0"},
             verify=False,
         ) as c:
             r = c.head(url)
@@ -143,7 +143,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", action="store_true",
                     help="Also HEAD-check external URLs and re-test internal "
-                         "URLs against caracasresearch.com.")
+                         "URLs against cubaninsights.com.")
     ap.add_argument("--max-external", type=int, default=200,
                     help="Cap on number of external URLs to check.")
     args = ap.parse_args()

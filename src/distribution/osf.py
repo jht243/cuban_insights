@@ -71,22 +71,24 @@ def _bearer() -> dict:
 
 
 def _filename_for(d: date) -> str:
-    return f"caracas-research-tearsheet-{d.isoformat()}.pdf"
+    return f"cuban-insights-tearsheet-{d.isoformat()}.pdf"
 
 
 def _description(d: date) -> str:
     nice_date = d.strftime("%B %d, %Y")
     return (
         f"One-page research note for international investors covering "
-        f"Venezuela on {nice_date}. Includes BCV official + parallel FX "
-        f"rates and parallel premium, US travel advisory level, the day's "
-        f"top development with full investor takeaway, the 6-bar Investment "
-        f"Climate Scorecard (sanctions trajectory, diplomatic progress, "
-        f"legal framework, political stability, property rights, macro "
-        f"stability), and any high-relevance calendar events in the next "
-        f"14 days. Sources: BCV (live scrape), OFAC SDN, US State Department, "
-        f"Federal Register, GDELT, Asamblea Nacional. Full daily briefing "
-        f"and methodology at https://caracasresearch.com."
+        f"Cuba on {nice_date}. Includes the elTOQUE TRMI informal CUP/USD "
+        f"rate vs the BCC official rate (with spread), OFAC SDN Cuba "
+        f"program designations and Cuba Restricted List updates, "
+        f"Helms-Burton Title III lawsuits and settlements, MIPYME policy "
+        f"moves and Mariel ZED approvals, the US State Department "
+        f"travel-advisory level for Cuba, and upcoming OFAC general-license "
+        f"renewals plus ANPP / Council of State calendar items in the next "
+        f"14 days. Sources: elTOQUE (live scrape), BCC, OFAC SDN, US State "
+        f"Department, Cuban Gaceta Oficial, ANPP, Granma/Cubadebate "
+        f"corpus. Full daily briefing and methodology at "
+        f"https://cubaninsights.com."
     )
 
 
@@ -213,21 +215,22 @@ def upload_tearsheet(pdf_bytes: bytes, d: date) -> OSFUploadResult:
                 "type": "preprints",
                 "attributes": {
                     "title": (
-                        f"Caracas Research — Daily Venezuela Investor "
+                        f"Cuban Insights — Daily Cuba Investor "
                         f"Tearsheet — {d.strftime('%B %d, %Y')}"
                     ),
                     "description": _description(d),
                     "tags": [
-                        "Venezuela",
+                        "Cuba",
                         "investment",
                         "sanctions",
                         "OFAC",
-                        "BCV",
-                        "emerging markets",
-                        "Latin America",
-                        "country risk",
+                        "CACR",
+                        "Helms-Burton",
+                        "Mariel ZED",
+                        "MIPYMES",
                         "tearsheet",
-                        "research note",
+                        "elTOQUE TRMI",
+                        "BCC",
                     ],
                     "original_publication_date": d.isoformat(),
                 },
@@ -300,7 +303,7 @@ def upload_tearsheet(pdf_bytes: bytes, d: date) -> OSFUploadResult:
         if license_name:
             patch_attrs["license_record"] = {
                 "year": str(d.year),
-                "copyright_holders": ["Caracas Research"],
+                "copyright_holders": ["Cuban Insights"],
             }
 
         patch_body = {

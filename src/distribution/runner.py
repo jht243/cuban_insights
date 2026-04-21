@@ -57,7 +57,7 @@ _STATIC_URLS_TO_PING_DAILY = (
     "/sanctions/vessels",
     "/sanctions/aircraft",
     "/companies",
-    "/tools/public-company-venezuela-exposure-check",
+    "/tools/public-company-cuba-exposure-check",
 )
 
 
@@ -243,7 +243,7 @@ def run_indexnow() -> dict:
         except Exception as exc:
             logger.warning("indexnow: could not enumerate SDN profiles: %s", exc)
 
-        # Per-S&P-500 Venezuela-exposure pages. The 23-hour cooldown via
+        # Per-S&P-500 Cuba-exposure pages. The 23-hour cooldown via
         # `already_submitted` means each URL pings exactly once per day
         # cycle; on the very first run after this lands, we'll submit
         # all ~500 URLs in a single batch (well under IndexNow's 10k
@@ -429,7 +429,7 @@ def run_bluesky() -> dict:
 def run_internet_archive() -> dict:
     """Upload today's daily Investor Tearsheet PDF to Internet Archive.
 
-    Identifier (`caracas-research-daily-tearsheet-YYYY-MM-DD`) is
+    Identifier (`cuban-insights-daily-tearsheet-YYYY-MM-DD`) is
     deterministic per-day, and IA's upload semantics are
     upsert-in-place — so re-running on the same day is safe and
     overwrites the existing file rather than creating a duplicate item.

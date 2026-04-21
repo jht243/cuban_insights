@@ -1,9 +1,9 @@
 {#
-  Per-S&P-500 company "Venezuela exposure" landing page.
+  Per-S&P-500 company "Cuba exposure" landing page.
 
-  URL: /companies/<slug>/venezuela-exposure
+  URL: /companies/<slug>/cuba-exposure
 
-  The TITLE and H1 carry "{Company} Venezuela exposure" verbatim so the
+  The TITLE and H1 carry "{Company} Cuba exposure" verbatim so the
   matching SERP snippet is the user's exact query. Even when the answer
   is "no exposure", the page exists, ranks, and answers the question
   authoritatively — which is what a compliance analyst is looking for.
@@ -78,7 +78,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a>
     <span>›</span>
-    <a href="/companies">S&amp;P 500 Venezuela Exposure</a>
+    <a href="/companies">S&amp;P 500 Cuba Exposure</a>
     <span>›</span>
     <strong>{{ report.company.short_name }}</strong>
   </nav>
@@ -86,16 +86,17 @@
   <article>
     <header style="margin: 8px 0 12px;">
       <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
-        Venezuela exposure profile · {{ report.company.ticker }} ·
+        Cuba exposure profile · {{ report.company.ticker }} ·
         {{ report.company.sector }}
       </div>
       <h1 style="font-family:var(--font-serif); font-size:36px; color:var(--sr-blue-dark); margin:8px 0 10px; line-height:1.2;">
         {{ report.company.short_name }} ({{ report.company.ticker }}):
-        Venezuela Exposure Check
+        Cuba Exposure Check
       </h1>
       <p class="subtitle" style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:18px;">
-        Independent audit of {{ report.company.name }}'s exposure to Venezuela —
-        OFAC SDN matches, SEC filings, and Caracas Research news corpus.
+        Independent audit of {{ report.company.name }}'s exposure to Cuba —
+        OFAC SDN matches, Helms-Burton Title III risk, SEC filings, and the
+        Cuban Insights news corpus.
       </p>
     </header>
 
@@ -141,13 +142,14 @@
     <div class="body">
 
       {# ── SDN matches ─────────────────────────────────────────── #}
-      <h2 id="ofac-matches">OFAC Venezuela SDN matches</h2>
+      <h2 id="ofac-matches">OFAC Cuba SDN matches</h2>
       {% if report.sdn_matches %}
         <p>
-          The Caracas Research engine matched
+          The Cuban Insights engine matched
           {{ report.sdn_matches|length }}
           {{ 'entry' if report.sdn_matches|length == 1 else 'entries' }}
-          on the US Treasury OFAC Venezuela-program SDN list to
+          on the US Treasury OFAC Cuba-program SDN list (CACR / 31 CFR Part 515)
+          and the State Department Cuba Restricted List to
           {{ report.company.short_name }} or one of its operating
           subsidiaries. Click through to each profile to verify the
           match before relying on it for a compliance decision.
@@ -163,7 +165,7 @@
         {% endfor %}
       {% else %}
         <div class="empty-block">
-          No entry on the OFAC Venezuela SDN list contains
+          No entry on the OFAC Cuba SDN list contains
           <strong>{{ report.company.short_name }}</strong>
           {% if report.curated and report.curated.subsidiaries %}
           or any of its operating subsidiaries
@@ -176,12 +178,12 @@
       {% endif %}
 
       {# ── EDGAR mentions ─────────────────────────────────────── #}
-      <h2 id="sec-filings">SEC filings disclosing Venezuela items</h2>
+      <h2 id="sec-filings">SEC filings disclosing Cuba items</h2>
       {% if report.edgar_mentions %}
         <p>
           {{ report.company.short_name }} has filed
           {{ report.edgar_mentions|length }} recent SEC document{{ 's' if report.edgar_mentions|length != 1 else '' }}
-          containing references to Venezuela, PdVSA, CITGO or related
+          containing references to Cuba, the CACR, Helms-Burton, GAESA, or related
           terms. These are the company's own disclosures.
         </p>
         {% for f in report.edgar_mentions %}
@@ -197,10 +199,10 @@
         <div class="empty-block">
           We searched {{ report.company.short_name }}'s SEC filings (10-K,
           10-Q, 8-K, 20-F, 6-K) for the past two years and found no
-          mention of Venezuela, PdVSA, CITGO, or Caracas. This is
+          mention of Cuba, CACR, Helms-Burton, GAESA, or Havana. This is
           consistent with no material disclosed exposure. The full SEC
           full-text search is here:
-          <a href="https://efts.sec.gov/LATEST/search-index?q=%22Venezuela%22&ciks={{ report.company.cik or '' }}" rel="nofollow">
+          <a href="https://efts.sec.gov/LATEST/search-index?q=%22Cuba%22&ciks={{ report.company.cik or '' }}" rel="nofollow">
             EDGAR full-text search for {{ report.company.short_name }}
           </a>.
         </div>
@@ -208,7 +210,7 @@
         <div class="empty-block">
           SEC filings have not been indexed for {{ report.company.short_name }} yet.
           See the live full-text search:
-          <a href="https://efts.sec.gov/LATEST/search-index?q=%22Venezuela%22&ciks={{ report.company.cik or '' }}" rel="nofollow">
+          <a href="https://efts.sec.gov/LATEST/search-index?q=%22Cuba%22&ciks={{ report.company.cik or '' }}" rel="nofollow">
             EDGAR full-text search
           </a>.
         </div>
@@ -218,10 +220,10 @@
       <h2 id="news-corpus">Federal Register &amp; news corpus mentions</h2>
       {% if report.corpus_mentions %}
         <p>
-          Caracas Research indexes US Federal Register notices, the
-          Asamblea Nacional record, and the analyzed news corpus we
+          Cuban Insights indexes US Federal Register notices, the
+          Gaceta Oficial and ANPP record, and the analyzed news corpus we
           republish daily. The following entries name
-          {{ report.company.short_name }} alongside Venezuelan context:
+          {{ report.company.short_name }} alongside Cuba context:
         </p>
         {% for n in report.corpus_mentions %}
         <div class="signal-card corpus">
@@ -236,7 +238,7 @@
         <div class="empty-block">
           No Federal Register notice or analyzed news article in our
           corpus references {{ report.company.short_name }} in a
-          Venezuela context. Search the live
+          Cuba context. Search the live
           <a href="/sanctions-tracker">sanctions tracker</a>
           or the
           <a href="/briefing">daily briefing index</a>
@@ -246,16 +248,16 @@
 
       {# ── Curated note ──────────────────────────────────────── #}
       {% if report.curated %}
-      <h2 id="analyst-note">Caracas Research analyst note</h2>
+      <h2 id="analyst-note">Cuban Insights analyst note</h2>
       <p>{{ report.curated.summary }}</p>
       {% if report.curated.subsidiaries %}
-      <p><strong>Known Venezuela-related operating entities or counterparties:</strong>
+      <p><strong>Known Cuba-related operating entities or counterparties:</strong>
         {{ report.curated.subsidiaries|join(', ') }}.</p>
       {% endif %}
       {% if report.curated.ofac_licenses %}
-      <p><strong>Relevant OFAC general licenses:</strong>
+      <p><strong>Relevant OFAC general licenses (CACR §515.560–.578):</strong>
         {{ report.curated.ofac_licenses|join(', ') }} —
-        <a href="/tools/ofac-venezuela-general-licenses">browse the full GL directory</a>.</p>
+        <a href="/tools/ofac-cuba-general-licenses">browse the full GL directory</a>.</p>
       {% endif %}
       {% endif %}
 
@@ -263,12 +265,13 @@
       <div class="methodology">
         <strong>Methodology.</strong>
         This page combines four signals: (1) a hand-curated map of S&amp;P 500
-        Venezuela exposure maintained by Caracas Research analysts;
-        (2) fuzzy substring matching against every Venezuela-program OFAC SDN
-        designation (refreshed twice daily); (3) the SEC EDGAR full-text search
-        across the company's 10-K, 10-Q, 8-K, 20-F, and 6-K filings for the
-        past 24 months; (4) a scan of our own analyzed-news corpus and US
-        Federal Register notices. Last refreshed
+        Cuba exposure maintained by Cuban Insights analysts;
+        (2) fuzzy substring matching against every Cuba-program OFAC SDN
+        designation and the State Department Cuba Restricted List (refreshed
+        twice daily); (3) the SEC EDGAR full-text search across the company's
+        10-K, 10-Q, 8-K, 20-F, and 6-K filings for the past 24 months — including
+        Helms-Burton Title III trafficking-claim disclosures; (4) a scan of our
+        own analyzed-news corpus and US Federal Register notices. Last refreshed
         {{ report.generated_at[:10] }}. This is not legal or compliance advice;
         always verify with primary sources and qualified sanctions counsel
         before transacting.
@@ -288,12 +291,12 @@
 
       <h2>Useful tools</h2>
       <ul>
-        <li><a href="/tools/public-company-venezuela-exposure-check">Look up another public company's Venezuela exposure</a></li>
-        <li><a href="/tools/sec-edgar-venezuela-impairment-search">SEC EDGAR Venezuela / PDVSA / impairment search</a> — pre-canned full-text search across S&amp;P 500 10-K and 20-F filings</li>
-        <li><a href="/tools/ofac-venezuela-sanctions-checker">OFAC Venezuela sanctions checker</a> — fuzzy SDN search by name or ID</li>
-        <li><a href="/tools/ofac-venezuela-general-licenses">OFAC Venezuela general licenses lookup</a></li>
-        <li><a href="/sanctions-tracker">Browse all active OFAC Venezuela SDN designations</a></li>
-        <li><a href="/explainers/what-are-ofac-sanctions-on-venezuela">Plain-English explainer: OFAC Venezuela sanctions</a></li>
+        <li><a href="/tools/public-company-cuba-exposure-check">Look up another public company's Cuba exposure</a></li>
+        <li><a href="/tools/sec-edgar-cuba-impairment-search">SEC EDGAR Cuba / Helms-Burton / impairment search</a> — pre-canned full-text search across S&amp;P 500 10-K and 20-F filings</li>
+        <li><a href="/tools/ofac-cuba-sanctions-checker">OFAC Cuba sanctions checker</a> — fuzzy SDN search by name or ID</li>
+        <li><a href="/tools/ofac-cuba-general-licenses">OFAC Cuba general licenses lookup (CACR §515.560–.578)</a></li>
+        <li><a href="/sanctions-tracker">Browse all active OFAC Cuba SDN designations</a></li>
+        <li><a href="/explainers/what-are-ofac-sanctions-on-cuba">Plain-English explainer: OFAC Cuba sanctions</a></li>
       </ul>
     </div>
 
@@ -309,7 +312,7 @@
         {% endfor %}
       </div>
       <p style="margin-top:14px;font-size:14px;">
-        <a href="/companies"><strong>Browse the full S&amp;P 500 Venezuela exposure register →</strong></a>
+        <a href="/companies"><strong>Browse the full S&amp;P 500 Cuba exposure register →</strong></a>
       </p>
     </div>
     {% endif %}

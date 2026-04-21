@@ -1,0 +1,240 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .quick-chips { display: flex; flex-wrap: nowrap; gap: 6px; align-items: center; margin: 14px 0 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .quick-chips .label { flex-shrink: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-gray-text); font-weight: 600; margin-right: 2px; }
+  .quick-chips a { flex-shrink: 0; display: inline-block; padding: 4px 10px; border: 1px solid var(--sr-gray-light); border-radius: 999px; background: #f7f9fc; color: var(--sr-blue-dark); text-decoration: none; font-size: 12px; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .quick-chips a:hover { background: var(--sr-blue); color: var(--white); border-color: var(--sr-blue); }
+  .picker-block { background: #fafbfd; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 14px 16px; margin: 12px 0 4px; }
+  .picker-block .picker-row { display: grid; grid-template-columns: 140px 1fr; gap: 10px 14px; align-items: center; }
+  .picker-block .picker-row + .picker-row { margin-top: 10px; }
+  .picker-block label { font-size: 13px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 1.1px; font-weight: 600; }
+  .picker-block select { width: 100%; padding: 11px 14px; border: 2px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; background: var(--white); }
+  .picker-block select:focus { border-color: var(--sr-blue); outline: none; }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 14px 0 10px; color: var(--sr-gray-text); font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--sr-gray-light); }
+  .checker-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 4px; }
+  .checker-form input[type=text] { flex: 1 1 280px; padding: 14px 18px; border: 2px solid var(--sr-blue); border-radius: 3px; font-size: 16px; }
+  .checker-form button { background: var(--sr-blue); color: var(--white); border: none; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; border-radius: 3px; white-space: nowrap; }
+  .checker-form button:hover { background: var(--sr-blue-dark); }
+  @media (max-width: 540px) {
+    .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
+    .picker-block label { font-size: 12px; }
+  }
+  .result-banner { padding: 16px 20px; margin: 22px 0 14px; border-radius: 3px; }
+  .result-banner.match { background: #fdecea; border-left: 4px solid var(--sr-red); color: #7a1f1a; }
+  .result-banner.clear { background: #e8f5e9; border-left: 4px solid #2e7d32; color: #1b4d1f; }
+  .result-banner h3 { font-family: var(--font-serif); margin-bottom: 4px; }
+  .match-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-red); padding: 14px 18px; margin-bottom: 10px; background: #fff8f7; border-radius: 3px; }
+  .match-card .name { font-weight: 700; color: #7a1f1a; font-family: var(--font-serif); font-size: 17px; }
+  .match-card .meta { font-size: 13px; color: var(--sr-gray-text); margin-top: 4px; }
+  .match-card .score { float: right; background: var(--sr-red); color: var(--white); padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+  .section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; margin: 16px 0 28px; }
+  .section-grid a { display: block; padding: 10px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; text-decoration: none; color: var(--sr-blue-dark); background: #fafafa; font-size: 14px; }
+  .section-grid a:hover { background: #f0f4fa; border-color: var(--sr-blue); }
+  .section-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
+  .context-box { background: #f5f7fb; border-left: 4px solid var(--sr-blue); padding: 14px 18px; font-size: 14px; margin: 16px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Cuba Restricted List Entity Checker</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Compliance tool · Live check against {{ total_entries }} prohibited entities · CACR §515.209
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Cuba Restricted List (CRL) Entity Checker
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      Check any Cuban company, ministry, hotel, or marina against the State Department&rsquo;s Cuba Restricted List. Most entities here &mdash; GAESA, CIMEX, Gaviota, Habaguanex &mdash; are <em>not</em> on the OFAC SDN, so a clean SDN screen alone is not enough.
+    </p>
+  </header>
+
+  <div class="quick-chips">
+    <span class="label">Popular:</span>
+    <a href="?q=gaesa">GAESA</a>
+    <a href="?q=gaviota">Gaviota</a>
+    <a href="?q=cimex">CIMEX</a>
+    <a href="?q=habaguanex">Habaguanex</a>
+    <a href="?q=fincimex">FINCIMEX</a>
+    <a href="?q=mariel">Mariel ZED</a>
+    <a href="?q=minfar">MINFAR</a>
+    <a href="?q=bfi">BFI</a>
+  </div>
+
+  <div class="picker-block" id="crl-picker" data-base="/tools/cuba-restricted-list-checker">
+    <div class="picker-row">
+      <label for="crl-entity">Pick an entity</label>
+      <select id="crl-entity" data-param="q" aria-label="Select an entity from the full CRL">
+        <option value="">All {{ total_entries }} prohibited entities &mdash; pick one&hellip;</option>
+        {% for sec, items in entities_by_section %}
+        <optgroup label="{{ sec }} ({{ items|length }})">
+          {% for e in items %}
+          <option value="{{ e.name }}"{% if query and query == e.name %} selected{% endif %}>{{ e.name }}</option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="crl-kind">By kind</label>
+      <select id="crl-kind" data-param="kind" aria-label="Filter CRL by kind of entity">
+        <option value="">All kinds</option>
+        {% for k, c in kind_counts %}
+        <option value="{{ k }}"{% if kind_filter == k %} selected{% endif %}>{{ k }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="picker-row">
+      <label for="crl-location">By location</label>
+      <select id="crl-location" data-param="location" aria-label="Filter CRL by Cuban province or cayo">
+        <option value="">All locations</option>
+        {% for loc, c in location_counts %}
+        <option value="{{ loc }}"{% if location_filter == loc %} selected{% endif %}>{{ loc }} ({{ c }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="or-divider"><span>or type a name</span></div>
+
+  <form class="checker-form" method="get" action="/tools/cuba-restricted-list-checker">
+    <input type="text" name="q" value="{{ query or '' }}" placeholder="e.g. GAESA, Gaviota, CIMEX, Habaguanex, FINCIMEX, Mariel">
+    <button type="submit">Check entity</button>
+  </form>
+
+  <div id="crl-results">
+  {% set scope_label %}{% if location_filter %} in {{ location_filter }}{% elif kind_filter %} in {{ kind_filter }}{% elif section_filter %} in {{ section_filter }}{% endif %}{% endset %}
+  {% if query or section_filter or kind_filter or location_filter %}
+    {% if matches and matches|length > 0 %}
+    <div class="result-banner match">
+      <h3>{{ matches|length }} entr{% if matches|length == 1 %}y{% else %}ies{% endif %} on the Cuba Restricted List{{ scope_label }} &mdash; direct transactions prohibited (§515.209)</h3>
+    </div>
+    {% for m in matches %}
+    <article class="match-card">
+      <div class="name">{{ m.name }}</div>
+      <div class="meta"><strong>Category:</strong> {{ m.section }}</div>
+    </article>
+    {% endfor %}
+    {% else %}
+    <div class="result-banner clear">
+      <h3>No CRL match{% if query %} for &ldquo;{{ query }}&rdquo;{% endif %}{{ scope_label }}</h3>
+      <p>Still cross-check the <a href="/tools/ofac-cuba-sanctions-checker">OFAC SDN list</a> and the <a href="/tools/cuba-prohibited-hotels-checker">CPAL</a> &mdash; a clean CRL screen alone is not enough.</p>
+    </div>
+    {% endif %}
+  {% endif %}
+
+  {% if not query and not section_filter and not kind_filter and not location_filter %}
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 8px;">
+    Browse the CRL by kind
+  </h2>
+  <div class="section-grid">
+    {% for k, c in kind_counts %}
+    <a href="?kind={{ k|urlencode }}">{{ k }}<span class="count">{{ c }}</span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  </div>{# /#crl-results #}
+
+  <div class="disclaimer">
+    <strong>Important:</strong> Cached snapshot of the U.S. State Department&rsquo;s
+    <a href="https://www.state.gov/cuba-restricted-list/" rel="noopener" target="_blank">Cuba Restricted List</a>
+    (last refreshed {{ refreshed_on }}). Published under §515.209 of the Cuban
+    Assets Control Regulations. CRL listing coexists with &mdash; and is
+    independent of &mdash; the OFAC SDN List (CACR §515) and the CPAL
+    accommodations list (§515.210). The State Department adds and removes
+    entities between our refreshes; always verify with the official source for
+    high-stakes counterparties and retain documentation per §515.601 (5-year
+    recordkeeping). Background: <a href="/explainers/cuba-restricted-list">The
+    Cuba Restricted List explained</a>. Not legal advice.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+
+<script>
+(function () {
+  var picker = document.getElementById('crl-picker');
+  var results = document.getElementById('crl-results');
+  if (!picker || !results) return;
+  var base = picker.getAttribute('data-base');
+  var inflight = null;
+
+  function buildUrl(param, value) {
+    if (!value) return base;
+    return base + '?' + param + '=' + encodeURIComponent(value);
+  }
+
+  function swap(url) {
+    if (inflight) inflight.abort && inflight.abort();
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    inflight = ctrl;
+    results.setAttribute('aria-busy', 'true');
+    fetch(url, { credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { return r.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var fresh = doc.getElementById('crl-results');
+        if (fresh) results.innerHTML = fresh.innerHTML;
+        if (history && history.replaceState) {
+          history.replaceState({ crl: true }, '', url);
+        }
+        results.removeAttribute('aria-busy');
+      })
+      .catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        results.removeAttribute('aria-busy');
+      });
+  }
+
+  // Pickers: change handler swaps results in-place, no scroll, no nav.
+  // Query / section / location are mutually exclusive in URL state, so
+  // changing one resets the others — matches the server-side semantics.
+  picker.querySelectorAll('select[data-param]').forEach(function (sel) {
+    sel.addEventListener('change', function (e) {
+      e.preventDefault();
+      picker.querySelectorAll('select[data-param]').forEach(function (other) {
+        if (other !== sel) other.selectedIndex = 0;
+      });
+      swap(buildUrl(sel.getAttribute('data-param'), sel.value));
+    });
+  });
+
+  // Popular-check chips: same swap behavior
+  document.querySelectorAll('.quick-chips a').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(a.getAttribute('href'));
+    });
+  });
+
+  // Text-search form: intercept submit so we don't navigate
+  var form = document.querySelector('form.checker-form');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = form.querySelector('input[name=q]');
+      var v = input ? input.value.trim() : '';
+      picker.querySelectorAll('select[data-param]').forEach(function (s) { s.selectedIndex = 0; });
+      swap(buildUrl('q', v));
+    });
+  }
+})();
+</script>
+{% endblock %}
