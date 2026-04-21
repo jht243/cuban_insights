@@ -271,6 +271,21 @@ class StateDeptCRLScraper(BaseScraper):
         path = SNAPSHOT_DIR / f"crl_{snap_date.isoformat()}.json"
         path.write_text(json.dumps(current, indent=2, ensure_ascii=False))
         logger.info("Saved CRL snapshot: %s (%d entries)", path, len(current))
+        # Mirror the snapshot to Supabase Storage so the web service
+        # (separate Render container, separate disk) can see today's
+        # data. Best-effort — if storage isn't configured or the upload
+        # fails, the local snapshot still works for this cron run.
+        try:
+            from src.storage_remote import upload_object
+
+            upload_object(
+                f"state_dept_snapshots/crl_{snap_date.isoformat()}.json",
+                json.dumps(current, ensure_ascii=False).encode("utf-8"),
+                content_type="application/json",
+                cache_control="max-age=3600",
+            )
+        except Exception as exc:
+            logger.warning("CRL snapshot Supabase mirror failed: %s", exc)
 
     # ----- Article construction ---------------------------------------
 

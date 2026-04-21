@@ -1198,14 +1198,55 @@ def _extract_cpal_neighborhood(address: str) -> str | None:
     return None
 
 
+_STATE_DEPT_SNAPSHOT_CACHE: dict[str, tuple[float, dict, str]] = {}
+_STATE_DEPT_SNAPSHOT_TTL_SECONDS = 6 * 60 * 60  # 6 hours
+
+
 def _load_state_dept_snapshot(prefix: str) -> tuple[dict, str]:
-    """Return (entries_dict, refreshed_on_iso) for the most recent
-    State Department snapshot whose filename starts with ``prefix`` (e.g.
-    ``cpal`` or ``crl``). The CPAL/CRL scrapers write one JSON file per
-    refresh into ``storage/state_dept_snapshots/``; we always read the
-    newest by filename (which is date-stamped).
-    Returns (``{}``, ``""``) if no snapshot exists yet.
+    """Return ``(entries_dict, refreshed_on_iso)`` for the most recent
+    State Department snapshot whose filename starts with ``prefix``
+    (``"cpal"`` or ``"crl"``).
+
+    Resolution order (Venezuela-style Supabase bridge):
+
+    1. **Local disk** — ``storage/state_dept_snapshots/{prefix}_*.json``,
+       written by the daily cron and by step 2 below. Fast path.
+    2. **Supabase Storage** — ``state_dept_snapshots/{prefix}_*.json``
+       in the public ``reports`` bucket, uploaded by the cron after
+       each successful scrape. This is how the web service (a separate
+       Render container with its own ephemeral disk) sees the data the
+       cron produced.
+    3. **Live scrape** — last-resort safety net: run the scraper inline
+       once, persist locally and to Supabase, then return its output.
+       Only fires on a fresh deploy when both disk and Supabase are
+       empty (e.g. before the first cron run has ever completed).
+
+    Results are memoised in-process for ``_STATE_DEPT_SNAPSHOT_TTL_SECONDS``
+    so we don't re-hit Supabase on every request. The cache is per-worker
+    (gunicorn forks), which is fine — each worker pays the cost once
+    per TTL window.
     """
+    import time as _time
+
+    cached = _STATE_DEPT_SNAPSHOT_CACHE.get(prefix)
+    if cached and (_time.time() - cached[0]) < _STATE_DEPT_SNAPSHOT_TTL_SECONDS:
+        return cached[1], cached[2]
+
+    data, refreshed = _load_state_dept_snapshot_from_disk(prefix)
+
+    if not data:
+        data, refreshed = _load_state_dept_snapshot_from_supabase(prefix)
+
+    if not data:
+        data, refreshed = _scrape_state_dept_snapshot_now(prefix)
+
+    if data:
+        _STATE_DEPT_SNAPSHOT_CACHE[prefix] = (_time.time(), data, refreshed)
+    return data, refreshed
+
+
+def _load_state_dept_snapshot_from_disk(prefix: str) -> tuple[dict, str]:
+    """Read the newest locally-cached snapshot, or ``({}, "")`` if none."""
     import json as _json
     from src.config import settings as _settings
 
@@ -1228,6 +1269,115 @@ def _load_state_dept_snapshot(prefix: str) -> tuple[dict, str]:
     except Exception as exc:
         logger.warning("Failed to load %s snapshot %s: %s", prefix, latest, exc)
         return {}, ""
+
+
+def _load_state_dept_snapshot_from_supabase(prefix: str) -> tuple[dict, str]:
+    """Pull the newest snapshot for ``prefix`` from Supabase Storage.
+
+    Lists ``state_dept_snapshots/{prefix}_*.json`` in the public bucket,
+    picks the lexically-greatest key (filenames are ISO-dated, so this
+    is also the newest by date), downloads it, and persists a copy to
+    local disk so subsequent calls hit the fast path.
+    """
+    import json as _json
+    from src.config import settings as _settings
+
+    try:
+        from src.storage_remote import (
+            download_object,
+            list_object_keys,
+            supabase_storage_read_enabled,
+        )
+    except Exception as exc:
+        logger.debug("Supabase storage helpers unavailable: %s", exc)
+        return {}, ""
+
+    if not supabase_storage_read_enabled():
+        return {}, ""
+
+    keys = list_object_keys("state_dept_snapshots")
+    matching = sorted(
+        k for k in keys
+        if k.rsplit("/", 1)[-1].startswith(f"{prefix}_") and k.endswith(".json")
+    )
+    if not matching:
+        return {}, ""
+
+    latest_key = matching[-1]
+    body = download_object(latest_key)
+    if not body:
+        return {}, ""
+
+    try:
+        data = _json.loads(body.decode("utf-8"))
+    except Exception as exc:
+        logger.warning("Could not parse Supabase snapshot %s: %s", latest_key, exc)
+        return {}, ""
+    if not isinstance(data, dict):
+        return {}, ""
+
+    filename = latest_key.rsplit("/", 1)[-1]
+    date_part = filename[: -len(".json")].split("_", 1)[-1]
+
+    # Persist to local disk so the next call (and any sibling worker
+    # that ends up reading the same path) hits the fast path.
+    try:
+        snapshot_dir = _settings.storage_dir / "state_dept_snapshots"
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        (snapshot_dir / filename).write_bytes(body)
+    except Exception as exc:
+        logger.debug("Could not cache Supabase snapshot to disk: %s", exc)
+
+    logger.info(
+        "Loaded %s snapshot from Supabase Storage: %s (%d entries)",
+        prefix, latest_key, len(data),
+    )
+    return data, date_part
+
+
+def _scrape_state_dept_snapshot_now(prefix: str) -> tuple[dict, str]:
+    """Last-resort: run the scraper inline once.
+
+    Only used on a brand-new deploy when both local disk and Supabase
+    are empty. The scraper writes the snapshot to local disk and
+    (best-effort) to Supabase Storage as a side effect, so subsequent
+    calls won't have to repeat this.
+    """
+    from datetime import date as _date
+
+    try:
+        if prefix == "cpal":
+            from src.scraper.state_dept_cpal import StateDeptCPALScraper as _Scraper
+        elif prefix == "crl":
+            from src.scraper.state_dept_crl import StateDeptCRLScraper as _Scraper
+        else:
+            return {}, ""
+    except Exception as exc:
+        logger.warning("Could not import %s scraper: %s", prefix, exc)
+        return {}, ""
+
+    try:
+        result = _Scraper().scrape()
+    except Exception as exc:
+        logger.warning("Inline %s scrape failed: %s", prefix, exc)
+        return {}, ""
+
+    if not getattr(result, "success", False):
+        logger.warning(
+            "Inline %s scrape returned no data: %s",
+            prefix, getattr(result, "error", "unknown"),
+        )
+        return {}, ""
+
+    # The scraper has now persisted to disk; re-read so we use the
+    # exact same parsed shape the cron would produce.
+    data, refreshed = _load_state_dept_snapshot_from_disk(prefix)
+    if data:
+        logger.info(
+            "Inline %s scrape populated snapshot (%d entries, refreshed=%s)",
+            prefix, len(data), refreshed or _date.today().isoformat(),
+        )
+    return data, refreshed
 
 
 def _fuzzy_score(query: str, *fields: str) -> float:

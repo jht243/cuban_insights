@@ -317,6 +317,22 @@ class StateDeptCPALScraper(BaseScraper):
         path = SNAPSHOT_DIR / f"cpal_{snap_date.isoformat()}.json"
         path.write_text(json.dumps(current, indent=2, ensure_ascii=False))
         logger.info("Saved CPAL snapshot: %s (%d entries)", path, len(current))
+        # Mirror the snapshot to Supabase Storage so the web service
+        # (which runs in a different Render container with its own
+        # ephemeral disk) can see today's data. Best-effort — if storage
+        # isn't configured or the upload fails, the local snapshot is
+        # still valid for this cron run.
+        try:
+            from src.storage_remote import upload_object
+
+            upload_object(
+                f"state_dept_snapshots/cpal_{snap_date.isoformat()}.json",
+                json.dumps(current, ensure_ascii=False).encode("utf-8"),
+                content_type="application/json",
+                cache_control="max-age=3600",
+            )
+        except Exception as exc:
+            logger.warning("CPAL snapshot Supabase mirror failed: %s", exc)
 
     # ----- Article construction ---------------------------------------
 

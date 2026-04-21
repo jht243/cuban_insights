@@ -123,6 +123,93 @@ def public_object_url(object_key: str, bucket: Optional[str] = None) -> Optional
     return f"{base}/storage/v1/object/public/{target_bucket}/{object_key}"
 
 
+def download_object(object_key: str, bucket: Optional[str] = None) -> Optional[bytes]:
+    """
+    Fetch an arbitrary object from a public Supabase Storage bucket.
+    Returns the raw bytes, or None if the object is missing / storage
+    is not configured / the request failed.
+
+    This is the read-side counterpart to ``upload_object`` and only
+    needs ``SUPABASE_URL`` (no service key) — the bucket must be public.
+    """
+    url = public_object_url(object_key, bucket=bucket)
+    if not url:
+        return None
+    try:
+        resp = httpx.get(url, timeout=15)
+    except httpx.HTTPError as exc:
+        logger.warning("Supabase Storage GET failed for %s: %s", object_key, exc)
+        return None
+    if resp.status_code == 404:
+        return None
+    if resp.status_code >= 400:
+        logger.warning(
+            "Supabase Storage GET %s returned %d: %s",
+            object_key, resp.status_code, resp.text[:200],
+        )
+        return None
+    return resp.content
+
+
+def list_object_keys(prefix: str, bucket: Optional[str] = None) -> list[str]:
+    """
+    List object keys under a folder-style prefix in Supabase Storage.
+
+    Uses the storage list endpoint (POST .../object/list/<bucket>), which
+    does require an Authorization header — we pass the service key when
+    available, otherwise the anon-equivalent of the URL won't return
+    results. On any failure, returns an empty list (caller should treat
+    "no listing" as "nothing in storage").
+
+    The prefix is treated as a folder path (e.g. ``state_dept_snapshots``),
+    and returned keys are joined back with the prefix so callers can pass
+    them straight to ``download_object``.
+    """
+    base = _supabase_base_url()
+    if not base or not settings.supabase_service_key:
+        return []
+    target_bucket = bucket or settings.supabase_report_bucket
+    list_url = f"{base}/storage/v1/object/list/{target_bucket}"
+    headers = {
+        "Authorization": f"Bearer {settings.supabase_service_key}",
+        "apikey": settings.supabase_service_key,
+        "Content-Type": "application/json",
+    }
+    folder = prefix.strip("/")
+    body = {
+        "prefix": folder,
+        "limit": 1000,
+        "offset": 0,
+        "sortBy": {"column": "name", "order": "asc"},
+    }
+    try:
+        resp = httpx.post(list_url, json=body, headers=headers, timeout=15)
+    except httpx.HTTPError as exc:
+        logger.warning("Supabase Storage LIST failed for %s: %s", folder, exc)
+        return []
+    if resp.status_code >= 400:
+        logger.warning(
+            "Supabase Storage LIST %s returned %d: %s",
+            folder, resp.status_code, resp.text[:200],
+        )
+        return []
+    try:
+        items = resp.json()
+    except ValueError:
+        return []
+    keys: list[str] = []
+    for item in items or []:
+        name = item.get("name")
+        if not name:
+            continue
+        # The list endpoint returns names relative to the prefix, plus
+        # "folder" entries with id=None. Skip the folders.
+        if item.get("id") is None and not name.endswith(".json"):
+            continue
+        keys.append(f"{folder}/{name}" if folder else name)
+    return keys
+
+
 def fetch_report_html() -> Optional[str]:
     """
     Fetch the latest report.html from Supabase Storage.
