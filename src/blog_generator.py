@@ -151,7 +151,17 @@ def _candidate_external(db) -> list[ExternalArticleEntry]:
     out = []
     for r in rows:
         analysis = r.analysis_json or {}
-        if analysis.get("relevance_score", 0) < settings.blog_gen_min_relevance:
+        relevance = analysis.get("relevance_score", 0)
+        if relevance < settings.blog_gen_min_relevance:
+            continue
+        # Safety net for Federal Register: the API does full-text
+        # "cuba" search and can surface generic OFAC rules where
+        # Cuba is just one of many sanctioned jurisdictions. Require
+        # a higher relevance bar before spending an LLM call on a
+        # long-form post.
+        source = getattr(r, "source", None)
+        source_value = getattr(source, "value", source)
+        if source_value == "federal_register" and relevance < 7:
             continue
         out.append(r)
     return out

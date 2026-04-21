@@ -1,6 +1,8 @@
 """
-Report generator: reads analyzed entries from the database and renders
-the Jinja2 template into a static report.html file.
+Cuban Insights report generator: reads analyzed entries from the
+database and renders the Jinja2 template into a static report.html
+file. The output is the daily investor briefing published at
+cubaninsights.com.
 """
 
 from __future__ import annotations
@@ -87,9 +89,16 @@ SOURCE_DISPLAY_MAP = {
     SourceType.OFAC_SDN: "OFAC SDN List",
     SourceType.GDELT: None,
     SourceType.BCC_RATES: "BCC",
-    SourceType.BCV_RATES: "BCV",
+    SourceType.ELTOQUE_RATE: "elTOQUE TRMI",
     SourceType.TRAVEL_ADVISORY: "State Dept",
-    SourceType.ASAMBLEA_NACIONAL: "Asamblea Nacional",
+    SourceType.STATE_DEPT_CRL: "State Dept (Cuba Restricted List)",
+    SourceType.STATE_DEPT_CPAL: "State Dept (Cuba Prohibited Accommodations)",
+    SourceType.ASAMBLEA_NACIONAL_CU: "Asamblea Nacional del Poder Popular",
+    SourceType.GACETA_OFICIAL_CU: "Gaceta Oficial de la República de Cuba",
+    SourceType.MINREX: "MINREX",
+    SourceType.ONEI: "ONEI",
+    SourceType.PRESS_RSS: "Cuban Press",
+    SourceType.BCV_RATES: "BCC",
 }
 
 
@@ -187,6 +196,17 @@ def _build_entries(ext_articles, assembly_news) -> list[dict]:
         relevance = analysis.get("relevance_score", 0)
         if relevance < min_score:
             continue
+        # Federal Register matches use a broad full-text "cuba" query
+        # against OFAC docs and can pick up rules where Cuba is just
+        # one of ~20 sanctioned jurisdictions in a generic compliance
+        # screening list. We already drop those at scrape time when
+        # the title/abstract have no Cuba terms, but as a safety net
+        # we also require Federal Register entries to clear a higher
+        # relevance bar before they make the daily briefing.
+        source = getattr(item, "source", None)
+        source_value = getattr(source, "value", source)
+        if source_value == "federal_register" and relevance < 7:
+            continue
 
         sectors = analysis.get("sectors", [])
         sentiment = analysis.get("sentiment", "mixed")
@@ -221,7 +241,7 @@ def _build_entries(ext_articles, assembly_news) -> list[dict]:
                 source_display = domain or item.source_name or "International Press"
                 trust_label_default = f"Via GDELT — {source_display}"
         else:
-            source_display = "Asamblea Nacional"
+            source_display = "Asamblea Nacional del Poder Popular"
             trust_label_default = "State Media"
 
         is_new = (date.today() - item.published_date).days <= 3
@@ -275,11 +295,11 @@ _TOPIC_STOPWORDS = frozenset({
     "have", "has", "are", "was", "were", "will", "new", "more", "than",
     "but", "not", "may", "can", "now", "all", "how", "why", "when",
     "what", "which", "who", "you", "your", "his", "her", "its", "their",
-    "venezuela", "venezuelan", "venezuela's", "law", "laws", "bill",
+    "cuba", "cuban", "cuba's", "law", "laws", "bill",
     # Spanish
     "para", "con", "por", "del", "los", "las", "una", "uno", "que",
     "como", "esta", "este", "esto", "esos", "esas", "muy", "ser",
-    "venezolan", "venezolana", "venezolano", "venezolanas", "venezolanos",
+    "cubano", "cubana", "cubanos", "cubanas",
     "nacional", "nacionales", "asamblea", "diputado", "diputada",
     "diputados", "diputadas", "presidente", "presidenta",
     "comision", "comision", "permanente",
@@ -289,66 +309,91 @@ _TOPIC_STOPWORDS = frozenset({
 # contains one of these keywords is tagged with the topic. Entries that
 # share a topic AND fall within DEDUP_WINDOW_DAYS of each other are
 # collapsed to a single entry (the highest-relevance one). This is the
-# big hammer that catches "12 different MPs each made a statement about
-# the Mining Law this week" -> one entry.
+# big hammer that catches "12 different ANPP deputies each made a
+# statement about the Foreign Investment Law this week" -> one entry.
 # Order matters: the first tag whose keyword appears in the entry text
 # wins. Put NARROW, SPECIFIC topics first; broad ones last. This prevents
 # e.g. "foreign_investment" body text from getting mis-tagged as
-# "amnesty_law" just because the article mentions amnesty in passing.
+# "mipymes_decree" just because the article mentions MIPYMES in passing.
 _TOPIC_TAGS: list[tuple[str, tuple[str, ...]]] = [
-    # Specific named laws (highest priority)
-    ("mining_law", ("ley organica de minas", "ley de minas", "mining law", "ley organica minera", "ley minera")),
-    ("amnesty_law", ("ley de amnistia", "amnesty law")),
-    ("socioeconomic_law", ("ley de proteccion de derechos socioeconomicos", "derechos socioeconomicos", "socioeconomic law")),
-    ("admin_celeridad_law", ("ley para la celeridad", "ley para celeridad", "tramites administrativos law", "administrative streamlining law")),
-    ("hydrocarbons_law", ("ley de hidrocarburos", "hydrocarbons law")),
-    ("constitutional_court_minas", ("tsj declara constitucionalidad de la ley de minas", "constitutionality of the mining law", "constitutionality of the organic mining law")),
-    # Specific OFAC/sanctions actions
-    ("ofac_general_license", ("general license 5", "general license 6", "general license 7", "general license 8", "general license 9", "licencia general 5", "licencia general 6")),
-    ("ofac_designations", ("notice of ofac sanctions actions", "ofac sdn list update", "ofac sanctions actions")),
-    ("travel_advisory", ("travel advisory", "do not travel advisory", "reconsider travel", "advisory level")),
-    # Recurring public-mobilization campaigns (one campaign, many headlines).
-    # MUST come BEFORE ofac_sanctions_relief: protest articles routinely
-    # mention "lifting sanctions" as the protest's stated goal, which would
-    # otherwise let ofac_sanctions_relief steal the tag and split a single
-    # event into two non-merging buckets (e.g. one article emphasizing
-    # 'national mobilization' tagged as protest, sister article emphasizing
-    # 'levantamiento de las sanciones' tagged as relief).
-    ("anti_sanctions_protest", (
-        # English: march, mobilization, pilgrimage are all the same
-        # campaign reframed by different reporters / press releases.
-        "march against sanctions",
-        "national mobilization against sanctions",
-        "nationwide march against sanctions",
-        "anti-sanctions march",
-        "anti-sanctions mobilization",
-        "pilgrimage against sanctions",
-        "national pilgrimage against sanctions",
-        "national pilgrimage",
-        # Spanish: official AN framing rotates between marcha,
-        # movilizacion, peregrinacion. Add both the bare keyword
-        # ("peregrinacion") and the longer canonical phrasing.
-        "marcha contra las sanciones",
-        "movilizacion contra las sanciones",
-        "movilizacion nacional antiimperialista",
-        "marcha por la paz y contra las sanciones",
-        "movilizacion antiimperialista",
-        "peregrinacion contra las sanciones",
-        "peregrinacion nacional contra las sanciones",
-        "peregrinacion nacional",
-        "gran peregrinacion",
-        "peregrinacion unidos",
-        "venezuela sin sanciones y en paz",
+    # Specific named Cuban laws (highest priority)
+    ("foreign_investment_law", ("ley de inversion extranjera", "ley 118", "foreign investment law", "ley no. 118")),
+    ("mipymes_decree", ("decreto-ley 46", "decreto ley 46", "decreto ley de las mipymes", "mipymes decree", "decreto ley sobre las mipymes")),
+    ("price_control_resolution", ("resolucion sobre precios", "topes de precios", "price control resolution", "precios maximos")),
+    ("tarea_ordenamiento", ("tarea ordenamiento", "monetary unification", "ordenamiento monetario", "unificacion monetaria")),
+    ("mariel_zed_regulations", ("zona especial de desarrollo mariel", "mariel special development zone", "zed mariel", "decreto-ley zed")),
+    ("constitution_2019", ("constitucion de 2019", "2019 constitution", "constitutional reform 2019", "reforma constitucional")),
+    # Specific OFAC/sanctions actions on Cuba
+    ("ofac_general_license", (
+        "general license 1",
+        "general license 5",
+        "general license b",
+        "general license n",
+        "general license under cacr",
+        "licencia general bajo cacr",
+        "cacr general license",
     )),
-    # Generic sanctions-relief commentary (no specific protest framing).
-    # Sits AFTER anti_sanctions_protest so protest pieces win the tag.
-    ("ofac_sanctions_relief", ("levantamiento de las sanciones", "sanctions easing", "ease sanctions", "ease the sanctions", "lift sanctions", "us eases sanctions")),
+    ("cuba_restricted_list", ("cuba restricted list", "lista restringida de cuba", "section 515.209", "§515.209")),
+    ("cpal_update", ("cuba prohibited accommodations list", "lista de alojamientos prohibidos", "cpal update", "section 515.210")),
+    ("ofac_designations", ("notice of ofac sanctions actions", "ofac sdn list update", "ofac sanctions actions", "magnitsky designations")),
+    ("helms_burton_title_iii", ("helms-burton title iii", "title iii lawsuit", "libertad act title iii", "trafficking in confiscated property")),
+    ("travel_advisory", ("travel advisory", "do not travel advisory", "reconsider travel", "advisory level")),
+    # Recurring Cuban anti-embargo mobilizations (one campaign, many
+    # headlines). MUST come BEFORE ofac_sanctions_relief because state
+    # press routinely couples protest framing with calls to lift the
+    # embargo, which would otherwise split one event into two buckets.
+    ("anti_embargo_protest", (
+        # English framings used by Granma / Cubadebate translations.
+        "march against the blockade",
+        "march against the embargo",
+        "anti-embargo march",
+        "anti-blockade march",
+        "national mobilization against the blockade",
+        "national mobilization against the embargo",
+        # Spanish: state media rotates marcha / movilizacion / tribuna
+        # antiimperialista / acto. Catch the canonical phrasings.
+        "marcha contra el bloqueo",
+        "movilizacion contra el bloqueo",
+        "tribuna antiimperialista",
+        "acto contra el bloqueo",
+        "marcha del pueblo combatiente",
+        "abajo el bloqueo",
+        "cuba vs bloqueo",
+        "no al bloqueo",
+        "un solo pueblo contra el bloqueo",
+    )),
+    # UN General Assembly anti-embargo vote — recurring annual story.
+    ("un_anti_embargo_vote", (
+        "un general assembly resolution against the embargo",
+        "un vote against the cuba embargo",
+        "resolucion de la onu contra el bloqueo",
+        "votacion en la onu contra el bloqueo",
+        "asamblea general de la onu contra el bloqueo",
+    )),
+    # Generic embargo-easing commentary (no specific protest framing).
+    # Sits AFTER anti_embargo_protest so protest pieces win the tag.
+    ("ofac_sanctions_relief", (
+        "lift the embargo",
+        "easing of the embargo",
+        "embargo easing",
+        "ease the embargo",
+        "lift sanctions on cuba",
+        "us eases cuba sanctions",
+        "levantamiento del bloqueo",
+        "flexibilizacion del bloqueo",
+    )),
     # Diplomatic ties (specific bilaterals)
-    ("eu_dialogue", ("grupo de amistad venezuela-ue", "venezuela-eu friendship group", "european parliament delegation")),
-    ("us_relations_specific", ("us senate resolution", "us state department releases", "us-venezuela bilateral")),
+    ("eu_pdca", ("acuerdo de dialogo politico y cooperacion", "eu-cuba pdca", "political dialogue and cooperation agreement", "ue-cuba pdca")),
+    ("us_relations_specific", ("us senate resolution on cuba", "us state department releases on cuba", "us-cuba bilateral", "havana-washington bilateral")),
     # Sector-broad (lowest priority — only catch if nothing more specific matched)
     ("foreign_investment_general", ("inversion extranjera directa", "foreign direct investment")),
-    ("real_estate_reform", ("reformara leyes vinculadas al sector inmobiliario", "real estate sector reform", "leyes inmobiliarias")),
+    ("private_sector_reform", ("reforma del sector privado", "private sector reform", "mipymes y cuentapropistas")),
+    ("tourism_recovery", ("recuperacion del turismo", "tourism recovery", "llegadas de turistas", "tourist arrivals")),
+    ("biotech_sector", ("biocubafarma", "cuban biotech", "cuban vaccines", "abdala", "soberana")),
+    ("nickel_sector", ("moa nickel", "sherritt joint venture", "cubaniquel", "nickel and cobalt")),
+    ("telecom_etecsa", ("etecsa", "cuban telecom", "section 515.578", "§515.578 telecom carve-out")),
+    ("remittances_corridor", ("western union cuba", "fincimex", "mlc remittances", "envio de remesas a cuba")),
+    ("real_estate_reform", ("reforma del sector inmobiliario", "real estate sector reform", "leyes inmobiliarias", "mercado inmobiliario en cuba")),
 ]
 
 
@@ -392,24 +437,25 @@ DEDUP_WINDOW_DAYS = 7
 JACCARD_THRESHOLD = 0.35
 # Even when two entries share a topic tag and fall inside the dedup
 # window, they must also have at least this much *content* overlap to
-# be merged. This protects against the "two genuinely different mining
-# laws were passed in the same week" case — both would tag as
-# mining_law, but their headlines/bodies would have low word overlap
-# (e.g. "Mining Royalty Reform" vs "Organic Mining Law Promulgation"),
-# so they stay as separate entries.
+# be merged. This protects against the "two genuinely different
+# private-sector reforms were announced in the same week" case — both
+# would tag as private_sector_reform, but their headlines/bodies would
+# have low word overlap (e.g. "MIPYMES Tax Window Extended" vs "New
+# cuentapropistas licensing bands"), so they stay as separate entries.
 #
 # This Jaccard floor is *only* applied to non-exclusive topic tags
-# (see _EXCLUSIVE_TOPIC_TAGS below). For named single-instrument
-# tags like mining_law (= Ley Orgánica de Minas), sharing the tag +
-# date window is sufficient to merge — those tags inherently refer
-# to one specific legal instrument, so 5 articles tagged mining_law
+# (see _EXCLUSIVE_TOPIC_TAGS below). For named single-instrument tags
+# like foreign_investment_law (= Ley 118), sharing the tag + date
+# window is sufficient to merge — those tags inherently refer to one
+# specific legal instrument, so 5 articles tagged foreign_investment_law
 # in the same week are all about the same law.
 TOPIC_MERGE_MIN_JACCARD = 0.25
 
 # Topic tags that refer to a single, uniquely-named instrument or
 # event. Articles sharing one of these tags within DEDUP_WINDOW_DAYS
-# always describe the same underlying story (e.g. "Ley Orgánica de
-# Minas" only exists once; the Amnesty Law of 2025 only exists once;
+# always describe the same underlying story (e.g. "Ley 118" / the
+# Foreign Investment Law only exists once; the Cuba Restricted List
+# is one document; an annual UN anti-embargo vote is one event;
 # a single travel-advisory revision only exists once), so we collapse
 # them without requiring extra word-overlap evidence.
 #
@@ -418,14 +464,17 @@ TOPIC_MERGE_MIN_JACCARD = 0.25
 # "foreign_investment_general" must NOT be exclusive — those legitimately
 # cover multiple distinct deals.
 _EXCLUSIVE_TOPIC_TAGS = frozenset({
-    "mining_law",
-    "amnesty_law",
-    "hydrocarbons_law",
-    "socioeconomic_law",
-    "admin_celeridad_law",
-    "constitutional_court_minas",
+    "foreign_investment_law",
+    "mipymes_decree",
+    "tarea_ordenamiento",
+    "mariel_zed_regulations",
+    "constitution_2019",
+    "cuba_restricted_list",
+    "cpal_update",
+    "helms_burton_title_iii",
     "travel_advisory",
-    "anti_sanctions_protest",
+    "anti_embargo_protest",
+    "un_anti_embargo_vote",
 })
 
 # Calendar-specific dedup threshold. Lower than the news Jaccard floor
@@ -441,8 +490,8 @@ def _deduplicate_entries(entries: list[dict]) -> list[dict]:
     Two passes:
       1. **Topic-window pass**: entries with the same topic tag within
          DEDUP_WINDOW_DAYS collapse to the highest-relevance one. This
-         catches the "12 MPs separately commented on the Mining Law
-         this week" case.
+         catches the "12 ANPP deputies separately commented on the
+         Foreign Investment Law this week" case.
       2. **Jaccard fallback**: catches near-duplicates that didn't
          match a topic tag, using shared significant-word ratio.
 
@@ -623,41 +672,58 @@ def _build_ticker(db) -> list[dict]:
     """Build ticker bar items from latest DB data."""
     items = []
 
-    bcv = (
+    bcc = (
         db.query(ExternalArticleEntry)
         .filter(ExternalArticleEntry.source == SourceType.BCC_RATES)
         .order_by(ExternalArticleEntry.published_date.desc())
         .first()
     )
-    if bcv and bcv.extra_metadata:
-        usd_rate = bcv.extra_metadata.get("usd")
+    if bcc and bcc.extra_metadata:
+        usd_rate = bcc.extra_metadata.get("usd")
         if usd_rate:
-            parallel = bcv.extra_metadata.get("parallel_usd")
-            premium = bcv.extra_metadata.get("parallel_premium_pct")
-            change = None
-            if parallel and premium is not None:
-                change = f"+{premium:.1f}% parallel"
-            source_used = bcv.extra_metadata.get("source_used") or "BCV"
-            source_label = "BCV (live)" if source_used == "bcv" else f"BCV via {source_used}"
+            source_used = bcc.extra_metadata.get("source_used") or "BCC"
+            source_label = "BCC (live)" if source_used == "bcc" else f"BCC via {source_used}"
             items.append({
-                "label": "BCV Official",
+                "label": "BCC Official",
                 "value": f"{float(usd_rate):.2f}",
-                "unit": "Bs.D/$",
-                "change": change,
+                "unit": "CUP/$",
+                "change": None,
                 "change_dir": "up",
                 "value_color": None,
                 "source": source_label,
             })
-            if parallel:
-                items.append({
-                    "label": "USD Parallel",
-                    "value": f"{float(parallel):.2f}",
-                    "unit": "Bs.D/$",
-                    "change": None,
-                    "change_dir": "up",
-                    "value_color": "#fbbf24",
-                    "source": "Monitor (avg)",
-                })
+
+    eltoque = (
+        db.query(ExternalArticleEntry)
+        .filter(ExternalArticleEntry.source == SourceType.ELTOQUE_RATE)
+        .order_by(ExternalArticleEntry.published_date.desc())
+        .first()
+    )
+    if eltoque and eltoque.extra_metadata:
+        usd_informal = eltoque.extra_metadata.get("usd")
+        premium = eltoque.extra_metadata.get("informal_premium_pct")
+        change = f"+{premium:.1f}% vs BCC" if premium is not None else None
+        if usd_informal:
+            items.append({
+                "label": "elTOQUE TRMI",
+                "value": f"{float(usd_informal):.2f}",
+                "unit": "CUP/$",
+                "change": change,
+                "change_dir": "up",
+                "value_color": "#fbbf24",
+                "source": "elTOQUE (informal)",
+            })
+        mlc_rate = eltoque.extra_metadata.get("mlc")
+        if mlc_rate:
+            items.append({
+                "label": "MLC Rate",
+                "value": f"{float(mlc_rate):.2f}",
+                "unit": "CUP/MLC",
+                "change": None,
+                "change_dir": "up",
+                "value_color": "#a78bfa",
+                "source": "elTOQUE (informal)",
+            })
 
     advisory = (
         db.query(ExternalArticleEntry)
@@ -668,12 +734,12 @@ def _build_ticker(db) -> list[dict]:
     if advisory and advisory.extra_metadata:
         level = advisory.extra_metadata.get("level")
         if level:
-            color = "#4ade80" if level <= 3 else "#f87171"
+            color = "#4ade80" if level <= 2 else "#fbbf24" if level == 3 else "#f87171"
             items.append({
                 "label": "Travel Advisory",
                 "value": f"Level {level}",
                 "unit": None,
-                "change": f"{'↓' if level < 4 else ''} from 4" if level < 4 else None,
+                "change": None,
                 "change_dir": "up" if level < 4 else "down",
                 "value_color": color,
                 "source": "State Dept",
@@ -682,15 +748,15 @@ def _build_ticker(db) -> list[dict]:
     if not items or len(items) < 2:
         items.extend([
             {"label": "Brent Crude", "value": "$65.48", "unit": None, "change": "−4.1%", "change_dir": "down", "value_color": None, "source": "MarketWatch"},
-            {"label": "Inflation Q1", "value": "71.8%", "unit": None, "change": None, "change_dir": "down", "value_color": None, "source": "BCV Official"},
-            {"label": "Oil Prod.", "value": "1.095M", "unit": "bpd", "change": None, "change_dir": "up", "value_color": None, "source": "PDVSA"},
+            {"label": "BCC Reference", "value": "120.00", "unit": "CUP/$", "change": None, "change_dir": "down", "value_color": None, "source": "BCC Official"},
+            {"label": "Tourist Arrivals", "value": "2.4M", "unit": "FY24", "change": None, "change_dir": "up", "value_color": None, "source": "ONEI"},
         ])
     else:
         items.extend([
             {"label": "Brent Crude", "value": "$65.48", "unit": None, "change": "−4.1%", "change_dir": "down", "value_color": None, "source": "MarketWatch"},
-            {"label": "Inflation Q1", "value": "71.8%", "unit": None, "change": None, "change_dir": "down", "value_color": None, "source": "BCV Official"},
-            {"label": "FDI Stock", "value": "$30.5B", "unit": None, "change": None, "change_dir": "up", "value_color": None, "source": "UNCTAD '24"},
-            {"label": "Oil Prod.", "value": "1.095M", "unit": "bpd", "change": None, "change_dir": "up", "value_color": None, "source": "PDVSA"},
+            {"label": "Inflation '24", "value": "31.0%", "unit": None, "change": None, "change_dir": "down", "value_color": None, "source": "ONEI"},
+            {"label": "Tourist Arrivals", "value": "2.4M", "unit": "FY24", "change": None, "change_dir": "up", "value_color": None, "source": "ONEI"},
+            {"label": "Nickel + Cobalt", "value": "49.5kt", "unit": "FY24", "change": None, "change_dir": "up", "value_color": None, "source": "Sherritt / ONEI"},
         ])
 
     return items
@@ -716,23 +782,33 @@ _URGENCY_ORDER = {
 _STANDING_CALENDAR_ITEMS: list[dict] = [
     {
         "date_label": "Ongoing",
-        "title": "OFAC GLs 46A–50A",
+        "title": "CACR §515 General Licenses",
         "subtitle": "Active",
-        "note": "Oil & gas authorizations. Revocable.",
-        "link": "https://ofac.treasury.gov/sanctions-programs-and-country-information/venezuela-related-sanctions",
+        "note": "Travel, telecom, agricultural-export and humanitarian authorizations under 31 CFR Part 515. Revocable.",
+        "link": "https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions",
         "link_label": "OFAC",
         "css_class": "cal-positive",
         "urgency": "ongoing",
     },
     {
-        "date_label": "2026 Target",
-        "title": "34 laws planned",
-        "subtitle": None,
-        "note": "Full legislative agenda for 2026.",
-        "link": "https://www.ciudadvalencia.com.ve/sancionar-34-leyes-2026/",
-        "link_label": "Source",
+        "date_label": "Annual",
+        "title": "UN General Assembly anti-embargo vote",
+        "subtitle": "October–November (annual)",
+        "note": "32nd consecutive year of the UNGA resolution calling for an end to the US embargo on Cuba.",
+        "link": "https://www.un.org/en/ga/",
+        "link_label": "UN",
         "css_class": "",
         "urgency": "longterm",
+    },
+    {
+        "date_label": "Ongoing",
+        "title": "Cuba Restricted List (CRL)",
+        "subtitle": "State Department list under §515.209",
+        "note": "GAESA holdings, CIMEX, Gaviota, FINCIMEX and 200+ subentities prohibited as direct counterparties.",
+        "link": "https://www.state.gov/cuba-restricted-list/",
+        "link_label": "State",
+        "css_class": "cal-negative",
+        "urgency": "ongoing",
     },
 ]
 
@@ -754,12 +830,13 @@ def _deduplicate_calendar_events(events: list[dict]) -> list[dict]:
     """Two-pass dedup of calendar candidates.
 
     Pass 1: Exclusive topic tags. The LLM frequently rephrases the same
-    underlying event ("Amnesty Law Review Extension" vs "Amnesty Law
-    Commission Extension", "Nationwide March Against Sanctions" vs
-    "National Mobilization Against Sanctions"), but the topic tag system
-    pins both to the same canonical event (`amnesty_law`,
-    `anti_sanctions_protest`). At most one event per exclusive tag
-    survives, with the highest-priority one kept.
+    underlying event ("Foreign Investment Law Reform" vs "Ley 118
+    Amendment Window", "Nationwide March Against the Blockade" vs
+    "National Mobilization Against the Embargo"), but the topic tag
+    system pins both to the same canonical event
+    (`foreign_investment_law`, `anti_embargo_protest`). At most one
+    event per exclusive tag survives, with the highest-priority one
+    kept.
 
     Pass 2: Jaccard fallback on title tokens for any pair the topic
     system didn't catch (threshold = CALENDAR_JACCARD_THRESHOLD).
@@ -1083,8 +1160,14 @@ def _calendar_link_label(item) -> str:
             return "State Dept"
         if item.source == SourceType.OFAC_SDN:
             return "OFAC"
-    if hasattr(item, "source_url") and "asambleanacional" in (item.source_url or ""):
-        return "AN"
+        if item.source == SourceType.GACETA_OFICIAL_CU:
+            return "Gaceta CU"
+        if item.source == SourceType.MINREX:
+            return "MINREX"
+        if item.source == SourceType.ONEI:
+            return "ONEI"
+    if hasattr(item, "source_url") and "parlamentocubano" in (item.source_url or ""):
+        return "ANPP"
     return "Source"
 
 
@@ -1123,19 +1206,22 @@ def _build_climate() -> dict:
     return {
         "period": "Q2 2026 vs. Q1 2026 (baseline)",
         "bars": [
-            {"label": "Sanctions Trajectory", "score": 7, "trend_dir": "flat", "trend_value": "", "bar_color": "green", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
-            {"label": "Diplomatic Progress", "score": 6, "trend_dir": "flat", "trend_value": "", "bar_color": "green", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
-            {"label": "Legal Framework", "score": 4, "trend_dir": "flat", "trend_value": "", "bar_color": "yellow", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Embargo Posture", "score": 3, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "Diplomatic Engagement", "score": 4, "trend_dir": "flat", "trend_value": "", "bar_color": "yellow", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
+            {"label": "MIPYME & FDI Framework", "score": 4, "trend_dir": "flat", "trend_value": "", "bar_color": "yellow", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
             {"label": "Political Stability", "score": 3, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
             {"label": "Property Rights", "score": 3, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
             {"label": "Macro Stability", "score": 2, "trend_dir": "flat", "trend_value": "", "bar_color": "red", "why": "Awaiting first weekly climate refresh — showing manual baseline."},
         ],
         "methodology": (
             "Cold-start fallback. The live scorecard is computed weekly by "
-            "src.climate.runner.run_weekly_climate_refresh from BCV FX, "
-            "OFAC SDN/Federal Register activity, US travel advisory, GDELT "
-            "tone, and Gaceta/Asamblea keyword counts, with QoQ deltas "
-            "against the previous quarter's stored snapshot."
+            "src.climate.runner.run_weekly_climate_refresh from BCC reference + "
+            "elTOQUE TRMI FX, OFAC SDN (Cuba program) / Federal Register "
+            "activity, US State Dept Cuba travel advisory, GDELT tone, "
+            "and Gaceta Oficial CU + ANPP / Granma keyword counts on "
+            "MIPYME, FDI, Helms-Burton Title III, 11J / apagón, and "
+            "migration themes, with QoQ deltas against the previous "
+            "quarter's stored snapshot."
         ),
     }
 
@@ -1241,7 +1327,7 @@ def _build_jsonld(entries: list[dict], seo: dict, generated_at: datetime) -> str
         })
     item_list = {
         "@type": "ItemList",
-        "name": "Latest Venezuelan investment & sanctions briefings",
+        "name": "Latest Cuba investment & sanctions briefings",
         "itemListOrder": "https://schema.org/ItemListOrderDescending",
         "numberOfItems": len(item_list_elements),
         "itemListElement": item_list_elements,
@@ -1291,7 +1377,7 @@ def _build_jsonld(entries: list[dict], seo: dict, generated_at: datetime) -> str
             "publisher": {"@id": f"{base}/#organization"},
             "keywords": keywords_list,
             "isAccessibleForFree": True,
-            "articleSection": "Venezuela investment briefing",
+            "articleSection": "Cuba investment briefing",
             "inLanguage": "en-US",
         }
         graph.append(news_article)
@@ -1325,7 +1411,7 @@ def _build_seo(entries: list[dict], generated_at: datetime) -> dict:
     ][:3]
 
     title = (
-        "Caracas Research — Venezuela Investment Intelligence "
+        "Cuban Insights — Cuba Investment Intelligence "
         f"| Updated {generated_at.strftime('%b %d, %Y')}"
     )
 
@@ -1336,31 +1422,40 @@ def _build_seo(entries: list[dict], generated_at: datetime) -> dict:
         if len(lead) > 220:
             lead = lead[:217].rsplit(" ", 1)[0] + "…"
         description = (
-            f"Daily Venezuelan investment briefing — {lead} "
-            "Tracking OFAC sanctions, Asamblea Nacional, Gaceta Oficial, BCV rates."
+            f"Daily Cuba investment briefing — {lead} "
+            "Tracking OFAC CACR sanctions, Helms-Burton Title III, the "
+            "Cuba Restricted List, ANPP, Gaceta Oficial, BCC + elTOQUE TRMI rates."
         )
     else:
         description = (
-            "Daily Venezuelan investment & sanctions briefing for global investors. "
-            "Real-time monitoring of OFAC SDN, US Federal Register general licenses, "
-            "Asamblea Nacional legislation, Gaceta Oficial decrees, BCV exchange rates, "
+            "Daily Cuba investment & sanctions briefing for global investors. "
+            "Real-time monitoring of OFAC SDN (CACR / Cuba programs), the State "
+            "Department's Cuba Restricted List and CPAL hotel blacklist, US "
+            "Federal Register general licenses, Asamblea Nacional del Poder "
+            "Popular legislation, Gaceta Oficial de la República de Cuba "
+            "decrees, BCC reference + elTOQUE TRMI informal exchange rates, "
             "and US State Department travel advisories."
         )
 
     keywords = [
-        "invest in Venezuela",
-        "Venezuelan investment opportunities",
-        "OFAC Venezuela sanctions",
-        "invest in Caracas",
-        "Venezuela general license",
-        "Venezuela mining law",
-        "Asamblea Nacional",
-        "PDVSA Chevron license",
-        "Venezuela emerging markets",
-        "Bolivar exchange rate",
+        "invest in Cuba",
+        "Cuba investment opportunities",
+        "OFAC Cuba sanctions",
+        "Cuban Assets Control Regulations",
+        "Helms-Burton Title III",
+        "Cuba Restricted List",
+        "Cuba general license",
+        "Mariel ZED",
+        "BioCubaFarma",
+        "Asamblea Nacional del Poder Popular",
+        "Gaceta Oficial de Cuba",
+        "elTOQUE TRMI rate",
+        "CUP USD MLC exchange rate",
+        "MIPYMES Cuba",
+        "doing business in Havana",
     ]
     for sector in top_sectors:
-        keywords.append(f"Venezuela {sector.lower()} sector")
+        keywords.append(f"Cuba {sector.lower()} sector")
 
     canonical = f"{base}/"
     og_image = f"{base}/static/og-image.png?v=3"

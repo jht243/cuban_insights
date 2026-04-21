@@ -35,6 +35,23 @@ CUBA_TERMS = [
 OFAC_AGENCY_SLUG = "foreign-assets-control-office"
 
 
+def _is_cuba_relevant(title: str, abstract: str) -> bool:
+    """
+    True iff the document is genuinely about Cuba (not just an OFAC rule
+    that happens to list Cuba alongside ~20 other sanctioned jurisdictions
+    in a generic compliance section).
+
+    The Federal Register API's ``term`` parameter does full-text search,
+    so e.g. a global stablecoin-issuer AML rule mentioning "Cuba, Iran,
+    North Korea, ..." in its required-screening list will match. We
+    keep the broad search (so we don't miss real CACR amendments) but
+    require Cuba to appear in the *title or abstract* before persisting
+    the doc as a Cuba briefing item.
+    """
+    haystack = f"{title or ''}\n{abstract or ''}".lower()
+    return any(term.lower() in haystack for term in CUBA_TERMS)
+
+
 class FederalRegisterScraper(BaseScraper):
     """
     Queries the Federal Register API for OFAC documents mentioning Cuba.
@@ -100,7 +117,19 @@ class FederalRegisterScraper(BaseScraper):
         results = resp.get("results", [])
 
         articles: list[ScrapedArticle] = []
+        dropped = 0
         for doc in results:
+            title = doc.get("title", "")
+            abstract = doc.get("abstract", "")
+
+            if not _is_cuba_relevant(title, abstract):
+                dropped += 1
+                logger.debug(
+                    "Federal Register: dropped non-Cuba-relevant doc %s — %r",
+                    doc.get("document_number"), title[:80],
+                )
+                continue
+
             pub_date = date.fromisoformat(doc["publication_date"])
             agencies = ", ".join(
                 a.get("name", "") for a in doc.get("agencies", [])
@@ -108,10 +137,10 @@ class FederalRegisterScraper(BaseScraper):
 
             articles.append(
                 ScrapedArticle(
-                    headline=doc.get("title", ""),
+                    headline=title,
                     published_date=pub_date,
                     source_url=doc.get("html_url", ""),
-                    body_text=doc.get("abstract", ""),
+                    body_text=abstract,
                     source_name="Federal Register",
                     source_credibility="official",
                     article_type=doc.get("type", "Notice"),
@@ -124,8 +153,8 @@ class FederalRegisterScraper(BaseScraper):
             )
 
         logger.info(
-            "Federal Register: found %d OFAC/Cuba docs (%s to %s)",
-            len(articles), date_from, date_to,
+            "Federal Register: kept %d Cuba-relevant docs, dropped %d generic-OFAC matches (%s to %s)",
+            len(articles), dropped, date_from, date_to,
         )
         return articles
 
