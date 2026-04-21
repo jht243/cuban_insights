@@ -1,8 +1,7 @@
 """
 Daily scraping pipeline orchestrator.
 
-Runs all scrapers, persists results to the database, downloads PDFs,
-and runs OCR on any downloaded gazette PDFs.
+Runs all scrapers and persists results to the database.
 
 Usage:
     from src.pipeline import run_daily_scrape
@@ -26,13 +25,11 @@ from src.models import (
     SourceType, CredibilityTier, GazetteStatus, GazetteType,
 )
 from src.scraper.base import ScrapedGazette, ScrapedNews, ScrapedArticle, ScrapeResult
-# Cuba-era scrapers (Phase 2 — currently active in the daily pipeline).
 from src.scraper.gaceta_oficial_cu import GacetaOficialCUScraper
 from src.scraper.asamblea_nacional_cu import AsambleaNacionalCUScraper
 from src.scraper.minrex import MinrexScraper
 from src.scraper.onei import ONEIScraper
 from src.scraper.rss import PressRssScraper
-# Cross-cutting scrapers (Phase 2a/b).
 from src.scraper.federal_register import FederalRegisterScraper
 from src.scraper.ofac_sdn import OFACSdnScraper
 from src.scraper.gdelt import GDELTScraper
@@ -41,14 +38,6 @@ from src.scraper.eltoque import ElToqueScraper
 from src.scraper.travel_advisory import TravelAdvisoryScraper
 from src.scraper.state_dept_crl import StateDeptCRLScraper
 from src.scraper.state_dept_cpal import StateDeptCPALScraper
-# NOTE: legacy Venezuela-era scrapers (gazette.TuGacetaScraper /
-# OfficialGazetteScraper, assembly.AssemblyNewsScraper, bcv.BCVScraper)
-# are intentionally NOT imported here. They've been replaced by the
-# Cuba-era modules above. The modules themselves remain on disk because
-# `run_backfill.py` and the legacy `/tools/bolivar-usd-exchange-rate`
-# route in `server.py` still import them; that's slated for cleanup in
-# the Phase 5 server/route rewrite.
-from src.ocr.engine import ocr_pdf
 
 logger = logging.getLogger(__name__)
 
@@ -79,8 +68,6 @@ def run_daily_scrape(target_date: Optional[date] = None) -> dict:
         "news_new": 0,
         "articles_found": 0,
         "articles_new": 0,
-        "pdfs_downloaded": 0,
-        "ocr_completed": 0,
         "errors": [],
     }
 
@@ -149,52 +136,9 @@ def run_daily_scrape(target_date: Optional[date] = None) -> dict:
     new_articles = _persist_articles(all_articles)
     summary["articles_new"] = len(new_articles)
 
-    # --- Phase 4: Download PDFs and run OCR ---
-    for gazette_id, pdf_url in new_gazettes:
-        if not pdf_url:
-            continue
-
-        # Skip MEGA links for now (require special handling)
-        if "mega.nz" in pdf_url:
-            logger.info(
-                "Skipping MEGA download for gazette %d — manual download required: %s",
-                gazette_id, pdf_url,
-            )
-            continue
-
-        try:
-            db = SessionLocal()
-            entry = db.query(GazetteEntry).get(gazette_id)
-            if not entry:
-                continue
-
-            scraper = TuGacetaScraper()
-            pdf_path, pdf_hash = scraper._download_pdf(pdf_url, entry.gazette_number or str(gazette_id))
-            scraper.close()
-
-            entry.pdf_path = str(pdf_path)
-            entry.pdf_hash = pdf_hash
-            db.commit()
-            summary["pdfs_downloaded"] += 1
-
-            # Run OCR
-            ocr_result = ocr_pdf(pdf_path)
-            entry.ocr_text = ocr_result.text
-            entry.ocr_confidence = ocr_result.avg_confidence
-            entry.status = GazetteStatus.OCR_COMPLETE
-            db.commit()
-            summary["ocr_completed"] += 1
-
-            logger.info(
-                "OCR complete for gazette %d: confidence=%d%%, pages=%d",
-                gazette_id, ocr_result.avg_confidence, ocr_result.page_count,
-            )
-
-        except Exception as e:
-            logger.error("PDF/OCR failed for gazette %d: %s", gazette_id, e, exc_info=True)
-            summary["errors"].append(f"ocr_gazette_{gazette_id}: {e}")
-        finally:
-            db.close()
+    # Cuba's Gaceta Oficial does not expose direct PDF downloads — every
+    # norm is published as in-page sumario text only. The analyzer works
+    # off `sumario_raw`, so there's no PDF/OCR phase in the daily run.
 
     logger.info("=" * 60)
     logger.info("Scrape complete: %s", summary)
