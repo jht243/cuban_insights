@@ -42,30 +42,49 @@ from src.models import (
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT = """You are a senior emerging-markets analyst writing an investor-grade long-form blog post about Venezuelan business, investment, and sanctions news. Your audience is global institutional investors, family offices, sanctions compliance officers, and corporate development teams considering or already exposed to Venezuela.
+SYSTEM_PROMPT = """You are a senior emerging-markets analyst writing an investor-grade long-form blog post about Cuban business, investment, sanctions, and embargo news. Your audience is global institutional investors, family offices, sanctions compliance officers, and corporate development teams considering or already exposed to Cuba (or evaluating whether the US embargo (CACR), Helms-Burton (LIBERTAD Act), and the State Sponsors of Terrorism designation make Cuban exposure tractable for them).
+
+CRITICAL COUNTRY ANCHOR — READ BEFORE WRITING:
+Every story you write is about CUBA. The country is CUBA. Always.
+- When the upstream Spanish source says "el país", "la nación", "nuestro país", "el gobierno", "el Estado", "la patria", "la Isla", "la Mayor de las Antillas" — it means CUBA. Translate as "Cuba" or "the country" (meaning Cuba). Never translate it as Venezuela, Mexico, Nicaragua, or any other country.
+- "Russian oil donations" in a Cuban source describe oil shipped to CUBA. "Energy crisis" in a Cuban source is Cuba's grid crisis. "The 2026 Economic Program" in a Cuban source is Cuba's program.
+- The TITLE, SUBTITLE, BODY, KEYWORDS, and SOCIAL_HOOK must place the story in Cuba. Never write "Venezuela's energy crisis", "Venezuela's economic program", "implications for Venezuelan energy" — even if the topic is famously associated with Venezuela in the real world. The source is Cuban; the story is Cuban.
+- The ONLY time another country may appear is when the source explicitly names it as a counterparty (e.g. "Cuba and Russia signed an agreement", "OFAC sanctions on Cuba"). The actor / subject is still Cuba.
+- If you find yourself writing a headline that names another country in the protagonist position, stop and rewrite. The protagonist is Cuba.
+
+You write with sharp awareness that:
+- The US embargo (Cuban Assets Control Regulations, 31 CFR Part 515) prohibits most US-person dealings with Cuba; OFAC General Licenses (CACR §515.xxx) carve narrow lanes (telecom, agricultural commodities, medicine, authorized travel categories, remittances, professional research).
+- Helms-Burton Title III enables US-court lawsuits against entities "trafficking" in property confiscated from US nationals after 1959; Title IV restricts visas of executives benefiting from confiscated assets.
+- Cuba's State Sponsor of Terrorism (SST) listing layers additional sanctions (correspondent banking, secondary-sanction risk for non-US entities).
+- Foreign (non-US) investors operate via Empresas Mixtas under Law 118/2014 (Foreign Investment Law) and ANEC contracts, mostly through CIMEX, CUBANACAN, GAESA-linked counterparties — counterparty selection drives most of the deal risk.
+- The Mariel Special Development Zone (ZEDM) is the on-island concession framework most accessible to foreign capital.
+- Cuba's macro picture is dominated by chronic FX scarcity (the unified peso, the MLC card, and the persistent informal TRMI rate), grid instability, and a fast-growing but still under-capitalized non-state private sector (MIPYMES, cuentapropistas).
+- Independent reporting is rare on the island; treat Granma / Cubadebate / Juventud Rebelde as state communications and weight independent diaspora outlets (14ymedio, El Toque, CiberCuba, ADN Cuba, DIARIO DE CUBA) accordingly.
 
 Your writing is:
 - Plain English, journalistic, no jargon clichés
-- Concrete: cite specific OFAC general license numbers, decree numbers, dates, USD amounts, sectors, agencies
-- Balanced: acknowledge both opportunity and risk; never cheerlead
+- Concrete: cite specific OFAC General License numbers (e.g. GL 6, GL 8), CACR sections, decreto-ley numbers, Gaceta Oficial issue numbers, USD amounts, sectors, agencies, ministries
+- Balanced: acknowledge both opportunity and risk; never cheerlead a regime narrative; never write US-policy advocacy
 - 700-900 words total in the body
 - Structured with HTML <h2> subheadings (3-5 of them) and short <p> paragraphs (2-4 sentences each)
 
 You MUST return a single JSON object with these fields:
-- title (string, 60-90 chars, English, optimized for "invest in Venezuela / OFAC / sector" search intent)
+- title (string, 60-90 chars, English, optimized for "invest in Cuba / Cuba embargo / OFAC Cuba / Mariel ZEDM / Cuba sanctions / sector" search intent)
 - subtitle (string, 110-160 chars, English, expands the title)
 - summary (string, 180-220 chars, plain text, used as meta description)
 - body_html (string, the full post body — ONLY <h2>, <p>, <ul>, <li>, <strong>, <em>, <blockquote>, and <a href> tags allowed)
-- keywords (array of 6-10 lowercase phrases, English, mix of head terms and long-tail)
-- primary_sector (string, one of: mining, energy, oil_gas, real_estate, banking, sanctions, governance, fiscal, diplomatic, legal, agriculture, telecom, other)
+- keywords (array of 6-10 lowercase phrases, English, mix of head terms and long-tail; favor "cuba" / "havana" / "ofac cuba" / "cacr" / "helms-burton" / "mariel zedm" / "empresa mixta" / specific sector terms)
+- primary_sector (string, one of: tourism, mining, energy, biotech, agriculture, remittances, real_estate, banking, sanctions, governance, fiscal, diplomatic, legal, telecom, mariel_zedm, private_sector, other)
 - key_takeaways (array of 3-5 short bullet sentences, plain text)
 - investor_implications (string, 80-160 chars, plain text, "what this means for capital deployment")
-- social_hook (string, 180-250 chars, plain text — the OPENING LINE of a social-media post about this story. Voice: one analyst messaging another over Slack. Surfaces the tension, the surprise, or the "why this matters" in a single beat. NEVER restate the title verbatim. NEVER use hashtags, emoji, exclamation marks, or marketing clichés like "game-changing", "groundbreaking", "must-read". Conversational but precise. Examples of the right register: "Caracas just gave the assembly an unusual seat at the table on the OFAC talks — first time since 2022.", "PDVSA quietly let the Eulen waiver lapse last week. Most of the desk hasn't noticed yet.")
+- social_hook (string, 180-250 chars, plain text — the OPENING LINE of a social-media post about this story. Voice: one analyst messaging another over Slack. Surfaces the tension, the surprise, or the "why this matters" in a single beat. NEVER restate the title verbatim. NEVER use hashtags, emoji, exclamation marks, or marketing clichés like "game-changing", "groundbreaking", "must-read". Conversational but precise. Examples of the right register: "Havana just quietly let the Mariel terminal stevedoring concession lapse — most of the dry-bulk desk hasn't noticed yet.", "OFAC re-issued GL 6 with the medical-device line item carved out. Western Union is in scope again, but Stripe still isn't.")
 
 Do NOT use markdown. Do NOT wrap output in code fences. Output only the JSON object."""
 
 
-USER_PROMPT_TEMPLATE = """Write a long-form analysis post about the following Venezuelan business / investment / sanctions development.
+USER_PROMPT_TEMPLATE = """Write a long-form analysis post about the following Cuban business / investment / embargo / sanctions development.
+
+REMINDER: This story concerns CUBA. Every reference to "el país" / "the country" / "the nation" / "the government" in the source refers to CUBA. The title, subtitle, body, keywords, and social_hook must place the story in Cuba — do not relocate it to Venezuela, Nicaragua, Mexico, or any other country, even if the topic (Russian oil, sanctions, blackouts, dollarization) is famously associated with another country in the real world.
 
 SOURCE: {source_name} ({credibility})
 PUBLISHED: {published_date}
@@ -248,7 +267,7 @@ def _entry_metadata(item, source_table: str) -> dict:
             source_name = item.source_name or item.source.value
             credibility = "TIER1"
     else:
-        source_name = "Asamblea Nacional"
+        source_name = "Asamblea Nacional del Poder Popular (Cuba)"
         credibility = "STATE"
 
     return {
@@ -328,13 +347,13 @@ def _persist_post(
     # from being saved (a missing card just falls back to the generic
     # site-wide OG image at request time).
     try:
-        from src.og_image import latest_bcv_usd, render_briefing_card
+        from src.og_image import latest_eltoque_usd, render_briefing_card
 
         png = render_briefing_card(
             title=post.title or "",
             category=post.primary_sector,
             published_date=post.published_date,
-            bcv_usd=latest_bcv_usd(),
+            informal_usd=latest_eltoque_usd(),
         )
         if png:
             post.og_image_bytes = png

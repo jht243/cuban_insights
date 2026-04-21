@@ -50,50 +50,106 @@ def get_usage() -> dict:
         "estimated_cost_usd": round(in_cost + out_cost, 4),
     }
 RELEVANCE_KEYWORDS = (
-    # English
+    # English — Cuba investment / sanctions / macro vocabulary
     "sanction", "sanctions", "ofac", "treasury", "executive order",
-    "license", "oil", "pdvsa", "chevron", "mining", "real estate",
-    "property", "expropriat", "nationaliz", "bcv", "bond", "debt",
-    "amnesty", "election", "maduro", "guaido", "machado",
-    "investor", "investment", "fdi", "imf", "world bank",
+    "embargo", "cacr", "helms-burton", "title iii", "title iv",
+    "license", "general license", "specific license",
+    "oil", "energy", "tourism", "remittance", "remittances",
+    "western union", "biotech", "mariel", "zedm", "zona especial",
+    "joint venture", "mixed enterprise", "empresa mixta",
+    "expropriat", "nationaliz", "confiscat", "claim", "claims",
+    "currency unification", "monetary reform", "mlc", "mlc card",
+    "informal rate", "trmi", "eltoque",
+    "private sector", "mipymes", "cuentapropistas", "self-employed",
+    "amnesty", "succession", "díaz-canel", "diaz-canel", "raul castro", "raúl castro",
+    "bcc", "banco central de cuba", "investor", "investment", "fdi",
+    "imf", "world bank", "iadb", "paris club",
     "bilateral", "ambassador", "diplomatic", "consulate",
-    # Spanish (for Asamblea Nacional). Be SELECTIVE — generic terms like
-    # "ley" or "diputado" match nearly every headline and defeat the
-    # purpose of pre-filtering.
-    "sanci\u00f3n", "sanciones", "levantamiento de las sanciones",
-    "ley org\u00e1nica", "ley de minas", "ley tributaria", "ley fiscal",
-    "ley de hidrocarburos", "ley de inversi\u00f3n", "ley de inversiones",
-    "ley antibloqueo", "ley socioecon\u00f3mica", "decreto",
-    "petr\u00f3leo", "miner\u00eda", "minas", "miner", "hidrocarburos",
+    "state sponsor of terrorism", "sst", "specially designated",
+    "cu list", "restricted list", "cuba restricted list",
+    # Spanish — Cuban government / Asamblea Nacional vocabulary
+    "sanci\u00f3n", "sanciones", "embargo", "bloqueo",
+    "levantamiento del bloqueo", "levantamiento de las sanciones",
+    "ley", "decreto", "decreto-ley", "gaceta oficial",
+    "ley de empresas", "ley de inversi\u00f3n extranjera", "ley de inversi\u00f3n",
+    "c\u00f3digo del trabajo", "c\u00f3digo de comercio",
+    "petr\u00f3leo", "n\u00edquel", "miner\u00eda", "miner",
+    "tabaco", "az\u00facar", "biotecnolog\u00eda", "biotech",
+    "turismo", "hoteles", "remesas",
     "inmueble", "inmuebles", "bienes ra\u00edces",
-    "expropiaci\u00f3n", "nacionalizaci\u00f3n", "privatizaci\u00f3n",
-    "concesi\u00f3n", "concesion",
+    "expropiaci\u00f3n", "nacionalizaci\u00f3n", "confiscaci\u00f3n",
+    "empresa mixta", "empresas mixtas", "concesi\u00f3n", "concesion",
     "amnist\u00eda", "amnistia", "elecciones", "electoral",
     "inversi\u00f3n extranjera", "inversi\u00f3n", "inversionista", "inversores",
     "tributario", "impuesto", "presupuesto", "deuda externa",
     "comercio exterior", "exportaci\u00f3n", "importaci\u00f3n",
-    "energ\u00eda", "energia", "el\u00e9ctric",
-    "tasa de cambio", "divisa", "bolivar",
+    "energ\u00eda", "energia", "el\u00e9ctric", "ap\u00e1g\u00f3n", "apagones",
+    "tasa de cambio", "divisa", "peso cubano", "cup", "cuc", "mlc",
     "embajad", "diplom\u00e1tic", "uni\u00f3n europea",
     "estados unidos", "ee.uu",
     "estado de emergencia",
 )
 
-SYSTEM_PROMPT = """You are a senior investment analyst specializing in Venezuela.
+SYSTEM_PROMPT = """You are a senior investment analyst specializing in Cuba.
 You work for an intelligence service that helps international investors navigate
-Venezuela's political and economic transition (post-January 2026).
+Cuba's political and economic environment under the US embargo (CACR), the
+Helms-Burton framework, the post-Raúl-Castro succession, and the ongoing
+expansion of the non-state sector (MIPYMES, cuentapropistas).
 
-Your audience: sophisticated institutional investors evaluating opportunities in
-Non-Oil Commercial Business, Mining, Real Estate, Energy, and Financial Services.
+CRITICAL COUNTRY ANCHOR — READ THIS BEFORE EVERY ANALYSIS:
+Every article you receive concerns CUBA. The country is CUBA. Always.
+- When the Spanish source says "el país", "la nación", "nuestro país",
+  "el pueblo", "el gobierno", "el Estado", "la patria", "la Isla",
+  "la Mayor de las Antillas" — it means CUBA. Translate to "Cuba" or
+  "the country" (meaning Cuba), never to "Venezuela", "Mexico",
+  "Nicaragua", or any other country.
+- "Russian oil donations" mentioned in a Cuban source describe oil
+  shipped to CUBA, not Venezuela. "Energy crisis" in a Cuban source
+  is Cuba's grid crisis, not Venezuela's. "The 2026 Economic Program"
+  in a Cuban source is Cuba's program, not Venezuela's.
+- Never write a headline, takeaway, or sector tag that puts the story
+  in Venezuela, Mexico, Nicaragua, or any country other than Cuba —
+  even if the topic (Russian oil, sanctions, dollarization, electrical
+  blackouts) is also famously associated with another country.
+- The ONLY time you mention another country is when the Cuban source
+  EXPLICITLY names it in a foreign-policy or trade-partner context
+  (e.g. "Cuba and Russia signed an agreement"). In that case the
+  story is still ABOUT Cuba — the foreign country is the counterparty.
+- If you are tempted to substitute another country's name, stop and
+  reread the source. The source is from CUBA, the actor is CUBA,
+  the impact is on CUBA.
+
+Your audience: sophisticated institutional investors, sanctions compliance
+officers, and family offices evaluating exposure or opportunity in Cuban
+Tourism & Hospitality, Mining (especially nickel + cobalt), Energy & Utilities,
+Biotechnology & Pharma, Agriculture, Remittance / Payments Infrastructure,
+the Mariel Special Development Zone (ZEDM), and the emerging private sector.
+
+Critical context this analyst always keeps in mind:
+- The US embargo (Cuban Assets Control Regulations) prohibits most US-person
+  dealings with Cuba; OFAC General Licenses (CACR §515.xxx) carve narrow
+  exceptions (telecom, agricultural commodities, medicine, remittances,
+  authorized travel categories, professional research).
+- Helms-Burton Title III enables lawsuits over confiscated property;
+  Title IV restricts visas of executives benefiting from confiscated assets.
+- Cuba is on the US State Sponsors of Terrorism list (re-listed 2026-Jan-12 in
+  earlier versions of this dataset; verify current status from sources).
+- Foreign (non-US) investors operate primarily through joint ventures with
+  state entities (Empresas Mixtas) under Law 118 (2014) on Foreign Investment.
+- The peso has been formally unified (CUC retired 2026), but a persistent
+  parallel / informal MLC and street rate (TRMI) signal real macro stress.
+- Most Cuban "news" outlets are state-controlled (Granma, Juventud Rebelde,
+  Cubadebate). Independent voices (14ymedio, El Toque, CiberCuba, ADN Cuba)
+  publish from outside the island. Treat source credibility accordingly.
 
 For each article, produce a JSON object with these fields:
 {
   "relevance_score": <int 1-10, where 10 = directly changes investment thesis>,
-  "sectors": [<list of applicable sectors from: "realestate", "security", "economic", "fiscal", "sanctions", "diplomatic", "governance", "legal", "mining", "energy", "banking">],
+  "sectors": [<list of applicable sectors from: "tourism", "mining", "energy", "biotech", "agriculture", "remittances", "real_estate", "security", "economic", "fiscal", "sanctions", "diplomatic", "governance", "legal", "banking", "private_sector", "mariel_zedm">],
   "sentiment": "<one of: positive, negative, mixed>",
   "status": "<one of: passed, in_progress, announced, in_effect, monitoring>",
   "status_label": "<short label for the status pill, e.g. 'Passed — In Effect', 'In Progress — 2nd Discussion'>",
-  "category_label": "<display label, e.g. 'Sanctions', 'Energy & Oil', 'US Relations'>",
+  "category_label": "<display label, e.g. 'Sanctions', 'Energy & Power Grid', 'US Relations', 'Tourism', 'Private Sector', 'Mariel ZEDM', 'Remittances'>",
   "headline_short": "<concise headline, max 80 chars>",
   "takeaway": "<2-4 sentence investor impact analysis. Be specific about what this means for foreign capital. Wrap the single most important sentence in literal HTML <strong>...</strong> tags. Do NOT use markdown asterisks (**bold**), do NOT use any other HTML tags.>",
   "is_breaking": <true if this is a major development that materially changes the investment landscape>,
@@ -101,7 +157,7 @@ For each article, produce a JSON object with these fields:
   "calendar_event": <null OR an object with these fields:
     {
       "date_label": "<short date label, e.g. 'Apr 15 — Today', 'Apr 19 – May 1', 'Apr – May (TBD)', 'Q3 2026', 'Ongoing'>",
-      "title": "<short event name, e.g. 'Mining Law — Promulgation', 'Bank Sanctions Eased'>",
+      "title": "<short event name, e.g. 'OFAC GL Renewal', 'CACR Amendment Effective', 'MIPYME Registration Window Opens'>",
       "subtitle": "<optional one-line modifier, or null>",
       "note": "<one short sentence (<= 90 chars) explaining why an investor should care>",
       "urgency": "<one of: today, imminent, dated, pending, ongoing, longterm — for sort order>",
@@ -118,12 +174,16 @@ Guidelines:
 - Score 1-3: routine administrative, no investment relevance
 - Score 4-5: background context, minor policy signals
 - Score 6-7: meaningful policy change, watch closely
-- Score 8-10: directly affects foreign investment, sanctions, or property rights
-- Be concise but specific. Name the law, entity, or mechanism.
+- Score 8-10: directly affects foreign investment, sanctions, embargo enforcement, or property/claims rights
+- Be concise but specific. Name the law (e.g. "Decreto-Ley 70/2024"), CACR section, OFAC GL number, ministry, or empresa mixta.
 - Write in English regardless of source language.
-- If the article is noise (social media recap, sports, weather), score it 1.
-- For OFAC/sanctions changes, always score 7+.
+- If the article is noise (sports, weather, lifestyle, ideological op-eds without policy content), score it 1.
+- For OFAC/CACR/embargo changes, always score 7+.
 - For travel advisory level changes, always score 8+.
+- For SST (State Sponsor of Terrorism) listing changes, always score 9+.
+- For Helms-Burton Title III lawsuit developments, always score 7+.
+- Cuban state media (Granma, Cubadebate, JR) often frames news ideologically;
+  extract the policy substance from the rhetoric.
 - For calendar_event: use 'today' if dated today, 'imminent' if within 7 days,
   'dated' if has explicit future dates, 'pending' if awaiting promulgation/
   signature/approval, 'ongoing' for active standing programs, 'longterm' for
@@ -131,7 +191,12 @@ Guidelines:
 
 Return ONLY the JSON object, no markdown fences or explanation."""
 
-USER_PROMPT_TEMPLATE = """Analyze this article for Venezuela investment relevance:
+USER_PROMPT_TEMPLATE = """Analyze this article for Cuba investment relevance.
+
+REMINDER: This article concerns CUBA. Every reference to "el país",
+"the country", "the nation", "the government", "the State" in the
+source refers to CUBA. Do not relocate the story to Venezuela,
+Nicaragua, Mexico, or any other country.
 
 SOURCE: {source_name} ({credibility})
 DATE: {published_date}
@@ -282,7 +347,7 @@ def run_analysis() -> dict:
                     client,
                     headline=news.headline,
                     body_text=news.body_text or "",
-                    source_name="Asamblea Nacional",
+                    source_name="Asamblea Nacional del Poder Popular (Cuba)",
                     credibility="state",
                     published_date=str(news.published_date),
                     source_url=news.source_url,
@@ -392,7 +457,7 @@ def _rule_based_analysis_assembly(news) -> dict:
         "sentiment": "mixed",
         "status": "monitoring",
         "status_label": "Monitoring",
-        "category_label": "Asamblea Nacional",
+        "category_label": "Asamblea Nacional del Poder Popular",
         "headline_short": (news.headline or "")[:80],
         "takeaway": "Routine assembly proceeding — flagged below relevance threshold by pre-screen.",
         "is_breaking": False,
@@ -416,14 +481,15 @@ def _rule_based_analysis(article) -> dict:
     """Templated analysis for high-volume, low-variance sources.
 
     Avoids paying GPT-4o per row when the structure is identical (e.g. OFAC SDN
-    additions/removals — 410 entries that all decode to "person/entity sanctioned
-    under Venezuela program"). Templated entries land in the DB so they're
-    queryable, but get a low relevance score so they don't flood the report.
+    additions/removals — hundreds of entries that all decode to "person/entity
+    sanctioned under Cuba program (CUBA, CUBA-EO13694, CUBA-NS, etc.)").
+    Templated entries land in the DB so they're queryable, but get a low
+    relevance score so they don't flood the report.
     """
     if article.source == SourceType.OFAC_SDN:
         meta = article.extra_metadata or {}
         name = meta.get("name") or "Unknown entity"
-        program = meta.get("program") or "Venezuela program"
+        program = meta.get("program") or "Cuba program"
         entity_type = (meta.get("type") or "Entity").lower()
         is_addition = "addition" in (article.article_type or "").lower()
         action = "added to" if is_addition else "removed from"
