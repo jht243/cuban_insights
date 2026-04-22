@@ -1583,7 +1583,11 @@ def tool_cpal_hotel_checker():
                     f"§515.210 CACR. {total_entries} properties across "
                     f"{len(provinces)} provinces."
                 ),
-                "creator": {"@type": "GovernmentOrganization", "name": "U.S. Department of State"},
+                "creator": {
+                    "@type": "Organization",
+                    "name": "U.S. Department of State",
+                    "url": "https://www.state.gov/",
+                },
                 "license": "https://www.usa.gov/government-works",
                 "isAccessibleForFree": True,
             },
@@ -1846,7 +1850,11 @@ def tool_crl_entity_checker():
                     f"hotels, marinas, stores, defense entities, "
                     f"subentities)."
                 ),
-                "creator": {"@type": "GovernmentOrganization", "name": "U.S. Department of State"},
+                "creator": {
+                    "@type": "Organization",
+                    "name": "U.S. Department of State",
+                    "url": "https://www.state.gov/",
+                },
                 "license": "https://www.usa.gov/government-works",
                 "isAccessibleForFree": True,
             },
