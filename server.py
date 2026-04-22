@@ -2703,8 +2703,28 @@ def tools_index():
             ],
         }, ensure_ascii=False)
 
+        from src.seo.cluster_topology import companion_links as _companion_links
+        companion_ctx = {
+            "eyebrow": "Other hubs across Cuban Insights",
+            "title": "Where to go next from /tools",
+            "links": _companion_links([
+                "/sanctions-tracker",
+                "/companies",
+                "/invest-in-cuba",
+                "/travel",
+                "/explainers",
+                "/sanctions/by-sector",
+            ]),
+        }
+
         template = _env.get_template("tools_index.html.j2")
-        html = template.render(tools=tools, seo=seo, jsonld=jsonld, current_year=_date.today().year)
+        html = template.render(
+            tools=tools,
+            seo=seo,
+            jsonld=jsonld,
+            companion_ctx=companion_ctx,
+            current_year=_date.today().year,
+        )
         return Response(html, mimetype="text/html")
     except HTTPException:
         raise
@@ -3189,8 +3209,22 @@ def sanctions_tracker():
                 ],
             }, ensure_ascii=False)
 
-            from src.seo.cluster_topology import build_cluster_ctx
+            from src.seo.cluster_topology import build_cluster_ctx, companion_links as _companion_links
             cluster_ctx = build_cluster_ctx("/sanctions-tracker")
+            companion_ctx = {
+                "eyebrow": "Tools that use this data",
+                "title": "Screen any name, hotel, or S&P 500 company against this list",
+                "links": _companion_links([
+                    "/tools/ofac-cuba-sanctions-checker",
+                    "/tools/cuba-restricted-list-checker",
+                    "/tools/cuba-prohibited-hotels-checker",
+                    "/tools/public-company-cuba-exposure-check",
+                    "/tools/sec-edgar-cuba-impairment-search",
+                    "/tools/ofac-cuba-general-licenses",
+                    "/companies",
+                    "/explainers/helms-burton-title-iii",
+                ]),
+            }
 
             try:
                 from src.data.sdn_profiles import sector_stats as _sector_stats
@@ -3207,6 +3241,7 @@ def sanctions_tracker():
                 seo=seo,
                 jsonld=jsonld,
                 cluster_ctx=cluster_ctx,
+                companion_ctx=companion_ctx,
                 current_year=_date.today().year,
                 last_refreshed_local=last_refreshed_local,
                 last_refreshed_relative=last_refreshed_relative,
@@ -3940,8 +3975,22 @@ def companies_index_page():
             ],
         }, ensure_ascii=False)
 
-        from src.seo.cluster_topology import build_cluster_ctx
+        from src.seo.cluster_topology import build_cluster_ctx, companion_links as _companion_links
         cluster_ctx = build_cluster_ctx("/companies")
+        companion_ctx = {
+            "eyebrow": "Screening tools for any listed company",
+            "title": "Vet a name beyond the S&P 500",
+            "links": _companion_links([
+                "/tools/public-company-cuba-exposure-check",
+                "/tools/sec-edgar-cuba-impairment-search",
+                "/tools/ofac-cuba-sanctions-checker",
+                "/tools/cuba-restricted-list-checker",
+                "/tools/cuba-prohibited-hotels-checker",
+                "/sanctions-tracker",
+                "/explainers/helms-burton-title-iii",
+                "/explainers/cuba-restricted-list",
+            ]),
+        }
 
         template = _env.get_template("companies/index.html.j2")
         html = template.render(
@@ -3951,6 +4000,7 @@ def companies_index_page():
             seo=seo,
             jsonld=jsonld,
             cluster_ctx=cluster_ctx,
+            companion_ctx=companion_ctx,
             current_year=_date.today().year,
         )
         return Response(html, mimetype="text/html")

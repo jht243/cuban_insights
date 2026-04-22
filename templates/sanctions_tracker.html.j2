@@ -1,6 +1,8 @@
 {% extends "_base.html.j2" %}
+{% from "_companion_links.html.j2" import companion_links, companion_links_css %}
 
 {% block head_extra %}
+{{ companion_links_css() }}
 <style>
   .filter-bar { display:flex; flex-wrap:wrap; gap:8px; margin: 16px 0 24px; }
   .filter-bar input, .filter-bar select { padding: 8px 12px; border: 1px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; font-family: var(--font-sans); }
@@ -92,6 +94,8 @@
     </div>
   </div>
   {% endif %}
+
+  {{ companion_links(companion_ctx) }}
 
   {# Each stat card above links to a full A-Z directory; the search table
      below stays the fast-filter UX. Per-name profile pages

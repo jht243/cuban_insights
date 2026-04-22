@@ -75,6 +75,7 @@ _ANCHOR: dict[str, str] = {
     "/tools/public-company-cuba-exposure-check": "Public company Cuba exposure check (S&P 500)",
     "/tools/sec-edgar-cuba-impairment-search": "SEC EDGAR Cuba / Helms-Burton / Cuba Restricted List / impairment search (S&P 500)",
     "/companies": "S&P 500 Cuba exposure register (every ticker, A-Z)",
+    "/explainers": "Cuba investor explainers — OFAC, Helms-Burton, BCC, MLC, Mariel ZED, Ley 118",
     "/explainers/what-are-ofac-sanctions-on-cuba": "What are OFAC sanctions on Cuba? (plain-English guide to the embargo)",
     "/explainers/helms-burton-title-iii": "Helms-Burton Title III explained — confiscated-property lawsuits against US-listed companies",
     "/explainers/cuba-restricted-list": "The Cuba Restricted List explained — GAESA, CIMEX, Gaviota and the prohibited-counterparty regime",
@@ -394,6 +395,26 @@ def program_to_sector_links() -> dict[str, ClusterLink]:
     for prog, slug in _PROGRAM_TO_SECTOR_SLUG.items():
         path = f"/sectors/{slug}"
         out[prog] = ClusterLink(path=path, anchor=_ANCHOR.get(path, path))
+    return out
+
+
+def companion_links(paths: list[str]) -> list[ClusterLink]:
+    """Resolve a hand-curated list of paths into ClusterLink objects
+    using the canonical anchor text from ``_ANCHOR``.
+
+    Used to render hub-page "companion tools" / "cross-hub" callout
+    blocks where we want the visible anchor text to stay in lockstep
+    with every other inbound link to those URLs across the site.
+    Paths missing from ``_ANCHOR`` fall through with the path itself
+    as anchor text — never silently dropped, so missing entries are
+    visible in QA.
+    """
+    out: list[ClusterLink] = []
+    for p in paths:
+        if not p:
+            continue
+        norm = "/" + p.lstrip("/").rstrip("/")
+        out.append(ClusterLink(path=norm, anchor=_ANCHOR.get(norm, norm)))
     return out
 
 

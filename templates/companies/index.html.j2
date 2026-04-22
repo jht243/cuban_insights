@@ -9,8 +9,10 @@
 #}
 {% extends "_base.html.j2" %}
 {% from "_cluster_nav.html.j2" import cluster_nav %}
+{% from "_companion_links.html.j2" import companion_links, companion_links_css %}
 
 {% block head_extra %}
+{{ companion_links_css() }}
 <style>
   .companies-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 18px 0 26px; }
   .companies-summary .stat { background: var(--sr-gray-bg); padding: 14px 16px; border-radius: 4px; text-align: center; }
@@ -71,6 +73,8 @@
     <div class="stat"><span class="num">{{ counts.historical }}</span><span class="label">Historical</span></div>
     <div class="stat"><span class="num">{{ counts.unknown }}</span><span class="label">No exposure on record</span></div>
   </div>
+
+  {{ companion_links(companion_ctx) }}
 
   <div class="companies-filter">
     <input type="text" id="company-filter" placeholder="Filter by ticker or company name (e.g. CVX or Chevron)" autocomplete="off">

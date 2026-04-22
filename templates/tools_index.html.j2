@@ -1,4 +1,9 @@
 {% extends "_base.html.j2" %}
+{% from "_companion_links.html.j2" import companion_links, companion_links_css %}
+
+{% block head_extra %}
+{{ companion_links_css() }}
+{% endblock %}
 
 {% block content %}
 <section class="container">
@@ -34,6 +39,8 @@
     </article>
     {% endfor %}
   </div>
+
+  {{ companion_links(companion_ctx) }}
 
 </section>
 {% endblock %}
