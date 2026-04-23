@@ -90,6 +90,12 @@
     .hero { background-color: var(--sr-gray-bg); padding: 40px 20px 30px; text-align: center; border-bottom: 1px solid var(--sr-gray-light); }
     .hero h1 { font-family: var(--font-serif); font-size: 2.8rem; font-weight: 700; color: var(--sr-blue); max-width: 800px; margin: 0 auto 20px; line-height: 1.25; }
     .hero .subtitle { font-family: var(--font-sans); font-size: 1.15rem; color: var(--sr-gray-text); max-width: 680px; margin: 0 auto; line-height: 1.6; }
+    .seo-priority-links { margin: 0 auto 20px; max-width: 1140px; padding: 14px 20px; background: #f0f4f8; border: 1px solid var(--sr-gray-light); border-radius: 4px; font-size: 14px; line-height: 1.65; text-align: left; }
+    .seo-priority-links-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700; color: var(--sr-blue-dark); margin-bottom: 6px; }
+    .seo-priority-links-items { color: var(--sr-dark-text); }
+    .seo-priority-links a { font-weight: 600; text-decoration: none; color: var(--sr-blue); }
+    .seo-priority-links a:hover { color: var(--sr-red); text-decoration: underline; }
+    .seo-priority-sep { color: #adb5bd; margin: 0 2px; }
     .climate-panel { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
     .climate-box { background: var(--white); border: 1px solid var(--sr-gray-light); border-top: 4px solid var(--sr-blue); margin-top: 24px; padding: 28px 36px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     .climate-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
@@ -296,6 +302,8 @@
   <h1>Cuba Research for International Investors</h1>
   <div class="subtitle">The definitive guide to investing into Cuba — navigating the US embargo (CACR), Helms-Burton, the Cuba Restricted List, the Mariel ZED, and the emerging MIPYME private sector across tourism, biotech, agriculture, and remittances.</div>
 </div>
+
+{% include "_seo_priority_links.html.j2" %}
 
 <a href="/tearsheet/latest.pdf" class="tearsheet-fab" rel="nofollow" download aria-label="Download Investor Tearsheet ({{ tearsheet_date_label }})">
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
