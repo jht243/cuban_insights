@@ -1497,7 +1497,7 @@ def tool_cpal_hotel_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
-            title="Cuba Prohibited Hotels Checker — CPAL Lookup (State Department)",
+            title="Cuba Prohibited Accommodations List (CPAL) — Free Hotel Lookup (§515.210)",
             description=(
                 f"Free Cuba Prohibited Accommodations List (CPAL) checker: "
                 f"instantly check any of the {total_entries} hotels, casas, or "
@@ -3130,6 +3130,15 @@ def sanctions_tracker():
                 "%b %d · %-I:%M %p"
             ) + " (Havana)"
 
+            from src.data.sdn_profiles import list_all_profiles as _list_all_sdn_profiles
+            try:
+                _profile_url_by_db_id = {
+                    p.db_id: p.url_path for p in _list_all_sdn_profiles()
+                }
+            except Exception:
+                logger.exception("sanctions_tracker: failed to build SDN profile url map")
+                _profile_url_by_db_id = {}
+
             sdn_entries = []
             stats = {
                 "total": 0, "individuals": 0, "entities": 0,
@@ -3145,6 +3154,7 @@ def sanctions_tracker():
                     "type": ent_type,
                     "program": meta.get("program") or "",
                     "remarks": meta.get("remarks") or "",
+                    "url_path": _profile_url_by_db_id.get(r.id),
                 })
                 stats["total"] += 1
                 stats[
