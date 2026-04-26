@@ -35,39 +35,30 @@
 {% if cluster_ctx and cluster_ctx.cluster %}
 <aside class="cluster-nav" aria-labelledby="cluster-nav-title">
   <header class="cluster-nav__head">
-    <p class="cluster-nav__eyebrow">{% if cluster_ctx.is_pillar %}In this hub{% else %}Keep reading{% endif %}</p>
-    <h2 id="cluster-nav-title" class="cluster-nav__title">{{ cluster_ctx.cluster.name }}</h2>
+    <h2 id="cluster-nav-title" class="cluster-nav__title">More in {{ cluster_ctx.cluster.name }}</h2>
+    <p class="cluster-nav__count">{{ cluster_ctx.total_members }} related page{{ '' if cluster_ctx.total_members == 1 else 's' }}</p>
   </header>
-
-  {% if cluster_ctx.pillar %}
-  <a class="cluster-nav__pillar" href="{{ cluster_ctx.pillar.path }}">
-    <span class="cluster-nav__pillar-eyebrow">Hub page</span>
-    <span class="cluster-nav__pillar-anchor">{{ cluster_ctx.pillar.anchor }}</span>
-    {% if cluster_ctx.pillar.description %}
-    <span class="cluster-nav__pillar-desc">{{ cluster_ctx.pillar.description }}</span>
-    {% endif %}
-    <span class="cluster-nav__pillar-cta" aria-hidden="true">Open hub &rarr;</span>
-  </a>
-  {% endif %}
 
   {% if cluster_ctx.others %}
   <ol class="cluster-nav__related">
     {% for link in cluster_ctx.others %}
     <li>
       <a href="{{ link.path }}">
+        <span class="cluster-nav__related-eyebrow"><span aria-hidden="true"></span> In this hub</span>
         <span class="cluster-nav__related-anchor">{{ link.anchor }}</span>
         {% if link.description %}
         <span class="cluster-nav__related-desc">{{ link.description }}</span>
         {% endif %}
+        <span class="cluster-nav__related-cta" aria-hidden="true">Open page &rarr;</span>
       </a>
     </li>
     {% endfor %}
   </ol>
   {% endif %}
 
-  {% if cluster_ctx.hidden_count and cluster_ctx.hidden_count > 0 and cluster_ctx.pillar %}
+  {% if cluster_ctx.pillar %}
   <p class="cluster-nav__more">
-    <a href="{{ cluster_ctx.pillar.path }}">See {{ cluster_ctx.hidden_count }} more page{{ '' if cluster_ctx.hidden_count == 1 else 's' }} in {{ cluster_ctx.cluster.name }} &rarr;</a>
+    <a href="{{ cluster_ctx.pillar.path }}">View hub &mdash; {{ cluster_ctx.cluster.name }}</a>
   </p>
   {% endif %}
 </aside>
@@ -83,92 +74,31 @@
 {% macro cluster_nav_css() -%}
 <style>
   .cluster-nav {
-    margin: 56px 0 24px;
+    margin: 64px 0 28px;
     padding: 0;
     background: transparent;
     border: 0;
   }
   .cluster-nav__head {
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e9ecef;
-  }
-  .cluster-nav__eyebrow {
-    font-family: 'Open Sans', sans-serif;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: #cc0000;
-    font-weight: 700;
-    margin: 0 0 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #d6dde6;
   }
   .cluster-nav__title {
     font-family: 'Libre Baskerville', serif;
-    font-size: 22px;
+    font-size: 32px;
     color: #001f44;
     margin: 0;
-    line-height: 1.25;
+    line-height: 1.2;
   }
-  .cluster-nav__pillar {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "eyebrow  cta"
-      "anchor   cta"
-      "desc     cta";
-    column-gap: 18px;
-    align-items: center;
-    background: #ffffff;
-    border: 1px solid #d6dde6;
-    border-left: 4px solid #cc0000;
-    padding: 16px 20px;
-    margin-bottom: 18px;
-    text-decoration: none;
-    color: inherit;
-    border-radius: 4px;
-    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
-  }
-  .cluster-nav__pillar:hover {
-    border-color: #002b5e;
-    box-shadow: 0 2px 8px rgba(0, 31, 68, 0.08);
-    transform: translateY(-1px);
-  }
-  .cluster-nav__pillar-eyebrow {
-    grid-area: eyebrow;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.4px;
-    color: #cc0000;
-    font-weight: 700;
-  }
-  .cluster-nav__pillar-anchor {
-    grid-area: anchor;
-    display: block;
-    font-family: 'Libre Baskerville', serif;
-    font-weight: 700;
-    color: #001f44;
-    font-size: 17px;
-    line-height: 1.35;
-    margin-top: 2px;
-  }
-  .cluster-nav__pillar-desc {
-    grid-area: desc;
-    display: block;
-    font-size: 13px;
-    color: #495057;
-    margin-top: 4px;
-    line-height: 1.5;
-  }
-  .cluster-nav__pillar-cta {
-    grid-area: cta;
-    align-self: center;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #002b5e;
+  .cluster-nav__count {
+    margin: 0;
+    color: #6c757d;
+    font-size: 20px;
     white-space: nowrap;
   }
   .cluster-nav__related {
@@ -176,51 +106,80 @@
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
   }
   .cluster-nav__related li { margin: 0; }
   .cluster-nav__related a {
-    display: block;
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    padding: 14px 16px;
-    background: #f7f9fb;
-    border: 1px solid #e6ebf2;
-    border-radius: 4px;
+    min-height: 270px;
+    padding: 28px 30px;
+    background: #ffffff;
+    border: 1px solid #d6dde6;
+    border-radius: 6px;
     text-decoration: none;
     color: inherit;
-    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
   }
   .cluster-nav__related a:hover {
-    background: #ffffff;
     border-color: #002b5e;
+    box-shadow: 0 12px 28px rgba(0, 31, 68, 0.08);
     transform: translateY(-1px);
+  }
+  .cluster-nav__related-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    line-height: 1;
+    text-transform: uppercase;
+    color: #c7251a;
+  }
+  .cluster-nav__related-eyebrow span {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #c7251a;
+    flex: 0 0 auto;
   }
   .cluster-nav__related-anchor {
     display: block;
     font-family: 'Libre Baskerville', serif;
-    font-size: 14.5px;
+    font-size: 22px;
     font-weight: 700;
-    color: #002b5e;
-    line-height: 1.35;
+    color: #111827;
+    line-height: 1.15;
   }
   .cluster-nav__related a:hover .cluster-nav__related-anchor { color: #cc0000; }
   .cluster-nav__related-desc {
     display: block;
-    font-size: 12.5px;
-    color: #6c757d;
-    margin-top: 6px;
-    line-height: 1.5;
+    font-size: 16px;
+    color: #374151;
+    margin-top: 18px;
+    line-height: 1.55;
+  }
+  .cluster-nav__related-cta {
+    margin-top: auto;
+    padding-top: 26px;
+    font-size: 17px;
+    line-height: 1.2;
+    color: #002b5e;
+    font-weight: 800;
   }
   .cluster-nav__more {
-    margin: 14px 0 0;
-    text-align: right;
-    font-size: 13px;
+    margin: 32px 0 0;
+    font-size: 20px;
   }
   .cluster-nav__more a {
     color: #002b5e;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 800;
     border-bottom: 1px solid transparent;
     transition: border-color 0.15s, color 0.15s;
   }
@@ -228,19 +187,41 @@
     color: #cc0000;
     border-bottom-color: #cc0000;
   }
-  @media (max-width: 720px) {
-    .cluster-nav__pillar {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "eyebrow"
-        "anchor"
-        "desc"
-        "cta";
-      row-gap: 4px;
+  @media (max-width: 980px) {
+    .cluster-nav__related {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .cluster-nav__pillar-cta { margin-top: 6px; }
+  }
+  @media (max-width: 720px) {
+    .cluster-nav__head {
+      display: block;
+      margin-bottom: 20px;
+    }
+    .cluster-nav__title {
+      font-size: 26px;
+    }
+    .cluster-nav__count {
+      margin-top: 6px;
+      font-size: 15px;
+    }
     .cluster-nav__related {
       grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .cluster-nav__related a {
+      min-height: 0;
+      padding: 26px 28px;
+    }
+    .cluster-nav__related-anchor {
+      font-size: 23px;
+    }
+    .cluster-nav__related-desc {
+      font-size: 16px;
+      margin-top: 16px;
+    }
+    .cluster-nav__related-cta {
+      padding-top: 24px;
+      font-size: 16px;
     }
   }
 </style>

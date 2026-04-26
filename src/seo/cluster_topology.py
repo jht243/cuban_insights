@@ -74,6 +74,20 @@ _ANCHOR: dict[str, str] = {
     "/tools/can-i-travel-to-cuba": "Can I legally travel to Cuba? — OFAC 12-category travel decision tree",
     "/tools/public-company-cuba-exposure-check": "Public company Cuba exposure check (S&P 500)",
     "/tools/sec-edgar-cuba-impairment-search": "SEC EDGAR Cuba / Helms-Burton / Cuba Restricted List / impairment search (S&P 500)",
+    "/export-to-cuba": "Export to Cuba — U.S. company opportunity and compliance hub",
+    "/tools/cuba-trade-leads-for-us-companies": "Cuba trade leads for U.S. companies",
+    "/tools/cuba-export-opportunity-finder": "Cuba export opportunity finder",
+    "/tools/cuba-hs-code-opportunity-finder": "Cuba HS code opportunity finder",
+    "/tools/cuba-export-controls-sanctions-process-map": "Cuba export controls and sanctions process map",
+    "/tools/can-my-us-company-export-to-cuba": "Can my U.S. company export to Cuba?",
+    "/tools/cuba-country-contacts-directory": "Cuba country contacts directory",
+    "/tools/us-company-cuba-market-entry-checklist": "U.S. company Cuba market-entry checklist",
+    "/tools/cuba-agricultural-medical-export-checker": "Cuba agricultural and medical export eligibility checker",
+    "/tools/cuba-telecom-internet-export-checker": "Cuba telecom and internet services export checker",
+    "/tools/cuba-mipyme-export-support-checklist": "Cuba MIPYME export support checklist",
+    "/tools/cuba-trade-events-matchmaking-calendar": "Cuba trade events and matchmaking calendar",
+    "/tools/cuba-trade-barriers-tracker": "Cuba trade barriers tracker",
+    "/tools/cuba-export-compliance-checklist": "Cuba export compliance checklist",
     "/companies": "S&P 500 Cuba exposure register (every ticker, A-Z)",
     "/explainers": "Cuba investor explainers — OFAC, Helms-Burton, BCC, MLC, Mariel ZED, Ley 118",
     "/explainers/what-are-ofac-sanctions-on-cuba": "What are OFAC sanctions on Cuba? (plain-English guide to the embargo)",
@@ -228,6 +242,40 @@ CLUSTERS: dict[str, Cluster] = {
         ),
     ),
 
+    "export": Cluster(
+        key="export",
+        name="Exporting to Cuba",
+        summary=(
+            "U.S. exporter hub for Cuba — ITA / Trade.gov opportunity "
+            "signals, trade leads, market intelligence, HS-code triage, "
+            "Commercial Service contacts, trade events, trade barriers, "
+            "and a sanctions-aware OFAC + BIS + State CRL/CPAL process "
+            "map for deciding whether an opportunity is actionable."
+        ),
+        pillar=_ck(
+            "/export-to-cuba",
+            "The U.S. company hub for exporting to Cuba — ITA opportunity data plus OFAC, BIS, State CRL/CPAL, payment, and counterparty screening.",
+        ),
+        members=(
+            _ck("/tools/cuba-trade-leads-for-us-companies", "Find and screen Cuba trade leads for U.S. companies against sanctions, export controls, payments, and counterparties."),
+            _ck("/tools/cuba-export-opportunity-finder", "Map Cuba sector demand to the authorization and counterparty checks a U.S. exporter needs."),
+            _ck("/tools/cuba-hs-code-opportunity-finder", "Use HS-code thinking to triage product-level opportunity, licensing risk, and documentation."),
+            _ck("/tools/cuba-export-controls-sanctions-process-map", "Walk a Cuba export through OFAC CACR, BIS, State CRL/CPAL, payment, logistics, and records steps."),
+            _ck("/tools/can-my-us-company-export-to-cuba", "Quickly classify whether a Cuba export idea is likely authorized, blocked, or license-dependent."),
+            _ck("/tools/cuba-country-contacts-directory", "Start with ITA Trade Americas, U.S. Commercial Service, sector specialists, and compliance-aware contact paths."),
+            _ck("/tools/us-company-cuba-market-entry-checklist", "Pre-entry checklist for product fit, authorization, counterparty, payment, logistics, and recordkeeping."),
+            _ck("/tools/cuba-agricultural-medical-export-checker", "Triage agricultural, food, medical, healthcare, and humanitarian exports to Cuba."),
+            _ck("/tools/cuba-telecom-internet-export-checker", "Evaluate telecom, internet, software, cloud, and connectivity exports under Cuba carve-outs and controls."),
+            _ck("/tools/cuba-mipyme-export-support-checklist", "Screen whether exports supporting Cuban private businesses avoid restricted state or military channels."),
+            _ck("/tools/cuba-trade-events-matchmaking-calendar", "Track ITA, Trade Americas, Caribbean, and sector events that may generate Cuba-relevant leads."),
+            _ck("/tools/cuba-trade-barriers-tracker", "Monitor sanctions, payment, logistics, Cuban import, and private-sector execution barriers."),
+            _ck("/tools/cuba-export-compliance-checklist", "Combine ITA research with OFAC, BIS, State CRL/CPAL, payment, logistics, and records controls."),
+            _ck("/tools/ofac-cuba-general-licenses", "Check the CACR general licenses that may authorize otherwise prohibited Cuba activity."),
+            _ck("/tools/cuba-restricted-list-checker", "Screen Cuban counterparties against the State Department Cuba Restricted List."),
+            _ck("/tools/ofac-cuba-sanctions-checker", "Search Cuban and third-country names against the live OFAC Cuba SDN list."),
+        ),
+    ),
+
     "travel": Cluster(
         key="travel",
         name="Cuba Travel & Logistics",
@@ -296,6 +344,21 @@ _PATH_TO_CLUSTER: tuple[tuple[str, str], ...] = (
     ("/tools/cuba-investment-roi-calculator", "investment"),
     ("/explainers/empresa-mixta-foreign-investment-law", "investment"),
     ("/explainers/doing-business-in-havana",   "investment"),
+
+    ("/export-to-cuba",        "export"),
+    ("/tools/cuba-trade-leads-for-us-companies", "export"),
+    ("/tools/cuba-export-opportunity-finder", "export"),
+    ("/tools/cuba-hs-code-opportunity-finder", "export"),
+    ("/tools/cuba-export-controls-sanctions-process-map", "export"),
+    ("/tools/can-my-us-company-export-to-cuba", "export"),
+    ("/tools/cuba-country-contacts-directory", "export"),
+    ("/tools/us-company-cuba-market-entry-checklist", "export"),
+    ("/tools/cuba-agricultural-medical-export-checker", "export"),
+    ("/tools/cuba-telecom-internet-export-checker", "export"),
+    ("/tools/cuba-mipyme-export-support-checklist", "export"),
+    ("/tools/cuba-trade-events-matchmaking-calendar", "export"),
+    ("/tools/cuba-trade-barriers-tracker", "export"),
+    ("/tools/cuba-export-compliance-checklist", "export"),
 
     ("/travel",                "travel"),
     ("/tools/cuba-visa-requirements",         "travel"),
@@ -531,6 +594,58 @@ _TOOL_META: dict[str, dict[str, str]] = {
         "name": "elTOQUE TRMI rate",
         "tagline": "Live CUP/USD/MLC informal exchange rate.",
     },
+    "/tools/cuba-trade-leads-for-us-companies": {
+        "name": "Cuba trade leads",
+        "tagline": "Find ITA-style leads and screen them before follow-up.",
+    },
+    "/tools/cuba-export-opportunity-finder": {
+        "name": "Cuba export opportunities",
+        "tagline": "Map sector demand to authorization and counterparty checks.",
+    },
+    "/tools/cuba-hs-code-opportunity-finder": {
+        "name": "Cuba HS code finder",
+        "tagline": "Product-level triage for demand, controls, and records.",
+    },
+    "/tools/cuba-export-controls-sanctions-process-map": {
+        "name": "Cuba export process map",
+        "tagline": "OFAC + BIS + State CRL/CPAL steps for exporters.",
+    },
+    "/tools/can-my-us-company-export-to-cuba": {
+        "name": "Can my company export?",
+        "tagline": "Decision tree for allowed, blocked, or license-dependent Cuba exports.",
+    },
+    "/tools/cuba-country-contacts-directory": {
+        "name": "Cuba contacts directory",
+        "tagline": "ITA Trade Americas and Commercial Service contact paths.",
+    },
+    "/tools/us-company-cuba-market-entry-checklist": {
+        "name": "Cuba market-entry checklist",
+        "tagline": "Product, party, payment, logistics, and records checks.",
+    },
+    "/tools/cuba-agricultural-medical-export-checker": {
+        "name": "Ag & medical exports",
+        "tagline": "Triage food, medical, healthcare, and humanitarian channels.",
+    },
+    "/tools/cuba-telecom-internet-export-checker": {
+        "name": "Telecom export checker",
+        "tagline": "Connectivity, software, cloud, and information-flow exports.",
+    },
+    "/tools/cuba-mipyme-export-support-checklist": {
+        "name": "MIPYME support checklist",
+        "tagline": "Keep private-sector support clear of restricted channels.",
+    },
+    "/tools/cuba-trade-events-matchmaking-calendar": {
+        "name": "Cuba trade events",
+        "tagline": "Track ITA, Trade Americas, Caribbean, and sector events.",
+    },
+    "/tools/cuba-trade-barriers-tracker": {
+        "name": "Cuba trade barriers",
+        "tagline": "Monitor sanctions, payment, logistics, and import barriers.",
+    },
+    "/tools/cuba-export-compliance-checklist": {
+        "name": "Export compliance checklist",
+        "tagline": "ITA opportunity research plus OFAC, BIS, State, and records.",
+    },
 }
 
 # Curated 3-tool recommendation set for each tool page. Keep at three
@@ -598,6 +713,75 @@ _RELATED_TOOLS: dict[str, tuple[str, ...]] = {
         "/tools/cuba-investment-roi-calculator",
         "/tools/public-company-cuba-exposure-check",
         "/tools/sec-edgar-cuba-impairment-search",
+    ),
+
+    # Export / ITA cluster — opportunity tools point at the process map
+    # and checklist so lead-gen traffic converts into compliance-aware
+    # workflows instead of dead-end pages.
+    "/tools/cuba-trade-leads-for-us-companies": (
+        "/tools/cuba-export-opportunity-finder",
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/cuba-export-compliance-checklist",
+    ),
+    "/tools/cuba-export-opportunity-finder": (
+        "/tools/cuba-trade-leads-for-us-companies",
+        "/tools/cuba-hs-code-opportunity-finder",
+        "/tools/us-company-cuba-market-entry-checklist",
+    ),
+    "/tools/cuba-hs-code-opportunity-finder": (
+        "/tools/cuba-export-opportunity-finder",
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/cuba-export-compliance-checklist",
+    ),
+    "/tools/cuba-export-controls-sanctions-process-map": (
+        "/tools/can-my-us-company-export-to-cuba",
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/ofac-cuba-general-licenses",
+    ),
+    "/tools/can-my-us-company-export-to-cuba": (
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/cuba-restricted-list-checker",
+    ),
+    "/tools/cuba-country-contacts-directory": (
+        "/tools/cuba-trade-leads-for-us-companies",
+        "/tools/cuba-trade-events-matchmaking-calendar",
+        "/tools/us-company-cuba-market-entry-checklist",
+    ),
+    "/tools/us-company-cuba-market-entry-checklist": (
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/cuba-export-opportunity-finder",
+        "/tools/cuba-country-contacts-directory",
+    ),
+    "/tools/cuba-agricultural-medical-export-checker": (
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/cuba-hs-code-opportunity-finder",
+        "/tools/cuba-trade-leads-for-us-companies",
+    ),
+    "/tools/cuba-telecom-internet-export-checker": (
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/cuba-mipyme-export-support-checklist",
+    ),
+    "/tools/cuba-mipyme-export-support-checklist": (
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/cuba-telecom-internet-export-checker",
+        "/tools/cuba-trade-barriers-tracker",
+    ),
+    "/tools/cuba-trade-events-matchmaking-calendar": (
+        "/tools/cuba-trade-leads-for-us-companies",
+        "/tools/cuba-country-contacts-directory",
+        "/tools/cuba-export-opportunity-finder",
+    ),
+    "/tools/cuba-trade-barriers-tracker": (
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/cuba-export-compliance-checklist",
+        "/tools/us-company-cuba-market-entry-checklist",
+    ),
+    "/tools/cuba-export-compliance-checklist": (
+        "/tools/cuba-export-controls-sanctions-process-map",
+        "/tools/ofac-cuba-general-licenses",
+        "/tools/cuba-restricted-list-checker",
     ),
 }
 

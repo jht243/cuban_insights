@@ -333,6 +333,667 @@ def _tool_seo_jsonld(*, slug: str, title: str, description: str, keywords: str, 
     return seo, _json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False)
 
 
+_ITA_EXPORT_SPOKES = [
+    {
+        "path": "/tools/cuba-trade-leads-for-us-companies",
+        "name": "Cuba trade leads for U.S. companies",
+        "tagline": "Find ITA-style opportunity signals and screen them against OFAC, BIS, CRL, and payment constraints.",
+    },
+    {
+        "path": "/tools/cuba-export-opportunity-finder",
+        "name": "Cuba export opportunity finder",
+        "tagline": "Map sectors such as agriculture, medical goods, telecom, energy, and logistics to allowed export paths.",
+    },
+    {
+        "path": "/tools/cuba-hs-code-opportunity-finder",
+        "name": "Cuba HS code opportunity finder",
+        "tagline": "Use HS-code thinking to triage Cuba demand, licensing risk, and documentation steps.",
+    },
+    {
+        "path": "/tools/cuba-export-controls-sanctions-process-map",
+        "name": "Cuba export controls and sanctions process map",
+        "tagline": "A step-by-step OFAC + BIS + State CRL/CPAL route map for U.S. exporters.",
+    },
+    {
+        "path": "/tools/can-my-us-company-export-to-cuba",
+        "name": "Can my U.S. company export to Cuba?",
+        "tagline": "Quickly classify whether a Cuba export idea is likely allowed, blocked, or license-dependent.",
+    },
+    {
+        "path": "/tools/cuba-country-contacts-directory",
+        "name": "Cuba country contacts directory",
+        "tagline": "Start with ITA Trade Americas and U.S. Commercial Service contact paths before approaching counterparties.",
+    },
+    {
+        "path": "/tools/us-company-cuba-market-entry-checklist",
+        "name": "U.S. company Cuba market-entry checklist",
+        "tagline": "A practical pre-entry checklist for product, counterparty, license, payment, and recordkeeping risk.",
+    },
+    {
+        "path": "/tools/cuba-agricultural-medical-export-checker",
+        "name": "Cuba agricultural and medical export eligibility checker",
+        "tagline": "Triage TSRA, medical, humanitarian, and support-for-the-Cuban-people channels.",
+    },
+    {
+        "path": "/tools/cuba-telecom-internet-export-checker",
+        "name": "Cuba telecom and internet services export checker",
+        "tagline": "Evaluate telecom, internet, software, and connectivity exports under CACR carve-outs.",
+    },
+    {
+        "path": "/tools/cuba-mipyme-export-support-checklist",
+        "name": "Cuba MIPYME export support checklist",
+        "tagline": "Screen whether support for private Cuban businesses can avoid prohibited state counterparties.",
+    },
+    {
+        "path": "/tools/cuba-trade-events-matchmaking-calendar",
+        "name": "Cuba trade events and matchmaking calendar",
+        "tagline": "Track ITA, Trade Americas, Caribbean, and sector events relevant to Cuba-facing exporters.",
+    },
+    {
+        "path": "/tools/cuba-trade-barriers-tracker",
+        "name": "Cuba trade barriers tracker",
+        "tagline": "Monitor sanctions, payment, logistics, licensing, and Cuban-side import barriers.",
+    },
+    {
+        "path": "/tools/cuba-export-compliance-checklist",
+        "name": "Cuba export compliance checklist",
+        "tagline": "Combine ITA opportunity research with OFAC, BIS, State CRL/CPAL, and records controls.",
+    },
+]
+
+_ITA_OFFICIAL_RESOURCE_LINKS = [
+    {
+        "label": "ITA Trade Americas contact page",
+        "href": "https://www.trade.gov/trade-americas-contact-us",
+        "text": "Use for regional export counseling and Commercial Service routing.",
+    },
+    {
+        "label": "ITA Market Intelligence search",
+        "href": "https://www.trade.gov/market-intelligence-search",
+        "text": "Use for official U.S. government market notes and sector signals.",
+    },
+    {
+        "label": "BIS export controls guidance",
+        "href": "https://www.bis.gov/",
+        "text": "Use for EAR, ECCN, license, and export-control questions.",
+    },
+    {
+        "label": "OFAC Cuba sanctions program",
+        "href": "https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions",
+        "text": "Use for CACR, sanctions, general licenses, and Cuba program guidance.",
+    },
+]
+
+_ITA_INTERNAL_RESOURCE_LINKS = [
+    {
+        "label": "OFAC Cuba General License Lookup",
+        "href": "/tools/ofac-cuba-general-licenses",
+        "text": "Find the CACR section that could authorize the activity.",
+    },
+    {
+        "label": "OFAC Cuba Sanctions Exposure Checker",
+        "href": "/tools/ofac-cuba-sanctions-checker",
+        "text": "Search names, companies, vessels, aircraft, or aliases against the Cuba SDN list.",
+    },
+    {
+        "label": "Cuba Restricted List checker",
+        "href": "/tools/cuba-restricted-list-checker",
+        "text": "Screen GAESA, Gaviota, CIMEX, FINCIMEX, Habaguanex, and other restricted entities.",
+    },
+    {
+        "label": "Public company Cuba exposure check",
+        "href": "/tools/public-company-cuba-exposure-check",
+        "text": "Use when a U.S.-listed counterparty, supplier, bank, or logistics provider is involved.",
+    },
+]
+
+
+def _ita_resource_modules(page_key: str) -> list[dict]:
+    base_internal = _ITA_INTERNAL_RESOURCE_LINKS
+    official = _ITA_OFFICIAL_RESOURCE_LINKS
+    specific: dict[str, list[dict]] = {
+        "can-my-us-company-export-to-cuba": [
+            {"label": "Cuba export controls and sanctions process map", "href": "/tools/cuba-export-controls-sanctions-process-map", "text": "Use after the quick answer to walk through OFAC, BIS, State, payment, shipping, and records."},
+            {"label": "Cuba export compliance checklist", "href": "/tools/cuba-export-compliance-checklist", "text": "Turn the answer into a file-ready compliance checklist before quoting or shipping."},
+            {"label": "Cuba country contacts directory", "href": "/tools/cuba-country-contacts-directory", "text": "Find official contact paths when the answer is yellow or you need export counseling."},
+        ],
+        "cuba-export-controls-sanctions-process-map": [
+            {"label": "Can my U.S. company export to Cuba?", "href": "/tools/can-my-us-company-export-to-cuba", "text": "Start here if you do not yet know whether the activity is green, yellow, or red."},
+            {"label": "Cuba export compliance checklist", "href": "/tools/cuba-export-compliance-checklist", "text": "Turn the process map into a file-ready compliance checklist."},
+            {"label": "Cuba country contacts directory", "href": "/tools/cuba-country-contacts-directory", "text": "Find the right official contact path after the U.S.-side issue list is clear."},
+        ],
+        "cuba-trade-leads-for-us-companies": [
+            {"label": "Cuba export opportunity finder", "href": "/tools/cuba-export-opportunity-finder", "text": "Compare a lead against sector demand and Cuba-specific execution barriers."},
+            {"label": "Cuba export controls and sanctions process map", "href": "/tools/cuba-export-controls-sanctions-process-map", "text": "Screen the lead before any outreach or quote."},
+            {"label": "U.S. company Cuba market-entry checklist", "href": "/tools/us-company-cuba-market-entry-checklist", "text": "Prepare the facts you need before contacting a buyer."},
+        ],
+        "cuba-country-contacts-directory": [
+            {"label": "U.S. company Cuba market-entry checklist", "href": "/tools/us-company-cuba-market-entry-checklist", "text": "Organize your product, buyer, payment, and shipping questions before contacting ITA."},
+            {"label": "Cuba trade events and matchmaking calendar", "href": "/tools/cuba-trade-events-matchmaking-calendar", "text": "Find official and sector events that may create warmer contact paths."},
+            {"label": "Cuba export compliance checklist", "href": "/tools/cuba-export-compliance-checklist", "text": "Bring a clean compliance file to an advisor or counsel."},
+        ],
+        "us-company-cuba-market-entry-checklist": [
+            {"label": "Cuba country contacts directory", "href": "/tools/cuba-country-contacts-directory", "text": "Find official counseling contacts once the checklist is mostly complete."},
+            {"label": "Cuba trade barriers tracker", "href": "/tools/cuba-trade-barriers-tracker", "text": "Check operational blockers before assuming the market-entry plan can execute."},
+            {"label": "Cuba export compliance checklist", "href": "/tools/cuba-export-compliance-checklist", "text": "Convert market-entry notes into compliance records."},
+        ],
+    }
+    default_specific = [
+        {"label": "Export to Cuba hub", "href": "/export-to-cuba", "text": "Return to the ordered hub workflow and choose the next tool."},
+        {"label": "Can my U.S. company export to Cuba?", "href": "/tools/can-my-us-company-export-to-cuba", "text": "Classify the opportunity before acting on it."},
+        {"label": "Cuba export controls and sanctions process map", "href": "/tools/cuba-export-controls-sanctions-process-map", "text": "Move from opportunity to compliance decision path."},
+    ]
+    return [
+        {
+            "heading": "Use Next",
+            "subheading": "Internal tools that make this page actionable.",
+            "links": specific.get(page_key, default_specific),
+        },
+        {
+            "heading": "Screen Internally",
+            "subheading": "Cuban Insights checks to run before outreach or shipment.",
+            "links": base_internal,
+        },
+        {
+            "heading": "Official Contacts & Sources",
+            "subheading": "Use these for counseling, authority, and source-of-truth checks.",
+            "links": official,
+        },
+    ]
+
+
+def _ita_export_pages() -> dict[str, dict]:
+    common_chips = ["ITA / Trade.gov", "U.S. exporters", "OFAC + BIS + State screening"]
+    common_spokes = _ITA_EXPORT_SPOKES
+    return {
+        "export-to-cuba": {
+            "path": "/export-to-cuba",
+            "short_title": "Export to Cuba",
+            "eyebrow": "Export hub · ITA + sanctions-aware",
+            "title": "Export to Cuba: U.S. Company Opportunity and Compliance Hub",
+            "lede": "A Cuba-specific hub for U.S. exporters that pairs International Trade Administration opportunity data with the compliance stack that actually governs Cuba: OFAC CACR general licenses, BIS export controls, the State Department Cuba Restricted List, payment constraints, and Cuban private-sector limits.",
+            "description": "Cuba export hub for U.S. companies: ITA trade leads, market intelligence, HS code opportunity triage, OFAC/BIS sanctions process map, contacts, events, trade barriers, and market-entry checklist.",
+            "keywords": "export to Cuba, Cuba trade leads, Cuba export controls, ITA Cuba, Trade.gov Cuba, Cuba market entry, Cuba sanctions process map",
+            "chips": ["Hub page", *common_chips],
+            "spokes": common_spokes,
+            "hub_groups": [
+                {
+                    "heading": "Start Here",
+                    "subheading": "Use these in order. The goal is to move from a commercial idea to a defensible go / no-go decision.",
+                    "cards": [
+                        {
+                            "eyebrow": "Step 1",
+                            "title": "Can my U.S. company export to Cuba?",
+                            "text": "Start with the decision tree before opening leads or contacting a buyer.",
+                            "href": "/tools/can-my-us-company-export-to-cuba",
+                            "cta": "Start decision tree",
+                        },
+                        {
+                            "eyebrow": "Step 2",
+                            "title": "Find Cuba trade leads",
+                            "text": "Review ITA-style opportunity signals only after you know what questions to ask.",
+                            "href": "/tools/cuba-trade-leads-for-us-companies",
+                            "cta": "Open leads tool",
+                        },
+                        {
+                            "eyebrow": "Step 3",
+                            "title": "Run the compliance process map",
+                            "text": "Route the product, counterparty, payment, shipping, and records through OFAC, BIS, and State checks.",
+                            "href": "/tools/cuba-export-controls-sanctions-process-map",
+                            "cta": "Open process map",
+                        },
+                    ],
+                },
+                {
+                    "heading": "Resource Library",
+                    "subheading": "Pick the resource that matches the question you are trying to answer right now.",
+                    "cards": [
+                        {
+                            "eyebrow": "Product",
+                            "title": "HS code opportunity finder",
+                            "text": "Use when you know the product category and need a product-level triage path.",
+                            "href": "/tools/cuba-hs-code-opportunity-finder",
+                            "cta": "Classify product",
+                        },
+                        {
+                            "eyebrow": "Sector",
+                            "title": "Export opportunity finder",
+                            "text": "Use when you are comparing agriculture, medical, telecom, energy, logistics, or MIPYME demand.",
+                            "href": "/tools/cuba-export-opportunity-finder",
+                            "cta": "Compare sectors",
+                        },
+                        {
+                            "eyebrow": "Checklist",
+                            "title": "Export compliance checklist",
+                            "text": "Use before quoting, signing, shipping, financing, or traveling for a Cuba opportunity.",
+                            "href": "/tools/cuba-export-compliance-checklist",
+                            "cta": "Open checklist",
+                        },
+                        {
+                            "eyebrow": "Agriculture / Medical",
+                            "title": "Ag and medical export checker",
+                            "text": "Use for food, agricultural commodities, medicines, devices, healthcare, or humanitarian channels.",
+                            "href": "/tools/cuba-agricultural-medical-export-checker",
+                            "cta": "Check eligibility",
+                        },
+                        {
+                            "eyebrow": "Telecom / Internet",
+                            "title": "Telecom export checker",
+                            "text": "Use for software, cloud, connectivity, communications, and information-flow exports.",
+                            "href": "/tools/cuba-telecom-internet-export-checker",
+                            "cta": "Check telecom path",
+                        },
+                        {
+                            "eyebrow": "Private Sector",
+                            "title": "MIPYME support checklist",
+                            "text": "Use when the buyer claims to be private-sector-facing or MIPYME-related.",
+                            "href": "/tools/cuba-mipyme-export-support-checklist",
+                            "cta": "Screen MIPYME path",
+                        },
+                    ],
+                },
+                {
+                    "heading": "Who to Contact",
+                    "subheading": "Do not contact a Cuban counterparty before the U.S.-side path is clear enough to describe.",
+                    "cards": [
+                        {
+                            "eyebrow": "Official counseling",
+                            "title": "ITA / Trade Americas contacts",
+                            "text": "Use for export counseling, regional market context, and finding the right U.S. government contact path.",
+                            "href": "/tools/cuba-country-contacts-directory",
+                            "cta": "Find contacts",
+                        },
+                        {
+                            "eyebrow": "Buyer follow-up",
+                            "title": "Market-entry checklist",
+                            "text": "Use before outreach to organize product, buyer, owner, bank, shipper, and records questions.",
+                            "href": "/tools/us-company-cuba-market-entry-checklist",
+                            "cta": "Prepare outreach",
+                        },
+                        {
+                            "eyebrow": "Events",
+                            "title": "Trade events and matchmaking",
+                            "text": "Use for Trade Americas, Caribbean, virtual counseling, and sector events that may generate leads.",
+                            "href": "/tools/cuba-trade-events-matchmaking-calendar",
+                            "cta": "Open calendar",
+                        },
+                    ],
+                },
+            ],
+            "sections": [
+                {
+                    "heading": "Recommended Order",
+                    "body": "Use the hub like a workflow, not a reading list. Each step should leave you with either a green, yellow, or red answer.",
+                    "items": [
+                        "<strong>1. Product:</strong> define the product, service, software, technology, HS code question, and end use.",
+                        "<strong>2. Authorization:</strong> check OFAC CACR, BIS controls, and whether the transaction is generally authorized, license-dependent, or blocked.",
+                        "<strong>3. Counterparty:</strong> screen buyer, beneficial owner, importer, bank, hotel, vessel, aircraft, and logistics provider.",
+                        "<strong>4. Execution:</strong> test payment, shipping, Cuban-side import channel, recordkeeping, and hard-currency constraints.",
+                        "<strong>5. Contact:</strong> use ITA / Trade Americas or counsel before approaching a Cuban counterparty if the answer is yellow.",
+                    ],
+                },
+                {
+                    "heading": "What to Collect Before Contacting Anyone",
+                    "items": [
+                        "Product description, HS code or classification notes, end use, and technical specifications.",
+                        "Buyer legal name, trade name, parent owner, beneficial owner, importer, address, and website.",
+                        "Payment route, bank, currency, shipping route, logistics provider, and delivery location.",
+                        "Screening results for OFAC SDN, State CRL, CPAL, GAESA, Gaviota, CIMEX, FINCIMEX, and military-control indicators.",
+                    ],
+                },
+                {
+                    "heading": "Best-Fit Sectors to Monitor",
+                    "items": [
+                        "Agricultural commodities and food inputs under TSRA-style export channels.",
+                        "Medical devices, medicines, healthcare technology, and humanitarian support.",
+                        "Telecom, internet connectivity, software, cloud, and information-flow tools.",
+                        "Energy resilience, logistics, cold chain, construction inputs, and private-sector equipment where licensing permits.",
+                    ],
+                },
+            ],
+        },
+        "cuba-trade-leads-for-us-companies": {
+            "short_title": "Cuba Trade Leads",
+            "eyebrow": "Trade leads · U.S. exporters",
+            "title": "Cuba Trade Leads for U.S. Companies",
+            "lede": "A sanctions-aware view of Cuba trade leads: useful demand signals, but only after the counterparty, product, license, payment, and Cuban-side importer risks are checked.",
+            "description": "Find and evaluate Cuba trade leads for U.S. companies with ITA opportunity data plus OFAC, BIS, CRL, CPAL, and payment-risk screening.",
+            "keywords": "Cuba trade leads, trade leads Cuba, U.S. companies Cuba export opportunities, ITA trade leads Cuba",
+            "chips": common_chips,
+            "sections": [
+                {"heading": "What counts as a usable lead", "items": ["A lead must identify a plausible buyer, sector, product or service, timing, and source.", "For Cuba, a lead is incomplete until the buyer and payment route clear sanctions and restricted-list screening.", "Leads involving state tourism, military-controlled distributors, or opaque import companies need enhanced review."]},
+                {"heading": "Lead triage workflow", "ordered": True, "items": ["Classify the opportunity by sector and product.", "Run SDN, CRL, and CPAL checks on every named entity and parent company.", "Check whether the export can fit TSRA, medical/humanitarian, telecom, informational materials, or support-for-the-Cuban-people channels.", "Document why the lead is allowed, blocked, or needs counsel / licensing."]},
+            ],
+        },
+        "cuba-export-opportunity-finder": {
+            "short_title": "Export Opportunity Finder",
+            "eyebrow": "Opportunity finder · Cuba sectors",
+            "title": "Cuba Export Opportunity Finder",
+            "lede": "A sector-first map of where U.S. exporters may find Cuba demand, with the compliance filters shown before the commercial upside.",
+            "description": "Cuba export opportunity finder for U.S. companies by sector, combining ITA market intelligence with sanctions, licensing, and counterparty checks.",
+            "keywords": "Cuba export opportunities, export opportunity finder Cuba, U.S. exports to Cuba sectors",
+            "chips": common_chips,
+            "sections": [
+                {"heading": "Highest-signal categories", "items": ["Agriculture and food supply chains.", "Medical and humanitarian goods.", "Telecom, internet, information, and software access.", "Energy resilience, logistics, and private-sector equipment where licensing and counterparties permit."]},
+                {"heading": "What makes Cuba different", "body": "The demand signal is only one part of the answer. The binding constraints are often licensing, payment, logistics, and who controls the Cuban buyer.", "items": ["Private-sector MIPYME demand is not the same as state-enterprise demand.", "A legal product can still fail if the buyer or payment channel is blocked.", "Cuban-side import rules and hard-currency scarcity can turn apparent demand into non-performance risk."]},
+            ],
+        },
+        "cuba-hs-code-opportunity-finder": {
+            "short_title": "HS Code Finder",
+            "eyebrow": "HS code tool · Product triage",
+            "title": "Cuba HS Code Opportunity Finder",
+            "lede": "Use HS-code thinking to turn a product idea into a Cuba export workflow: demand signal, product classification, licensing question, counterparty screen, and documentation trail.",
+            "description": "Cuba HS code opportunity finder for U.S. exporters evaluating product-level demand, OFAC/BIS licensing risk, and documentation requirements.",
+            "keywords": "Cuba HS code, export HS code Cuba, Cuba product opportunity finder, U.S. exporter HS code Cuba",
+            "chips": ["HS code", *common_chips],
+            "sections": [
+                {"heading": "How to use HS codes in Cuba research", "items": ["Start with the product's likely HS chapter and description.", "Map the product to Cuba-sensitive sectors: food, medicine, telecom, energy, construction, transport, or state tourism.", "Use the HS question as a prompt for BIS / ECCN review, not as a substitute for it."]},
+                {"heading": "Product-level checkpoints", "ordered": True, "items": ["Identify product and end use.", "Screen end user and importer.", "Check OFAC authorization path.", "Check BIS controls and license requirements.", "Store the classification rationale with source URLs and counsel notes."]},
+            ],
+        },
+        "cuba-export-controls-sanctions-process-map": {
+            "short_title": "Process Map",
+            "eyebrow": "Process map · OFAC + BIS",
+            "title": "Cuba Export Controls and Sanctions Process Map",
+            "lede": "A practical route map for U.S. exporters: before you quote, ship, finance, or meet a Cuban counterparty, walk the opportunity through the Cuba sanctions and export-control stack.",
+            "description": "Cuba export controls and sanctions process map covering OFAC CACR, BIS export controls, State CRL/CPAL, payment routes, and recordkeeping.",
+            "keywords": "Cuba export controls, Cuba sanctions process map, OFAC BIS Cuba exports, CACR export compliance",
+            "chips": ["Process map", *common_chips],
+            "sections": [
+                {"heading": "Start With This Answer", "body": "A Cuba export is not actionable until it clears four gates: OFAC authorization, BIS product / technology controls, restricted-party screening, and executable payment / shipping. If one gate is unknown, the answer is yellow until it is resolved.", "items": ["Use <a href=\"/tools/can-my-us-company-export-to-cuba\">Can my U.S. company export to Cuba?</a> if you need the quick green / yellow / red classification first.", "Use <a href=\"/tools/ofac-cuba-general-licenses\">OFAC Cuba General License Lookup</a> to find the possible CACR authorization basis.", "Use <a href=\"/tools/cuba-restricted-list-checker\">Cuba Restricted List checker</a> and <a href=\"/tools/ofac-cuba-sanctions-checker\">OFAC Cuba Sanctions Exposure Checker</a> before any outreach."]},
+                {"heading": "Before taking action", "ordered": True, "items": ["Define the transaction, product, service, software, technology, end use, and every party.", "Identify the OFAC general license, OFAC specific license path, or reason the activity is not authorized.", "Check product / technology controls through BIS and document ECCN / EAR99 thinking.", "Screen names, parents, owners, addresses, hotels, vessels, aircraft, banks, and payment intermediaries.", "If any answer is yellow, contact <a href=\"/tools/cuba-country-contacts-directory\">Cuba country contacts</a>, ITA Trade Americas, BIS, OFAC, or counsel before quoting or shipping.", "Keep records for the full required retention period."]},
+            ],
+        },
+        "cuba-country-contacts-directory": {
+            "short_title": "Contacts Directory",
+            "eyebrow": "Contacts · ITA Trade Americas",
+            "title": "Cuba Country Contacts Directory for U.S. Exporters",
+            "lede": "A directory-style starting point for U.S. exporters who need official counseling, Trade Americas context, sector specialists, and compliance-aware next steps before approaching Cuba.",
+            "description": "Cuba country contacts directory for U.S. exporters, pointing to ITA Trade Americas, Commercial Service resources, sector specialists, and compliance tools.",
+            "keywords": "Cuba country contacts, ITA Cuba contacts, Commercial Service Cuba, Trade Americas Cuba contacts",
+            "chips": ["Contacts", *common_chips],
+            "sections": [
+                {"heading": "Who to contact first", "items": ["ITA Trade Americas for regional export counseling and market intelligence.", "Relevant U.S. Commercial Service domestic office for exporter readiness.", "Sector specialists for agriculture, healthcare, telecom, energy, logistics, or professional services.", "Trade counsel for OFAC/BIS interpretation before relying on a lead."]},
+                {"heading": "Questions to bring", "items": ["What is the product, end use, buyer, payment route, and shipping path?", "Does the buyer touch a restricted Cuban state or military-controlled entity?", "Is this a private-sector support case, a humanitarian case, a telecom case, or a blocked case?"]},
+            ],
+        },
+        "can-my-us-company-export-to-cuba": {
+            "short_title": "Can My Company Export?",
+            "eyebrow": "Decision tree · U.S. exporters",
+            "title": "Can My U.S. Company Export to Cuba?",
+            "lede": "A plain-English decision tree for U.S. companies: identify the product, buyer, authorization path, export controls, restricted-party risk, payment route, and records before treating any Cuba opportunity as actionable.",
+            "description": "Decision tree for whether a U.S. company can export to Cuba, covering OFAC CACR, BIS export controls, State CRL/CPAL, product eligibility, counterparties, payment, and records.",
+            "keywords": "can my company export to Cuba, U.S. company export to Cuba, can I export to Cuba, OFAC BIS Cuba export decision tree",
+            "chips": ["Decision tree", *common_chips],
+            "sections": [
+                {"heading": "Short Answer", "kind": "callout", "body": "Yes, a U.S. company can export some goods and services to Cuba, but only in narrow authorized channels. The practical answer depends on the product, end use, Cuban buyer, payment route, shipping path, and whether OFAC or BIS licensing is required.", "items": ["<strong>Likely yes:</strong> informational materials, some telecom / internet services, certain agricultural or medical exports, and some support for genuinely private Cuban businesses when parties and payment routes screen clean.", "<strong>Maybe / get review:</strong> software, equipment, services, or MIPYME support where the importer, bank, logistics provider, or end user may touch the Cuban state sector. Use the <a href=\"/tools/cuba-export-controls-sanctions-process-map\">process map</a> next.", "<strong>Likely no:</strong> transactions involving SDN-listed parties, Cuba Restricted List entities, Cuban military-controlled companies, prohibited lodging, blocked payment routes, or state tourism counterparties."]},
+                {"heading": "Answer These Six Questions", "ordered": True, "items": ["<strong>What are you exporting?</strong> Product, service, software, technology, or data.", "<strong>Who receives it?</strong> End user, importer, beneficial owner, bank, shipper, and delivery location.", "<strong>Why is it allowed?</strong> OFAC general license, specific license, statutory channel, or no authorization.", "<strong>Does BIS control it?</strong> ECCN / EAR99, Cuba license requirement, license exception, or no-license determination.", "<strong>Is anyone restricted?</strong> SDN, CRL, CPAL, GAESA, Gaviota, CIMEX, FINCIMEX, ETECSA, or military-control exposure.", "<strong>Can you execute it?</strong> Payment, shipping, insurance, records, and Cuban-side import channel are feasible."]},
+                {"heading": "Simple Result", "items": ["<strong>Green:</strong> product fits an authorized channel, parties screen clean, BIS path is clear, payment/shipping work, and records are retained.", "<strong>Yellow:</strong> possible, but you need counsel, ITA/BIS/OFAC guidance, a license, or missing counterparty ownership facts.", "<strong>Red:</strong> blocked party, military-controlled buyer, prohibited payment route, prohibited end use, or no defensible authorization path."]},
+            ],
+        },
+        "us-company-cuba-market-entry-checklist": {
+            "short_title": "Market-Entry Checklist",
+            "eyebrow": "Checklist · Market entry",
+            "title": "U.S. Company Cuba Market-Entry Checklist",
+            "lede": "A pre-entry checklist for U.S. companies considering Cuba: commercial thesis first, then product authorization, counterparty screening, payment reality, and recordkeeping.",
+            "description": "U.S. company Cuba market-entry checklist covering product fit, sanctions, export controls, counterparties, payments, logistics, and records.",
+            "keywords": "Cuba market entry checklist, U.S. company Cuba checklist, doing business Cuba U.S. exporter",
+            "chips": ["Checklist", *common_chips],
+            "sections": [
+                {"heading": "Checklist", "ordered": True, "items": ["Define the exportable product or service.", "Identify Cuban buyer, beneficial owner, importer, bank, and logistics provider.", "Check OFAC general license / specific license path.", "Check BIS export controls.", "Screen SDN, CRL, CPAL, GAESA/Gaviota/CIMEX/FINCIMEX exposure.", "Validate payment and hard-currency mechanics.", "Keep written records of every decision."]},
+                {"heading": "Common failure points", "items": ["Assuming private-sector support applies when the importer is state-controlled.", "Ignoring payment routing and bank de-risking.", "Treating a Trade.gov opportunity as legal authorization. It is a signal, not permission."]},
+            ],
+        },
+        "cuba-agricultural-medical-export-checker": {
+            "short_title": "Agricultural / Medical Exports",
+            "eyebrow": "Eligibility checker · Ag + medical",
+            "title": "Cuba Agricultural and Medical Export Eligibility Checker",
+            "lede": "Agricultural and medical exports are among the most plausible U.S.-to-Cuba channels, but they still require product, end-user, financing, shipping, and records analysis.",
+            "description": "Cuba agricultural and medical export eligibility checker for U.S. exporters evaluating TSRA, medical, humanitarian, OFAC, and BIS constraints.",
+            "keywords": "Cuba agricultural exports, Cuba medical exports, TSRA Cuba, export food medicine Cuba",
+            "chips": ["Agriculture", "Medical", *common_chips],
+            "sections": [
+                {"heading": "Likely channels to evaluate", "items": ["Food, agricultural commodities, inputs, and related equipment.", "Medicines, medical devices, healthcare supplies, and humanitarian goods.", "Support services that are necessary and ordinarily incident to authorized exports."]},
+                {"heading": "Checks before shipment", "ordered": True, "items": ["Confirm product classification.", "Confirm buyer and end user.", "Check payment / financing restrictions.", "Check BIS license requirements.", "Document OFAC authorization and shipping route."]},
+            ],
+        },
+        "cuba-telecom-internet-export-checker": {
+            "short_title": "Telecom / Internet Exports",
+            "eyebrow": "Eligibility checker · Telecom",
+            "title": "Cuba Telecom and Internet Services Export Checker",
+            "lede": "Telecom, internet, software, and information-flow tools can have Cuba authorization paths, but ETECSA/state-control, technology controls, and payment mechanics still matter.",
+            "description": "Cuba telecom and internet services export checker covering CACR telecom carve-outs, software, connectivity, ETECSA risk, and BIS controls.",
+            "keywords": "Cuba telecom exports, Cuba internet services export, software exports Cuba, CACR telecom Cuba",
+            "chips": ["Telecom", "Internet", *common_chips],
+            "sections": [
+                {"heading": "Relevant categories", "items": ["Internet connectivity and communications tools.", "Software and services that support information flow.", "Telecom equipment, cloud, hosting, and related professional services."]},
+                {"heading": "Risk questions", "items": ["Does the transaction involve ETECSA or another state-controlled entity?", "Is the software or equipment controlled under BIS rules?", "Does the payment route require a prohibited Cuban financial intermediary?", "Can records show the activity supports authorized communications access?"]},
+            ],
+        },
+        "cuba-mipyme-export-support-checklist": {
+            "short_title": "MIPYME Support Checklist",
+            "eyebrow": "Checklist · Private sector",
+            "title": "Cuba MIPYME Export Support Checklist",
+            "lede": "Cuba's private-sector MIPYMES create a real commercial thesis, but exporters need to prove the support is private-sector-facing and not routed through restricted state or military entities.",
+            "description": "Cuba MIPYME export support checklist for U.S. exporters supporting private Cuban businesses while avoiding restricted counterparties.",
+            "keywords": "Cuba MIPYME exports, support for Cuban private sector, Cuba private business export checklist",
+            "chips": ["MIPYME", "Private sector", *common_chips],
+            "sections": [
+                {"heading": "What to verify", "items": ["The Cuban business is privately registered and not a front for a state or military entity.", "The importer, payment route, warehouse, hotel, or logistics provider is not CRL/SDN-linked.", "The goods or services fit an authorized support category.", "Records show end use, end user, payment path, and delivery chain."]},
+                {"heading": "Practical constraints", "items": ["Many MIPYMES still rely on state-controlled import channels.", "Hard-currency scarcity can delay payment.", "Beneficial ownership and political exposure may not be obvious from the trade name alone."]},
+            ],
+        },
+        "cuba-trade-events-matchmaking-calendar": {
+            "short_title": "Events Calendar",
+            "eyebrow": "Calendar · Trade events",
+            "title": "Cuba Trade Events and Matchmaking Calendar",
+            "lede": "Track ITA, Trade Americas, Caribbean, and sector events that could create Cuba-relevant export leads, then screen any lead before treating it as actionable.",
+            "description": "Cuba trade events and matchmaking calendar for U.S. exporters monitoring ITA, Trade Americas, Caribbean, and sector-specific opportunity events.",
+            "keywords": "Cuba trade events, Cuba matchmaking, Trade Americas events Cuba, ITA events Cuba",
+            "chips": ["Events", "Matchmaking", *common_chips],
+            "sections": [
+                {"heading": "Events worth monitoring", "items": ["Trade Americas regional programming.", "Agriculture, healthcare, telecom, energy, logistics, and Caribbean infrastructure events.", "Virtual export counseling and market-intelligence sessions.", "Business matchmaking where Cuba, Caribbean, or restricted-market compliance is discussed."]},
+                {"heading": "Post-event workflow", "ordered": True, "items": ["Capture lead details and source.", "Tag sector and product.", "Screen all named parties.", "Route product and technology through OFAC/BIS analysis.", "Add follow-up deadlines and recordkeeping notes."]},
+            ],
+        },
+        "cuba-trade-barriers-tracker": {
+            "short_title": "Trade Barriers",
+            "eyebrow": "Tracker · Trade barriers",
+            "title": "Cuba Trade Barriers Tracker",
+            "lede": "Cuba trade barriers are not just tariffs. The real blockers include U.S. sanctions, export controls, Cuban import channels, currency scarcity, payment de-risking, logistics, and state-sector concentration.",
+            "description": "Cuba trade barriers tracker covering sanctions, export controls, payment channels, Cuban import rules, logistics, and private-sector limits.",
+            "keywords": "Cuba trade barriers, Cuba export barriers, U.S. trade barriers Cuba, payment barriers Cuba exports",
+            "chips": ["Trade barriers", *common_chips],
+            "sections": [
+                {"heading": "Barrier categories", "items": ["OFAC authorization limits.", "BIS licensing and controlled technology.", "State / military-controlled counterparties.", "Payment and correspondent-banking de-risking.", "Cuban import permits, hard-currency scarcity, and state distribution bottlenecks.", "Shipping, insurance, and documentation friction."]},
+                {"heading": "How to use this tracker", "body": "Treat barriers as a living checklist. A sector can be commercially attractive and still be blocked by one operational step.", "items": ["Attach every barrier to a source URL.", "Separate U.S.-side legal blockers from Cuban-side execution blockers.", "Update the conclusion when ITA, OFAC, BIS, State, or Cuban official sources change."]},
+            ],
+        },
+        "cuba-export-compliance-checklist": {
+            "short_title": "Export Compliance Checklist",
+            "eyebrow": "Checklist · Compliance",
+            "title": "Cuba Export Compliance Checklist: ITA + OFAC + BIS + State",
+            "lede": "The all-in-one Cuba export compliance checklist: use ITA to find the commercial signal, then use OFAC, BIS, State CRL/CPAL, and records controls to decide whether the transaction can proceed.",
+            "description": "Cuba export compliance checklist for U.S. companies combining ITA opportunity research with OFAC, BIS, State CRL/CPAL, payments, logistics, and records.",
+            "keywords": "Cuba export compliance checklist, OFAC BIS Cuba exports, ITA OFAC Cuba checklist, State CRL Cuba export compliance",
+            "chips": ["Compliance", *common_chips],
+            "sections": [
+                {"heading": "Minimum compliance file", "items": ["Product / service description and classification rationale.", "End user, beneficial owner, importer, bank, logistics provider, vessel, and hotel if travel is involved.", "OFAC authorization basis or license request path.", "BIS classification and license analysis.", "SDN, CRL, CPAL, and known Cuban military-control screening results.", "Payment, shipping, and recordkeeping plan."]},
+                {"heading": "Traffic-light result", "items": ["Green: authorized path, clean parties, feasible payment, records retained.", "Yellow: possible path but needs counsel, license, or missing counterparty data.", "Red: blocked party, blocked category, prohibited payment route, or no defensible authorization."]},
+            ],
+        },
+    }
+
+
+def _render_ita_export_page(page_key: str):
+    try:
+        from src.page_renderer import _env, _base_url, _iso, settings as _s
+        from datetime import date as _date, datetime as _dt
+        import json as _json
+
+        pages = _ita_export_pages()
+        page = pages.get(page_key)
+        if not page:
+            abort(404)
+
+        base = _base_url()
+        path = page.get("path") or f"/tools/{page_key}"
+        canonical = f"{base}{path}"
+        seo = {
+            "title": page["title"],
+            "description": page["description"],
+            "keywords": page["keywords"],
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "website",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                        {"@type": "ListItem", "position": 2, "name": "Tools", "item": f"{base}/tools"},
+                        {"@type": "ListItem", "position": 3, "name": page["title"], "item": canonical},
+                    ],
+                },
+                {
+                    "@type": "WebApplication",
+                    "@id": f"{canonical}#app",
+                    "name": page["title"],
+                    "url": canonical,
+                    "description": page["description"],
+                    "applicationCategory": "BusinessApplication",
+                    "operatingSystem": "Any (browser-based)",
+                    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+                    "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                    "isBasedOn": [
+                        "https://developer.trade.gov/",
+                        "https://www.trade.gov/market-intelligence-search",
+                        "https://data.commerce.gov/trade-leads-api",
+                    ],
+                },
+            ],
+        }, ensure_ascii=False)
+
+        from src.seo.cluster_topology import build_cluster_ctx, build_related_tools_ctx
+        cluster_ctx = build_cluster_ctx(path)
+        related_tools_ctx = build_related_tools_ctx(path)
+        raw_resource_modules = page.get("resource_modules", _ita_resource_modules(page_key))
+        resource_modules = []
+        for group in raw_resource_modules:
+            links = [link for link in group.get("links", []) if link.get("href") != path]
+            if links:
+                resource_modules.append({**group, "links": links})
+        template = _env.get_template("tools/ita_export_page.html.j2")
+        html = template.render(
+            page={
+                **page,
+                "spokes": page.get("spokes", _ITA_EXPORT_SPOKES),
+                "short_title": page.get("short_title", page["title"]),
+                "resource_modules": resource_modules,
+            },
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+            related_tools_ctx=related_tools_ctx,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+
+
+@app.route("/export-to-cuba")
+@app.route("/export-to-cuba/")
+def export_to_cuba_hub():
+    return _render_ita_export_page("export-to-cuba")
+
+
+@app.route("/tools/cuba-trade-leads-for-us-companies")
+@app.route("/tools/cuba-trade-leads-for-us-companies/")
+def tool_cuba_trade_leads():
+    return _render_ita_export_page("cuba-trade-leads-for-us-companies")
+
+
+@app.route("/tools/cuba-export-opportunity-finder")
+@app.route("/tools/cuba-export-opportunity-finder/")
+def tool_cuba_export_opportunity_finder():
+    return _render_ita_export_page("cuba-export-opportunity-finder")
+
+
+@app.route("/tools/cuba-hs-code-opportunity-finder")
+@app.route("/tools/cuba-hs-code-opportunity-finder/")
+def tool_cuba_hs_code_opportunity_finder():
+    return _render_ita_export_page("cuba-hs-code-opportunity-finder")
+
+
+@app.route("/tools/cuba-export-controls-sanctions-process-map")
+@app.route("/tools/cuba-export-controls-sanctions-process-map/")
+def tool_cuba_export_controls_sanctions_process_map():
+    return _render_ita_export_page("cuba-export-controls-sanctions-process-map")
+
+
+@app.route("/tools/can-my-us-company-export-to-cuba")
+@app.route("/tools/can-my-us-company-export-to-cuba/")
+def tool_can_my_us_company_export_to_cuba():
+    return _render_ita_export_page("can-my-us-company-export-to-cuba")
+
+
+@app.route("/tools/cuba-country-contacts-directory")
+@app.route("/tools/cuba-country-contacts-directory/")
+def tool_cuba_country_contacts_directory():
+    return _render_ita_export_page("cuba-country-contacts-directory")
+
+
+@app.route("/tools/us-company-cuba-market-entry-checklist")
+@app.route("/tools/us-company-cuba-market-entry-checklist/")
+def tool_us_company_cuba_market_entry_checklist():
+    return _render_ita_export_page("us-company-cuba-market-entry-checklist")
+
+
+@app.route("/tools/cuba-agricultural-medical-export-checker")
+@app.route("/tools/cuba-agricultural-medical-export-checker/")
+def tool_cuba_agricultural_medical_export_checker():
+    return _render_ita_export_page("cuba-agricultural-medical-export-checker")
+
+
+@app.route("/tools/cuba-telecom-internet-export-checker")
+@app.route("/tools/cuba-telecom-internet-export-checker/")
+def tool_cuba_telecom_internet_export_checker():
+    return _render_ita_export_page("cuba-telecom-internet-export-checker")
+
+
+@app.route("/tools/cuba-mipyme-export-support-checklist")
+@app.route("/tools/cuba-mipyme-export-support-checklist/")
+def tool_cuba_mipyme_export_support_checklist():
+    return _render_ita_export_page("cuba-mipyme-export-support-checklist")
+
+
+@app.route("/tools/cuba-trade-events-matchmaking-calendar")
+@app.route("/tools/cuba-trade-events-matchmaking-calendar/")
+def tool_cuba_trade_events_matchmaking_calendar():
+    return _render_ita_export_page("cuba-trade-events-matchmaking-calendar")
+
+
+@app.route("/tools/cuba-trade-barriers-tracker")
+@app.route("/tools/cuba-trade-barriers-tracker/")
+def tool_cuba_trade_barriers_tracker():
+    return _render_ita_export_page("cuba-trade-barriers-tracker")
+
+
+@app.route("/tools/cuba-export-compliance-checklist")
+@app.route("/tools/cuba-export-compliance-checklist/")
+def tool_cuba_export_compliance_checklist():
+    return _render_ita_export_page("cuba-export-compliance-checklist")
+
+
 @app.route("/tools/havana-safety-by-neighborhood")
 @app.route("/tools/havana-safety-by-neighborhood/")
 def tool_havana_safety():
@@ -2626,6 +3287,90 @@ def tools_index():
                 "summary": "Searchable directory of the active OFAC general licenses under the Cuban Assets Control Regulations: the 12 authorized travel categories (§515.560–.578), telecom (§515.542), agricultural / medical exports under TSRA (§515.533), remittances (§515.570), and support for the Cuban people (§515.574).",
             },
             {
+                "url": "/export-to-cuba",
+                "name": "Export to Cuba — U.S. Company Hub",
+                "category": "Exports",
+                "summary": "Cuba export hub for U.S. companies: ITA / Trade.gov trade leads, market intelligence, contacts, trade events, HS-code opportunity triage, and a sanctions-aware OFAC + BIS + State CRL/CPAL process map.",
+            },
+            {
+                "url": "/tools/cuba-trade-leads-for-us-companies",
+                "name": "Cuba Trade Leads for U.S. Companies",
+                "category": "Exports",
+                "summary": "Find and evaluate Cuba trade leads with ITA opportunity signals, then screen product, buyer, parent company, payment route, and shipping path against OFAC, BIS, the Cuba Restricted List, and CPAL.",
+            },
+            {
+                "url": "/tools/cuba-export-opportunity-finder",
+                "name": "Cuba Export Opportunity Finder",
+                "category": "Exports",
+                "summary": "Map Cuba demand by sector — agriculture, medical goods, telecom, energy, logistics, and MIPYME equipment — to the authorization and counterparty checks a U.S. exporter needs before acting.",
+            },
+            {
+                "url": "/tools/cuba-hs-code-opportunity-finder",
+                "name": "Cuba HS Code Opportunity Finder",
+                "category": "Exports",
+                "summary": "Use HS-code thinking to triage product-level Cuba demand, likely licensing questions, end-use risk, BIS review, documentation, and sanctions-sensitive sectors.",
+            },
+            {
+                "url": "/tools/cuba-export-controls-sanctions-process-map",
+                "name": "Cuba Export Controls & Sanctions Process Map",
+                "category": "Compliance",
+                "summary": "Step-by-step route map for U.S. exporters: OFAC CACR authorization, BIS export controls, State CRL/CPAL screening, payment constraints, logistics, and records.",
+            },
+            {
+                "url": "/tools/can-my-us-company-export-to-cuba",
+                "name": "Can My U.S. Company Export to Cuba?",
+                "category": "Exports",
+                "summary": "Plain-English decision tree for U.S. companies: product, end user, OFAC authorization, BIS controls, SDN/CRL/CPAL screening, payment path, shipping, and recordkeeping.",
+            },
+            {
+                "url": "/tools/cuba-country-contacts-directory",
+                "name": "Cuba Country Contacts Directory",
+                "category": "Exports",
+                "summary": "Directory-style starting point for ITA Trade Americas, U.S. Commercial Service, sector specialists, and compliance-aware contact paths before approaching Cuba counterparties.",
+            },
+            {
+                "url": "/tools/us-company-cuba-market-entry-checklist",
+                "name": "U.S. Company Cuba Market-Entry Checklist",
+                "category": "Exports",
+                "summary": "Practical pre-entry checklist for U.S. companies: product fit, OFAC authorization, BIS controls, SDN/CRL/CPAL screening, payment feasibility, logistics, and recordkeeping.",
+            },
+            {
+                "url": "/tools/cuba-export-compliance-checklist",
+                "name": "Cuba Export Compliance Checklist",
+                "category": "Compliance",
+                "summary": "Combine ITA opportunity research with OFAC, BIS, State CRL/CPAL, payment, logistics, and recordkeeping checks in one Cuba export compliance workflow.",
+            },
+            {
+                "url": "/tools/cuba-agricultural-medical-export-checker",
+                "name": "Cuba Agricultural & Medical Export Checker",
+                "category": "Exports",
+                "summary": "Triage agriculture, food, medical devices, medicines, healthcare technology, and humanitarian exports against TSRA-style channels, OFAC authorization, BIS controls, and end-user risk.",
+            },
+            {
+                "url": "/tools/cuba-telecom-internet-export-checker",
+                "name": "Cuba Telecom & Internet Export Checker",
+                "category": "Exports",
+                "summary": "Evaluate telecom, internet, software, cloud, connectivity, and information-flow exports under CACR carve-outs, BIS controls, ETECSA exposure, and payment constraints.",
+            },
+            {
+                "url": "/tools/cuba-mipyme-export-support-checklist",
+                "name": "Cuba MIPYME Export Support Checklist",
+                "category": "Exports",
+                "summary": "Screen whether support for Cuban private businesses is genuinely private-sector-facing and can avoid prohibited state, military, importer, bank, and logistics counterparties.",
+            },
+            {
+                "url": "/tools/cuba-trade-events-matchmaking-calendar",
+                "name": "Cuba Trade Events & Matchmaking Calendar",
+                "category": "Exports",
+                "summary": "Track ITA, Trade Americas, Caribbean, virtual counseling, and sector events that can create Cuba-relevant leads, then run post-event screening before follow-up.",
+            },
+            {
+                "url": "/tools/cuba-trade-barriers-tracker",
+                "name": "Cuba Trade Barriers Tracker",
+                "category": "Exports",
+                "summary": "Monitor Cuba trade barriers across sanctions, export controls, Cuban import channels, hard-currency scarcity, payments, shipping, insurance, and state-sector concentration.",
+            },
+            {
                 "url": "/tools/eltoque-trmi-rate",
                 "name": "elTOQUE TRMI — CUP / USD / MLC Rate & Converter",
                 "category": "Markets",
@@ -2978,6 +3723,14 @@ def sources_page():
                     "entries_count": _count_ext(SourceType.ONEI),
                 },
                 {
+                    "name": "International Trade Administration / Trade.gov",
+                    "kind": "US Department of Commerce", "tier": "Primary",
+                    "url": "https://developer.trade.gov/",
+                    "description": "U.S. export-facing market intelligence, trade leads, events, contacts, and export guidance. We use ITA / Trade.gov as the commercial-opportunity layer and then cross-check Cuba items against OFAC, BIS, State CRL/CPAL, payment, and counterparty constraints.",
+                    "cadence": "Twice daily",
+                    "entries_count": _count_ext(SourceType.ITA_TRADE),
+                },
+                {
                     "name": "US State Department — Cuba travel advisory",
                     "kind": "US Government", "tier": "Primary",
                     "url": "https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cuba-travel-advisory.html",
@@ -3223,7 +3976,7 @@ def sanctions_tracker():
             cluster_ctx = build_cluster_ctx("/sanctions-tracker")
             companion_ctx = {
                 "eyebrow": "Tools that use this data",
-                "title": "Screen any name, hotel, or S&P 500 company against this list",
+                "title": "Cross-check SDN results: name search, CRL, CPAL lodging list, and tickers",
                 "links": _companion_links([
                     "/tools/ofac-cuba-sanctions-checker",
                     "/tools/cuba-restricted-list-checker",
@@ -5187,6 +5940,7 @@ def sitemap_xml():
         {"loc": f"{base}/sanctions/aircraft", "lastmod": today_iso, "changefreq": "daily", "priority": "0.8"},
         {"loc": f"{base}/calendar", "lastmod": today_iso, "changefreq": "daily", "priority": "0.7"},
         {"loc": f"{base}/travel", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base}/export-to-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.9"},
         {"loc": f"{base}/sources", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/briefing", "lastmod": today_iso, "changefreq": "daily", "priority": "0.9"},
         {"loc": f"{base}/tools", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
@@ -5200,6 +5954,19 @@ def sitemap_xml():
         {"loc": f"{base}/tools/sec-edgar-cuba-impairment-search", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/companies", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
         {"loc": f"{base}/tools/ofac-cuba-general-licenses", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.7"},
+        {"loc": f"{base}/tools/cuba-trade-leads-for-us-companies", "lastmod": today_iso, "changefreq": "daily", "priority": "0.85"},
+        {"loc": f"{base}/tools/cuba-export-opportunity-finder", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
+        {"loc": f"{base}/tools/cuba-hs-code-opportunity-finder", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-export-controls-sanctions-process-map", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
+        {"loc": f"{base}/tools/can-my-us-company-export-to-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
+        {"loc": f"{base}/tools/cuba-country-contacts-directory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
+        {"loc": f"{base}/tools/us-company-cuba-market-entry-checklist", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-agricultural-medical-export-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-telecom-internet-export-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-mipyme-export-support-checklist", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-trade-events-matchmaking-calendar", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
+        {"loc": f"{base}/tools/cuba-trade-barriers-tracker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
+        {"loc": f"{base}/tools/cuba-export-compliance-checklist", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
         {"loc": f"{base}/tools/havana-safety-by-neighborhood", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-investment-roi-calculator", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},

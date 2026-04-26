@@ -56,6 +56,15 @@ class Settings(BaseSettings):
     # macroeconomic statistics office. The "publicaciones-economico"
     # listing is the most reliable surface for new releases.
     onei_url: str = "https://www.onei.gob.cu"
+    # International Trade Administration / Trade.gov — U.S. export
+    # market intelligence, trade leads, export guidance, events, and
+    # Commercial Service contacts. ITA's API requires a subscription key
+    # for some endpoints, so the scraper gracefully falls back to public
+    # Trade.gov HTML pages when the key is blank.
+    ita_trade_base_url: str = "https://www.trade.gov"
+    ita_developer_url: str = "https://developer.trade.gov"
+    ita_api_base_url: str = "https://api.trade.gov"
+    ita_api_key: str = ""
 
     # LLM Analysis
     openai_api_key: str = ""

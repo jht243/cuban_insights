@@ -158,6 +158,37 @@ Last refreshed: 2026-04-20.
   Helms-Burton, embargo, blockade ("bloqueo"), Mariel, GAESA, CIMEX, MINREX,
   ETECSA, BioCubaFarma, mipyme, MLC, CUP, CACR, OFAC.
 
+### 11. International Trade Administration / Trade.gov — U.S. exporter opportunity layer
+
+- **Mechanism:** Public Trade.gov HTML pages now; ITA Data Services Platform
+  API later when an `ITA_API_KEY` / subscription key is available.
+- **Entry points:**
+  - `https://www.trade.gov/market-intelligence-search`
+  - `https://www.trade.gov/trade-leads`
+  - `https://www.trade.gov/trade-leads-search`
+  - `https://www.trade.gov/trade-americas-contact-us`
+  - `https://www.trade.gov/trade-americas-country-information`
+  - `https://www.trade.gov/export-solutions`
+  - `https://www.trade.gov/learn-how-export`
+  - `https://www.trade.gov/trade-events-search`
+- **What it is:** the commercial-opportunity side of the U.S. government stack:
+  market intelligence, trade leads, exporter guidance, events, contacts, and
+  counseling paths for U.S. companies. For Cuba this should be paired with
+  OFAC / BIS / State Department screening before any lead is treated as
+  actionable.
+- **Cuba nuance:** There does not appear to be a clean public `trade.gov/cuba`
+  country hub equivalent to some other countries. Cuban Insights therefore
+  builds its own `/export-to-cuba` hub and pulls Cuba, Caribbean, Trade
+  Americas, agriculture, medical, telecom, energy, logistics, construction,
+  healthcare, sanctions, and export-control signals from the broader ITA
+  surfaces.
+- **Article types:** `trade_lead`, `market_intelligence`, `export_guidance`,
+  `country_guidance`, `contact`, `event`, `office`, `faq`, `process_map`.
+- **Attribution:** ITA requires clear non-endorsement attribution. Public pages
+  and generated tools should say that the product uses ITA data / Trade.gov
+  content but is not endorsed or certified by ITA.
+- **Maps to:** `SourceType.ITA_TRADE`.
+
 ---
 
 ## Tier 2 — High-signal independent press (RSS — easiest to integrate)

@@ -471,6 +471,7 @@ def _llm_priority(article) -> tuple:
     source_rank = {
         SourceType.FEDERAL_REGISTER: 4,
         SourceType.TRAVEL_ADVISORY: 3,
+        SourceType.ITA_TRADE: 3,
         SourceType.GDELT: 2,
     }.get(article.source, 1)
     tone_magnitude = abs(article.tone_score) if article.tone_score is not None else 0

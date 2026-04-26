@@ -98,6 +98,7 @@ SOURCE_DISPLAY_MAP = {
     SourceType.MINREX: "MINREX",
     SourceType.ONEI: "ONEI",
     SourceType.PRESS_RSS: "Cuban Press",
+    SourceType.ITA_TRADE: "International Trade Administration",
     SourceType.BCV_RATES: "BCC",
 }
 

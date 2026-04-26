@@ -113,6 +113,12 @@ class SourceType(str, enum.Enum):
     # tiering rationale.
     PRESS_RSS = "press_rss"
 
+    # International Trade Administration / Trade.gov — U.S. export
+    # market intelligence, trade leads, events, contacts, and export
+    # guidance for U.S. companies evaluating Cuba or Caribbean trade
+    # opportunities. Subtypes live in ExternalArticleEntry.article_type.
+    ITA_TRADE = "ita_trade"
+
 
 class CredibilityTier(str, enum.Enum):
     OFFICIAL = "official"
@@ -439,3 +445,14 @@ def _ensure_columns() -> None:
             conn.execute(
                 sa_text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
             )
+
+    if dialect == "postgresql":
+        with engine.begin() as conn:
+            for value in (e.value for e in SourceType):
+                safe_value = value.replace("'", "''")
+                conn.execute(sa_text(
+                    "DO $$ BEGIN "
+                    f"ALTER TYPE source_type ADD VALUE IF NOT EXISTS '{safe_value}'; "
+                    "EXCEPTION WHEN duplicate_object THEN NULL; "
+                    "END $$;"
+                ))

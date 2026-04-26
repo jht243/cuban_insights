@@ -38,6 +38,7 @@ from src.scraper.eltoque import ElToqueScraper
 from src.scraper.travel_advisory import TravelAdvisoryScraper
 from src.scraper.state_dept_crl import StateDeptCRLScraper
 from src.scraper.state_dept_cpal import StateDeptCPALScraper
+from src.scraper.ita import ITATradeScraper
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ def run_daily_scrape(target_date: Optional[date] = None) -> dict:
         TravelAdvisoryScraper(),
         StateDeptCRLScraper(),
         StateDeptCPALScraper(),
+        ITATradeScraper(),
         # FX + global news monitoring.
         BCCScraper(),
         ElToqueScraper(),
@@ -292,6 +294,10 @@ def _resolve_source_type(source_name: str) -> SourceType:
         "us state department": SourceType.TRAVEL_ADVISORY,
         "minrex": SourceType.MINREX,
         "onei": SourceType.ONEI,
+        "international trade administration": SourceType.ITA_TRADE,
+        "ita": SourceType.ITA_TRADE,
+        "trade.gov": SourceType.ITA_TRADE,
+        "trade leads": SourceType.ITA_TRADE,
         # Press RSS — every outlet feeds into the same SourceType.
         # Per-outlet attribution is preserved in `source_name`.
         "granma": SourceType.PRESS_RSS,

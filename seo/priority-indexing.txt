@@ -6,7 +6,11 @@ https://cubaninsights.com/tools
 https://cubaninsights.com/companies
 https://cubaninsights.com/explainers
 https://cubaninsights.com/travel
+https://cubaninsights.com/export-to-cuba
 https://cubaninsights.com/calendar
+https://cubaninsights.com/tools/cuba-trade-leads-for-us-companies
+https://cubaninsights.com/tools/cuba-export-controls-sanctions-process-map
+https://cubaninsights.com/tools/can-my-us-company-export-to-cuba
 https://cubaninsights.com/tools/eltoque-trmi-rate
 https://cubaninsights.com/tools/ofac-cuba-sanctions-checker
 https://cubaninsights.com/tools/cuba-restricted-list-checker
@@ -14,7 +18,3 @@ https://cubaninsights.com/tools/cuba-prohibited-hotels-checker
 https://cubaninsights.com/tools/public-company-cuba-exposure-check
 https://cubaninsights.com/tools/sec-edgar-cuba-impairment-search
 https://cubaninsights.com/tools/ofac-cuba-general-licenses
-https://cubaninsights.com/tools/can-i-travel-to-cuba
-https://cubaninsights.com/tools/cuba-visa-requirements
-https://cubaninsights.com/sanctions/by-sector
-https://cubaninsights.com/sanctions/individuals
