@@ -2073,6 +2073,227 @@ def _fuzzy_score(query: str, *fields: str) -> float:
     return best if best >= 0.7 else 0.0
 
 
+_CPAL_PROFILE_INDEX_CACHE: dict = {"loaded_at": 0.0, "by_slug": {}, "ordered": []}
+_CPAL_PROFILE_INDEX_TTL = 300.0
+
+
+def _cpal_slug_for(name: str, province: str = "") -> str:
+    """Stable URL slug for a CPAL property.
+
+    Stability matters — once a hotel slug is indexed, changing it
+    breaks every backlink and search-result. We bake province in only
+    when there is a name collision across provinces.
+    """
+    import re as _re
+    import unicodedata as _ud
+
+    def _s(value: str) -> str:
+        if not value:
+            return ""
+        norm = _ud.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        return _re.sub(r"[^a-z0-9]+", "-", norm.lower()).strip("-")
+
+    base_slug = _s(name) or "property"
+    if province:
+        return f"{base_slug}-{_s(province)}"[:120].strip("-") or "property"
+    return base_slug[:120]
+
+
+def _cpal_profile_index() -> dict:
+    """Build / cache `{slug: row}` for every CPAL entry.
+
+    Disambiguates name collisions by appending the province slug
+    on the second-and-later occurrences of the same base slug.
+    """
+    import time as _time
+
+    cache = _CPAL_PROFILE_INDEX_CACHE
+    if cache.get("by_slug") and (_time.time() - cache["loaded_at"]) < _CPAL_PROFILE_INDEX_TTL:
+        return cache
+
+    entries, refreshed_on = _load_state_dept_snapshot("cpal")
+    rows = list(entries.values())
+
+    by_slug: dict[str, dict] = {}
+    name_seen: set[str] = set()
+    ordered: list[tuple[str, dict]] = []
+    for r in rows:
+        name = (r.get("name") or "").strip()
+        if not name:
+            continue
+        province = (r.get("province") or "").strip()
+        base = _cpal_slug_for(name)
+        slug = base if base not in name_seen else _cpal_slug_for(name, province)
+        suffix = 2
+        while slug in by_slug:
+            slug = f"{_cpal_slug_for(name, province)}-{suffix}"
+            suffix += 1
+        name_seen.add(base)
+        row_with_slug = dict(r)
+        row_with_slug["slug"] = slug
+        row_with_slug["url_path"] = f"/sanctions/cpal/{slug}"
+        by_slug[slug] = row_with_slug
+        ordered.append((slug, row_with_slug))
+
+    cache.update({
+        "loaded_at": _time.time(),
+        "by_slug": by_slug,
+        "ordered": ordered,
+        "refreshed_on": refreshed_on,
+    })
+    return cache
+
+
+def list_cpal_profiles() -> list[dict]:
+    """All CPAL rows with `slug` + `url_path` populated. Used by sitemap
+    + per-hotel pages."""
+    return [row for _, row in _cpal_profile_index()["ordered"]]
+
+
+@app.route("/sanctions/cpal/<slug>")
+@app.route("/sanctions/cpal/<slug>/")
+def cpal_profile_page(slug: str):
+    """One Cuba Prohibited Accommodations List entry → one indexable
+    page. Title leads with the property name + 'Sanctions' to match
+    GSC queries like '[hotel name] sanctions'.
+    """
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import date as _date, datetime as _dt
+    import json as _json
+
+    index = _cpal_profile_index()
+    row = index["by_slug"].get(slug)
+    if not row:
+        abort(404)
+
+    try:
+        name = (row.get("name") or "").strip()
+        province = (row.get("province") or "").strip()
+        address = (row.get("address") or "").strip()
+        marker = (row.get("marker") or "").strip()
+        neighborhood = _extract_cpal_neighborhood(address) or ""
+
+        siblings: list[dict] = []
+        if province:
+            for r in list_cpal_profiles():
+                if r["slug"] == slug:
+                    continue
+                if (r.get("province") or "").strip() == province:
+                    siblings.append(r)
+                if len(siblings) >= 8:
+                    break
+
+        base = _base_url()
+        canonical = f"{base}/sanctions/cpal/{slug}"
+        today_human = _date.today().strftime("%B %Y")
+        today_iso = _date.today().isoformat()
+        year = _date.today().year
+
+        title = f"{name} Sanctions — Cuba Prohibited Accommodations List ({year})"[:120]
+        loc_phrase = f" in {province}" if province else ""
+        description = (
+            f"{name}{loc_phrase} is on the U.S. State Department Cuba "
+            f"Prohibited Accommodations List (CPAL, §515.210 CACR) as of "
+            f"{today_human}. U.S. persons are prohibited from lodging at "
+            f"this property regardless of booking channel."
+        )[:300]
+
+        seo = {
+            "title": title,
+            "description": description,
+            "keywords": (
+                f"{name} sanctions, {name} CPAL, {name} Cuba prohibited, "
+                f"is {name} on the CPAL, US travelers {name}, "
+                f"§515.210 CACR, Cuba Prohibited Accommodations List"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "article",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+
+        breadcrumb = {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                {"@type": "ListItem", "position": 2, "name": "Cuba Sanctions", "item": f"{base}/sanctions-tracker"},
+                {"@type": "ListItem", "position": 3, "name": "Prohibited Accommodations", "item": f"{base}/tools/cuba-prohibited-hotels-checker"},
+                {"@type": "ListItem", "position": 4, "name": name, "item": canonical},
+            ],
+        }
+        hotel_node = {
+            "@type": "Hotel",
+            "@id": f"{canonical}#hotel",
+            "name": name,
+            "url": canonical,
+            "description": description,
+        }
+        if address or province:
+            hotel_node["address"] = {
+                "@type": "PostalAddress",
+                "addressLocality": province or "Cuba",
+                "addressCountry": "CU",
+                "streetAddress": address or province or "Cuba",
+            }
+        is_q = f"Is {name} on the Cuba Prohibited Accommodations List?"
+        is_a = (
+            f"Yes. As of {today_human}, {name}{loc_phrase} is on the U.S. "
+            f"State Department Cuba Prohibited Accommodations List (CPAL) "
+            f"under §515.210 of the Cuban Assets Control Regulations. U.S. "
+            f"persons are prohibited from lodging or paying for lodging at "
+            f"this property, regardless of whether the booking is made "
+            f"through a U.S., Cuban, or third-country travel agent or platform."
+        )
+        why_q = f"Why is {name} on the CPAL?"
+        why_a = (
+            "The State Department adds properties to the CPAL when they are "
+            "owned or controlled by a Cuban government entity, party "
+            "official, or other prohibited party. Inclusion is a "
+            "compliance determination made by State, separate from the "
+            "OFAC SDN list and the State Department Cuba Restricted List."
+        )
+        faq_node = {
+            "@type": "FAQPage",
+            "@id": f"{canonical}#faq",
+            "mainEntity": [
+                {"@type": "Question", "name": is_q, "acceptedAnswer": {"@type": "Answer", "text": is_a[:500]}},
+                {"@type": "Question", "name": why_q, "acceptedAnswer": {"@type": "Answer", "text": why_a[:500]}},
+            ],
+        }
+
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [breadcrumb, hotel_node, faq_node],
+        }, ensure_ascii=False)
+
+        template = _env.get_template("sanctions/cpal_profile.html.j2")
+        html = template.render(
+            name=name,
+            province=province,
+            neighborhood=neighborhood,
+            address=address,
+            marker=marker,
+            siblings=siblings,
+            seo=seo,
+            jsonld=jsonld,
+            today_human=today_human,
+            today_iso=today_iso,
+            year=year,
+            refreshed_on=index.get("refreshed_on", ""),
+            faq=[{"q": is_q, "a": is_a}, {"q": why_q, "a": why_a}],
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("CPAL profile render failed for slug=%s: %s", slug, exc)
+        abort(500)
+
+
 @app.route("/tools/cuba-prohibited-hotels-checker")
 @app.route("/tools/cuba-prohibited-hotels-checker/")
 def tool_cpal_hotel_checker():
@@ -2155,6 +2376,15 @@ def tool_cpal_hotel_checker():
 
             matches.sort(key=lambda m: (-m["score"], m["province"], m["name"]))
             matches = matches[:60]
+
+            cpal_idx = _cpal_profile_index()["by_slug"]
+            name_to_slug: dict[str, str] = {}
+            for s, row in cpal_idx.items():
+                name_to_slug.setdefault((row.get("name") or "").strip(), s)
+            for m in matches:
+                slug = name_to_slug.get(m["name"])
+                if slug:
+                    m["url_path"] = f"/sanctions/cpal/{slug}"
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
@@ -2433,7 +2663,7 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title="Cuba Restricted List Entity Checker — Free CRL Lookup (§515.209)",
+            title="Cuba Restricted List (CRL) 2026 — Full GAESA, CIMEX, Gaviota Lookup",
             description=(
                 f"Free State Department Cuba Restricted List (CRL) checker: "
                 f"search any of the {total_entries} entities U.S. persons "
@@ -3920,7 +4150,7 @@ def sanctions_tracker():
             base = _base_url()
             canonical = f"{base}/sanctions-tracker"
             seo = {
-                "title": f"OFAC Cuba Sanctions Tracker — {stats['total']} active CACR §515 designations",
+                "title": f"Cuba Sanctions List 2026 — {stats['total']} OFAC SDN Entries (Live Tracker)",
                 "description": (
                     f"Live tracker of {stats['total']} US Treasury OFAC SDN "
                     "designations under the CUBA program (Cuban Assets "
@@ -4441,8 +4671,8 @@ def sanctions_profile_page(bucket: str, slug: str):
         today_iso = _date.today().isoformat()
 
         title = (
-            f"{profile.display_name} — Sanctioned by OFAC "
-            f"(Active {_date.today().year})"
+            f"{profile.display_name} Sanctions — OFAC SDN Cuba Status "
+            f"({_date.today().year})"
         )[:120]
 
         ident_bits: list[str] = []
@@ -4687,7 +4917,7 @@ def companies_index_page():
         canonical = f"{base}/companies"
         seo = {
             "title": (
-                f"S&P 500 Cuba Exposure Register — {len(rows)} companies audited"
+                f"S&P 500 Cuba Sanctions & Exposure List — {len(rows)} Companies Checked"
             ),
             "description": (
                 f"Free Cuba-exposure audit for every S&P 500 company. OFAC "
@@ -4827,8 +5057,8 @@ def companies_profile_page(slug: str):
         today_iso = _date.today().isoformat()
 
         title = (
-            f"Is {company.short_name} ({company.ticker}) Sanctioned? "
-            f"Cuba & OFAC Exposure ({today_human})"
+            f"{company.name} Sanctions Check — Cuba & OFAC Exposure "
+            f"({today_human})"
         )[:120]
 
         binary_yes_no = {
@@ -5313,6 +5543,219 @@ def calendar_page():
         abort(500)
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Venezuela signposting pages.
+#
+# /travel currently picks up ~12 imp/mo for "transport venezuela" and
+# a handful of other Venezuela-travel queries. They can never convert
+# on a Cuba publication. These thin landing pages capture the existing
+# search demand and forward it to caracasresearch.com (sister site)
+# rather than letting it fail silently on the Cuba travel page.
+# ──────────────────────────────────────────────────────────────────────
+
+CARACAS_RESEARCH_TRAVEL_URL = "https://caracasresearch.com/travel"
+
+_VENEZUELA_TOPICS: dict[str, dict] = {
+    "transport": {
+        "slug": "transport",
+        "h1": "Transport in Venezuela — Caracas Taxis, Metro, Domestic Flights & Security",
+        "short_title": "Transport in Venezuela",
+        "eyebrow": "Venezuela · Transport overview",
+        "title": "Transport in Venezuela 2026 — Caracas Taxis, Metro & Domestic Flights",
+        "description": (
+            "Overview of ground transport in Venezuela for 2026: pre-arranged "
+            "Caracas airport transfers, Metro de Caracas, intercity buses, "
+            "domestic flights, and security considerations. Full guide on "
+            "Caracas Research."
+        ),
+        "keywords": (
+            "transport venezuela, transport in venezuela, caracas taxis, "
+            "caracas airport transfer, venezuela domestic flights, "
+            "metro de caracas, venezuela ground transport, caracas research"
+        ),
+        "lede": (
+            "A short reference for U.S. travelers, journalists, and operators "
+            "asking how to move around Venezuela in 2026 — from Caracas "
+            "airport transfers to intercity bus and domestic flight options. "
+            "For the full Venezuela travel handbook, visit Caracas Research."
+        ),
+        "cta_url": CARACAS_RESEARCH_TRAVEL_URL,
+        "cta_label": "Open the full Caracas & Venezuela travel guide",
+        "sections": [
+            {
+                "heading": "Caracas airport (CCS / Maiquetía) transfers",
+                "body": (
+                    "Pre-arranged transfers booked through your hotel, an embassy "
+                    "list, or a vetted security provider are the standard option "
+                    "for foreign visitors arriving at Simón Bolívar International "
+                    "Airport (CCS / Maiquetía). The Caracas-airport corridor "
+                    "passes through Vargas state and the highway has historically "
+                    "had armed-robbery incidents at night; daylight arrivals and "
+                    "pre-arranged drivers are the dominant risk-mitigation pattern."
+                ),
+            },
+            {
+                "heading": "Caracas urban transport",
+                "items": [
+                    "<strong>Metro de Caracas:</strong> functional but service quality and security vary by line and time of day.",
+                    "<strong>Taxis:</strong> use radio-dispatched or app-based services arranged through your hotel; avoid hailing from the street.",
+                    "<strong>Walking:</strong> daylight and curated zones (Las Mercedes, Altamira, Chacao) only.",
+                ],
+            },
+            {
+                "heading": "Intercity and domestic flights",
+                "body": (
+                    "Domestic carriers serve Maracaibo, Valencia, Barcelona, "
+                    "Mérida, Porlamar (Margarita), and other regional hubs. "
+                    "Schedules and reliability change frequently; confirm with "
+                    "the carrier within 24 hours of departure. Intercity bus "
+                    "service exists but is generally not recommended for "
+                    "foreign visitors due to security and reliability concerns."
+                ),
+            },
+            {
+                "heading": "Security overview",
+                "body": (
+                    "The U.S. State Department maintains a Level 4: Do Not Travel "
+                    "advisory for Venezuela. Any in-country movement plan should "
+                    "assume vetted drivers, daylight movements where possible, "
+                    "and an in-country security contact. The full operational "
+                    "checklist (drivers, vehicles, comms, embassy contacts) lives "
+                    "in the Caracas Research travel guide."
+                ),
+            },
+        ],
+    },
+    "caracas-travel-advisory": {
+        "slug": "caracas-travel-advisory",
+        "h1": "Caracas Travel Advisory 2026 — Current U.S. State Department Guidance",
+        "short_title": "Caracas Travel Advisory",
+        "eyebrow": "Venezuela · Travel advisory",
+        "title": "Caracas Travel Advisory 2026 — U.S. State Dept Level & Risks",
+        "description": (
+            "Current U.S. State Department travel advisory for Caracas and "
+            "Venezuela in 2026, key risk categories, and where to find the "
+            "full operational travel guide on Caracas Research."
+        ),
+        "keywords": (
+            "caracas travel advisory, venezuela travel advisory, caracas safety "
+            "2026, is caracas safe, venezuela state department warning, "
+            "venezuela tourism, travel to caracas venezuela, caracas research"
+        ),
+        "lede": (
+            "A short signposting page for travelers and corporate-security teams "
+            "checking the current U.S. State Department Caracas / Venezuela "
+            "travel advisory and what it means in practice. The full guide "
+            "lives on Caracas Research."
+        ),
+        "cta_url": CARACAS_RESEARCH_TRAVEL_URL,
+        "cta_label": "Open the full Caracas travel guide",
+        "sections": [
+            {
+                "heading": "Current U.S. State Department advisory level",
+                "body": (
+                    "The U.S. Department of State maintains a <strong>Level 4: "
+                    "Do Not Travel</strong> advisory for Venezuela, citing "
+                    "wrongful detentions, terrorism, kidnapping, civil unrest, "
+                    "crime, poor health infrastructure, and the absence of a "
+                    "U.S. embassy presence to assist U.S. citizens in country. "
+                    "The advisory is reviewed periodically; check "
+                    "<a href=\"https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html\" rel=\"nofollow noopener\" target=\"_blank\">travel.state.gov</a> for the live text."
+                ),
+            },
+            {
+                "heading": "Key risk categories cited",
+                "items": [
+                    "<strong>Wrongful detention:</strong> documented pattern of U.S. citizens being detained by Venezuelan authorities.",
+                    "<strong>Crime:</strong> violent crime including armed robbery, carjacking, and kidnapping in Caracas and other cities.",
+                    "<strong>Terrorism and civil unrest:</strong> intermittent demonstrations and irregular armed-group activity.",
+                    "<strong>Health:</strong> shortages of medicines, limited emergency services, and unreliable utilities.",
+                    "<strong>No U.S. embassy presence:</strong> the U.S. Embassy in Caracas is closed; U.S. citizens cannot expect routine consular assistance.",
+                ],
+            },
+            {
+                "heading": "What this means operationally",
+                "body": (
+                    "Travel decisions for Venezuela should be made with a vetted "
+                    "in-country security contact, evacuation insurance, and a "
+                    "documented communications plan. The Caracas Research "
+                    "travel guide covers airport transfer providers, lodging, "
+                    "communications, medical, and embassy-of-third-country "
+                    "contact paths in detail."
+                ),
+            },
+        ],
+    },
+}
+
+
+@app.route("/venezuela/<slug>")
+@app.route("/venezuela/<slug>/")
+def venezuela_topic_page(slug: str):
+    """Thin Venezuela-topic landing pages; CTA to caracasresearch.com."""
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import datetime as _dt
+    import json as _json
+
+    topic = _VENEZUELA_TOPICS.get(slug)
+    if not topic:
+        abort(404)
+
+    base = _base_url()
+    canonical = f"{base}/venezuela/{slug}"
+    seo = {
+        "title": topic["title"],
+        "description": topic["description"],
+        "keywords": topic["keywords"],
+        "canonical": canonical,
+        "site_name": _s.site_name,
+        "site_url": base,
+        "locale": _s.site_locale,
+        "og_image": f"{base}/static/og-image.png?v=3",
+        "og_type": "article",
+        "published_iso": _iso(_dt.utcnow()),
+        "modified_iso": _iso(_dt.utcnow()),
+    }
+    jsonld = _json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                    {"@type": "ListItem", "position": 2, "name": "Venezuela", "item": f"{base}/venezuela/{slug}"},
+                    {"@type": "ListItem", "position": 3, "name": topic["short_title"], "item": canonical},
+                ],
+            },
+            {
+                "@type": "Article",
+                "@id": f"{canonical}#article",
+                "url": canonical,
+                "headline": topic["h1"],
+                "description": topic["description"],
+                "datePublished": _iso(_dt.utcnow()),
+                "dateModified": _iso(_dt.utcnow()),
+                "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+            },
+        ],
+    }, ensure_ascii=False)
+
+    template = _env.get_template("venezuela/topic.html.j2")
+    html = template.render(
+        h1=topic["h1"],
+        short_title=topic["short_title"],
+        eyebrow=topic["eyebrow"],
+        lede=topic["lede"],
+        sections=topic["sections"],
+        cta_url=topic["cta_url"],
+        cta_label=topic["cta_label"],
+        seo=seo,
+        jsonld=jsonld,
+    )
+    return Response(html, mimetype="text/html")
+
+
 @app.route("/travel")
 @app.route("/travel/")
 def travel_page():
@@ -5367,7 +5810,7 @@ def travel_page():
 
         base = _base_url()
         canonical = f"{base}/travel"
-        title = "Travel to Cuba: Havana Operational Briefing for Business Travellers"
+        title = "Travel to Cuba 2026 — Havana Safety, Hotels, Money & Embassy Guide"
         description = (
             "Embassies, hotels, restaurants, hospitals, ground transport, "
             "corporate security firms, SIM cards (ETECSA / Cubacel), money "
@@ -5910,6 +6353,7 @@ def robots_txt():
         f"Sitemap: {base}/sitemap-briefings-recent.xml\n"
         f"Sitemap: {base}/sitemap-companies-priority.xml\n"
         f"Sitemap: {base}/sitemap-sdn-priority.xml\n"
+        f"Sitemap: {base}/sitemap-cpal.xml\n"
         f"Sitemap: {base}/news-sitemap.xml\n"
         f"Sitemap: {base}/curated-sitemap.xml\n"
     )
@@ -5986,6 +6430,8 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/tools/havana-safety-by-neighborhood", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-investment-roi-calculator", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
+        {"loc": f"{base}/venezuela/transport", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
+        {"loc": f"{base}/venezuela/caracas-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
     ]
 
 
@@ -6017,6 +6463,7 @@ def sitemap_xml():
         f"{base}/sitemap-briefings-recent.xml",
         f"{base}/sitemap-companies-priority.xml",
         f"{base}/sitemap-sdn-priority.xml",
+        f"{base}/sitemap-cpal.xml",
         f"{base}/sitemap-archive.xml",
     ]
     parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -6122,6 +6569,29 @@ def sitemap_sdn_priority_xml():
             })
     except Exception as exc:
         logger.warning("sitemap-sdn-priority failed: %s", exc)
+    return _emit_urlset(urls)
+
+
+@app.route("/sitemap-cpal.xml")
+def sitemap_cpal_xml():
+    """Per-property pages from the Cuba Prohibited Accommodations List.
+
+    Each entry is a strong-intent landing page for `[hotel name] sanctions`
+    queries that GSC shows hitting the checker hub with 0% CTR.
+    """
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    urls: list[dict] = []
+    try:
+        for row in list_cpal_profiles():
+            urls.append({
+                "loc": f"{base}{row['url_path']}",
+                "lastmod": today_iso,
+                "changefreq": "monthly",
+                "priority": "0.7",
+            })
+    except Exception as exc:
+        logger.warning("sitemap-cpal failed: %s", exc)
     return _emit_urlset(urls)
 
 
