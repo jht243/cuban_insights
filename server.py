@@ -4441,8 +4441,8 @@ def sanctions_profile_page(bucket: str, slug: str):
         today_iso = _date.today().isoformat()
 
         title = (
-            f"{profile.display_name} — Sanctioned by OFAC "
-            f"(Active {_date.today().year})"
+            f"{profile.display_name} Sanctions — OFAC SDN Cuba Status "
+            f"({_date.today().year})"
         )[:120]
 
         ident_bits: list[str] = []
@@ -4827,8 +4827,8 @@ def companies_profile_page(slug: str):
         today_iso = _date.today().isoformat()
 
         title = (
-            f"Is {company.short_name} ({company.ticker}) Sanctioned? "
-            f"Cuba & OFAC Exposure ({today_human})"
+            f"{company.name} Sanctions Check — Cuba & OFAC Exposure "
+            f"({today_human})"
         )[:120]
 
         binary_yes_no = {
