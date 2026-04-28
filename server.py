@@ -2433,7 +2433,7 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title="Cuba Restricted List Entity Checker — Free CRL Lookup (§515.209)",
+            title="Cuba Restricted List (CRL) 2026 — Full GAESA, CIMEX, Gaviota Lookup",
             description=(
                 f"Free State Department Cuba Restricted List (CRL) checker: "
                 f"search any of the {total_entries} entities U.S. persons "
@@ -3920,7 +3920,7 @@ def sanctions_tracker():
             base = _base_url()
             canonical = f"{base}/sanctions-tracker"
             seo = {
-                "title": f"OFAC Cuba Sanctions Tracker — {stats['total']} active CACR §515 designations",
+                "title": f"Cuba Sanctions List 2026 — {stats['total']} OFAC SDN Entries (Live Tracker)",
                 "description": (
                     f"Live tracker of {stats['total']} US Treasury OFAC SDN "
                     "designations under the CUBA program (Cuban Assets "
@@ -4687,7 +4687,7 @@ def companies_index_page():
         canonical = f"{base}/companies"
         seo = {
             "title": (
-                f"S&P 500 Cuba Exposure Register — {len(rows)} companies audited"
+                f"S&P 500 Cuba Sanctions & Exposure List — {len(rows)} Companies Checked"
             ),
             "description": (
                 f"Free Cuba-exposure audit for every S&P 500 company. OFAC "
@@ -5367,7 +5367,7 @@ def travel_page():
 
         base = _base_url()
         canonical = f"{base}/travel"
-        title = "Travel to Cuba: Havana Operational Briefing for Business Travellers"
+        title = "Travel to Cuba 2026 — Havana Safety, Hotels, Money & Embassy Guide"
         description = (
             "Embassies, hotels, restaurants, hospitals, ground transport, "
             "corporate security firms, SIM cards (ETECSA / Cubacel), money "
