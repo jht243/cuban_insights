@@ -5596,7 +5596,7 @@ _VENEZUELA_TOPICS: dict[str, dict] = {
             },
             {
                 "heading": "Caracas urban transport",
-                "items": [
+                "bullets": [
                     "<strong>Metro de Caracas:</strong> functional but service quality and security vary by line and time of day.",
                     "<strong>Taxis:</strong> use radio-dispatched or app-based services arranged through your hotel; avoid hailing from the street.",
                     "<strong>Walking:</strong> daylight and curated zones (Las Mercedes, Altamira, Chacao) only.",
@@ -5665,7 +5665,7 @@ _VENEZUELA_TOPICS: dict[str, dict] = {
             },
             {
                 "heading": "Key risk categories cited",
-                "items": [
+                "bullets": [
                     "<strong>Wrongful detention:</strong> documented pattern of U.S. citizens being detained by Venezuelan authorities.",
                     "<strong>Crime:</strong> violent crime including armed robbery, carjacking, and kidnapping in Caracas and other cities.",
                     "<strong>Terrorism and civil unrest:</strong> intermittent demonstrations and irregular armed-group activity.",

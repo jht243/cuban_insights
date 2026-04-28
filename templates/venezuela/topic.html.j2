@@ -33,9 +33,9 @@
       <section style="margin:22px 0;">
         <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); font-size:22px;">{{ section.heading }}</h2>
         {% if section.body %}<p>{{ section.body|safe }}</p>{% endif %}
-        {% if section["items"] %}
+        {% if section.bullets %}
         <ul>
-          {% for item in section["items"] %}<li>{{ item|safe }}</li>{% endfor %}
+          {% for item in section.bullets %}<li>{{ item|safe }}</li>{% endfor %}
         </ul>
         {% endif %}
       </section>
