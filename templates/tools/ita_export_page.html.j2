@@ -15,6 +15,7 @@
   .export-page__panel li { margin: 7px 0; }
   .export-page__callout { background: #fff8e1; border-left-color: #f5b041; }
   .export-page__source { max-width: 980px; background: var(--sr-gray-bg); border-left-color: var(--sr-gray-text); font-size: 13px; color: var(--sr-dark-text); }
+  .export-page__empty { background: #f7f9fc; border-left-color: #475569; }
   .hub-group { margin: 34px 0 38px; }
   .hub-group__head { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; border-bottom: 1px solid #d6dde6; padding-bottom: 14px; margin-bottom: 18px; }
   .hub-group__title { margin: 0; font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 28px; line-height: 1.2; }
@@ -37,6 +38,13 @@
   .resource-card__title { font-family: var(--font-serif); color: #111827; font-weight: 700; font-size: 18px; line-height: 1.2; }
   .resource-card__text { margin-top: 10px; color: #4b5563; font-size: 14px; line-height: 1.45; }
   .resource-card__cta { margin-top: auto; padding-top: 16px; color: var(--sr-blue-dark); font-size: 13px; font-weight: 800; }
+  .live-item-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 26px; max-width: 1180px; }
+  .live-item-card { display: flex; flex-direction: column; min-height: 210px; padding: 20px 22px; border: 1px solid #d6dde6; border-radius: 6px; background: #fff; color: inherit; text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
+  .live-item-card:hover { border-color: var(--sr-blue); box-shadow: 0 8px 20px rgba(0,31,68,.08); transform: translateY(-1px); }
+  .live-item-card__meta { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; color: var(--sr-gray-text); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .live-item-card__title { margin: 0; font-family: var(--font-serif); color: #111827; font-size: 21px; line-height: 1.2; }
+  .live-item-card__summary { margin: 12px 0 0; color: #4b5563; font-size: 14px; line-height: 1.5; }
+  .live-item-card__cta { margin-top: auto; padding-top: 18px; color: var(--sr-blue-dark); font-size: 13px; font-weight: 800; }
   .export-page__steps { counter-reset: step; list-style: none; padding-left: 0 !important; }
   .export-page__steps li { counter-increment: step; position: relative; padding-left: 34px; }
   .export-page__steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--sr-blue); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
@@ -49,6 +57,7 @@
     .resource-group__head { display: block; }
     .resource-group__sub { margin-top: 6px; text-align: left; }
     .resource-grid { grid-template-columns: 1fr; }
+    .live-item-grid { grid-template-columns: 1fr; }
   }
 </style>
 {% endblock %}
@@ -95,6 +104,34 @@
       </div>
     </section>
     {% endfor %}
+  {% endif %}
+
+  {% if page.live_items_heading %}
+  <section class="export-page__panel">
+    <h2>{{ page.live_items_heading }}</h2>
+    {% if page.live_items %}
+    <div class="live-item-grid">
+      {% for item in page.live_items %}
+      <a class="live-item-card" href="{{ item.href }}" rel="nofollow noopener" target="_blank">
+        <div class="live-item-card__meta">
+          {% if item.type %}<span>{{ item.type }}</span>{% endif %}
+          {% if item.date %}<span>{{ item.date }}</span>{% endif %}
+        </div>
+        <h3 class="live-item-card__title">{{ item.title }}</h3>
+        {% if item.summary %}<p class="live-item-card__summary">{{ item.summary }}</p>{% endif %}
+        <span class="live-item-card__cta" aria-hidden="true">Open source &rarr;</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="export-page__panel export-page__empty">
+      <h2>{{ page.empty_items_heading or "Current Items" }}</h2>
+      <p>{{ page.empty_items_message or "There are no items currently." }}</p>
+      {% if page.empty_items_detail %}<p>{{ page.empty_items_detail }}</p>{% endif %}
+      {% if page.live_error %}<p>Live data was unavailable during this request, so no fallback copy is shown.</p>{% endif %}
+    </div>
+    {% endif %}
+  </section>
   {% endif %}
 
   <main class="export-page__body">

@@ -830,6 +830,8 @@ def _render_ita_export_page(page_key: str):
         from src.page_renderer import _env, _base_url, _iso, settings as _s
         from datetime import date as _date, datetime as _dt
         import json as _json
+        import re as _re
+        from src.models import ExternalArticleEntry, SessionLocal, SourceType, init_db
 
         pages = _ita_export_pages()
         page = pages.get(page_key)
@@ -891,6 +893,91 @@ def _render_ita_export_page(page_key: str):
             links = [link for link in group.get("links", []) if link.get("href") != path]
             if links:
                 resource_modules.append({**group, "links": links})
+
+        def _normalize_text(value: str | None) -> str:
+            return _re.sub(r"\s+", " ", value or "").strip()
+
+        def _truncate_text(value: str, limit: int = 280) -> str:
+            value = _normalize_text(value)
+            if len(value) <= limit:
+                return value
+            clipped = value[: limit - 1].rsplit(" ", 1)[0].strip()
+            return f"{clipped or value[: limit - 1]}…"
+
+        def _is_cuba_specific(row: ExternalArticleEntry) -> bool:
+            text = " ".join([
+                row.headline or "",
+                row.body_text or "",
+                row.source_url or "",
+            ]).lower()
+            return any(term in text for term in ("cuba", "cuban", "havana"))
+
+        live_item_specs = {
+            "cuba-trade-leads-for-us-companies": {
+                "article_types": ("trade_lead",),
+                "heading": "Current Leads From Government Sources",
+                "empty_heading": "Current Leads",
+                "empty_message": "There are no leads currently.",
+                "empty_detail": (
+                    "This page only shows real Trade.gov / government-sourced Cuba leads "
+                    "stored in the database. It does not generate filler opportunities."
+                ),
+                "hide_static_sections_when_empty": True,
+            },
+            "cuba-export-opportunity-finder": {
+                "article_types": ("trade_lead", "market_intelligence"),
+                "heading": "Current Government-Sourced Opportunities",
+                "empty_heading": "Current Opportunities",
+                "empty_message": "There are no leads currently.",
+                "empty_detail": (
+                    "This page only shows real Trade.gov / government-sourced Cuba opportunities "
+                    "stored in the database. It does not invent sector ideas when no source data exists."
+                ),
+                "hide_static_sections_when_empty": True,
+            },
+        }
+
+        live_items: list[dict] = []
+        live_spec = live_item_specs.get(page_key)
+        live_error = None
+        if live_spec:
+            try:
+                init_db()
+                db = SessionLocal()
+                try:
+                    rows = (
+                        db.query(ExternalArticleEntry)
+                        .filter(ExternalArticleEntry.source == SourceType.ITA_TRADE)
+                        .filter(ExternalArticleEntry.article_type.in_(live_spec["article_types"]))
+                        .order_by(ExternalArticleEntry.published_date.desc(), ExternalArticleEntry.id.desc())
+                        .limit(60)
+                        .all()
+                    )
+                finally:
+                    db.close()
+
+                for row in rows:
+                    if not row.source_url or "trade.gov" not in row.source_url.lower():
+                        continue
+                    if not _is_cuba_specific(row):
+                        continue
+                    live_items.append({
+                        "title": _normalize_text(row.headline) or "Untitled Trade.gov item",
+                        "href": row.source_url,
+                        "date": row.published_date.isoformat() if row.published_date else "",
+                        "type": (row.article_type or "government_item").replace("_", " ").title(),
+                        "summary": _truncate_text(row.body_text or row.headline or ""),
+                    })
+                    if len(live_items) >= 12:
+                        break
+            except Exception as exc:
+                logger.warning("ITA live item fetch failed for %s: %s", page_key, exc)
+                live_error = str(exc)
+
+        sections = page.get("sections", [])
+        if live_spec and live_spec.get("hide_static_sections_when_empty") and not live_items:
+            sections = []
+
         template = _env.get_template("tools/ita_export_page.html.j2")
         html = template.render(
             page={
@@ -898,6 +985,13 @@ def _render_ita_export_page(page_key: str):
                 "spokes": page.get("spokes", _ITA_EXPORT_SPOKES),
                 "short_title": page.get("short_title", page["title"]),
                 "resource_modules": resource_modules,
+                "sections": sections,
+                "live_items": live_items,
+                "live_items_heading": live_spec.get("heading") if live_spec else None,
+                "empty_items_heading": live_spec.get("empty_heading") if live_spec else None,
+                "empty_items_message": live_spec.get("empty_message") if live_spec else None,
+                "empty_items_detail": live_spec.get("empty_detail") if live_spec else None,
+                "live_error": live_error,
             },
             seo=seo,
             jsonld=jsonld,
