@@ -5906,26 +5906,42 @@ def robots_txt():
         "Disallow: /api/\n"
         "Disallow: /health\n"
         f"Sitemap: {base}/sitemap.xml\n"
+        f"Sitemap: {base}/sitemap-core.xml\n"
+        f"Sitemap: {base}/sitemap-briefings-recent.xml\n"
+        f"Sitemap: {base}/sitemap-companies-priority.xml\n"
+        f"Sitemap: {base}/sitemap-sdn-priority.xml\n"
         f"Sitemap: {base}/news-sitemap.xml\n"
         f"Sitemap: {base}/curated-sitemap.xml\n"
     )
     return Response(body, mimetype="text/plain")
 
 
-@app.route("/sitemap.xml")
-def sitemap_xml():
-    """
-    Dynamic sitemap.xml. Reads recent analyzed entries from the DB and
-    emits an entry per briefing alongside static pages (home, tools,
-    sectors). Falls back to a minimal sitemap if the DB is unavailable.
-    """
-    from datetime import date as _date, datetime as _datetime, timezone as _tz, timedelta as _td
+def _sitemap_today_iso() -> str:
+    from datetime import datetime as _datetime, timezone as _tz
+    return _datetime.utcnow().replace(tzinfo=_tz.utc).date().isoformat()
+
+
+def _emit_urlset(urls: list[dict]) -> Response:
     from xml.sax.saxutils import escape as _xml_escape
+    parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for u in urls:
+        parts.append("<url>")
+        parts.append(f"<loc>{_xml_escape(u['loc'])}</loc>")
+        parts.append(f"<lastmod>{u['lastmod']}</lastmod>")
+        parts.append(f"<changefreq>{u['changefreq']}</changefreq>")
+        parts.append(f"<priority>{u['priority']}</priority>")
+        parts.append("</url>")
+    parts.append("</urlset>")
+    resp = Response("".join(parts), mimetype="application/xml")
+    resp.headers["Cache-Control"] = "public, max-age=1800"
+    return resp
 
+
+def _core_static_urls() -> list[dict]:
     base = settings.site_url.rstrip("/")
-    today_iso = _datetime.utcnow().replace(tzinfo=_tz.utc).date().isoformat()
-
-    static_urls = [
+    today_iso = _sitemap_today_iso()
+    return [
         {"loc": f"{base}/", "lastmod": today_iso, "changefreq": "daily", "priority": "1.0"},
         {"loc": f"{base}/invest-in-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.9"},
         {"loc": f"{base}/sanctions-tracker", "lastmod": today_iso, "changefreq": "daily", "priority": "0.9"},
@@ -5972,8 +5988,164 @@ def sitemap_xml():
         {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
     ]
 
-    dynamic_urls: list[dict] = []
-    sector_set: set[str] = set()
+
+# ──────────────────────────────────────────────────────────────────────
+# Sitemap split — see docs/scraper_research.md and the GSC indexation
+# audit. We split one giant sitemap into a sitemap-index pointing at
+# focused child sitemaps so we can submit only the high-value buckets
+# to Google and let the long-tail archive sit in robots discovery.
+#
+# Submitted to GSC:  sitemap-core, sitemap-briefings-recent,
+#                    sitemap-companies-priority, sitemap-sdn-priority
+# Listed in index but NOT submitted:  sitemap-archive
+# ──────────────────────────────────────────────────────────────────────
+
+_PRIORITY_BRIEFING_DAYS = 90
+_PRIORITY_BRIEFING_LIMIT = 200
+_PRIORITY_SDN_LIMIT = 100
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    """Sitemap index — points Google at the child sitemaps."""
+    from xml.sax.saxutils import escape as _xml_escape
+
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    children = [
+        f"{base}/sitemap-core.xml",
+        f"{base}/sitemap-briefings-recent.xml",
+        f"{base}/sitemap-companies-priority.xml",
+        f"{base}/sitemap-sdn-priority.xml",
+        f"{base}/sitemap-archive.xml",
+    ]
+    parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+    parts.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for url in children:
+        parts.append("<sitemap>")
+        parts.append(f"<loc>{_xml_escape(url)}</loc>")
+        parts.append(f"<lastmod>{today_iso}</lastmod>")
+        parts.append("</sitemap>")
+    parts.append("</sitemapindex>")
+    resp = Response("".join(parts), mimetype="application/xml")
+    resp.headers["Cache-Control"] = "public, max-age=1800"
+    return resp
+
+
+@app.route("/sitemap-core.xml")
+def sitemap_core_xml():
+    """Hand-curated home, hubs, tools, sector roots. Highest priority."""
+    return _emit_urlset(_core_static_urls())
+
+
+@app.route("/sitemap-briefings-recent.xml")
+def sitemap_briefings_recent_xml():
+    """BlogPost briefings published in the last 90 days, capped."""
+    from datetime import date as _date, timedelta as _td
+    base = settings.site_url.rstrip("/")
+    cutoff = _date.today() - _td(days=_PRIORITY_BRIEFING_DAYS)
+    urls: list[dict] = []
+    try:
+        from src.models import SessionLocal, init_db, BlogPost
+        init_db()
+        db = SessionLocal()
+        try:
+            posts = (
+                db.query(BlogPost)
+                .filter(BlogPost.published_date >= cutoff)
+                .order_by(BlogPost.published_date.desc())
+                .limit(_PRIORITY_BRIEFING_LIMIT)
+                .all()
+            )
+            for p in posts:
+                lastmod_dt = p.updated_at or p.created_at
+                lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else p.published_date.isoformat()
+                urls.append({
+                    "loc": f"{base}/briefing/{p.slug}",
+                    "lastmod": lastmod,
+                    "changefreq": "weekly",
+                    "priority": "0.8",
+                })
+        finally:
+            db.close()
+    except Exception as exc:
+        logger.warning("sitemap-briefings-recent failed: %s", exc)
+    return _emit_urlset(urls)
+
+
+@app.route("/sitemap-companies-priority.xml")
+def sitemap_companies_priority_xml():
+    """S&P 500 company pages with curated Cuba exposure or SDN matches.
+
+    Companies with no curated entry and zero SDN matches are thin and
+    go to the archive sitemap — Google has been refusing to crawl them.
+    """
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    urls: list[dict] = []
+    try:
+        from src.data.company_exposure import list_company_index_rows
+        for row in list_company_index_rows():
+            if not (row.has_curated or row.sdn_match_count > 0):
+                continue
+            urls.append({
+                "loc": f"{base}/companies/{row.slug}/cuba-exposure",
+                "lastmod": today_iso,
+                "changefreq": "weekly",
+                "priority": "0.7",
+            })
+    except Exception as exc:
+        logger.warning("sitemap-companies-priority failed: %s", exc)
+    return _emit_urlset(urls)
+
+
+@app.route("/sitemap-sdn-priority.xml")
+def sitemap_sdn_priority_xml():
+    """SDN profile pages — entities only, capped.
+
+    Individuals, vessels, and aircraft profiles go to the archive
+    sitemap. Entity searches (`"trober s.a." sanctions`,
+    `"hotel san alejandro" sanctions`) are what GSC shows actually
+    drives impressions to this site.
+    """
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    urls: list[dict] = []
+    try:
+        from src.data.sdn_profiles import list_profiles
+        for p in list_profiles("entities")[:_PRIORITY_SDN_LIMIT]:
+            urls.append({
+                "loc": f"{base}{p.url_path}",
+                "lastmod": p.designation_date or today_iso,
+                "changefreq": "monthly",
+                "priority": "0.7",
+            })
+    except Exception as exc:
+        logger.warning("sitemap-sdn-priority failed: %s", exc)
+    return _emit_urlset(urls)
+
+
+@app.route("/sitemap-archive.xml")
+def sitemap_archive_xml():
+    """Long-tail: older briefings, non-priority companies and SDN
+    profiles, landing pages, discovered sector pages.
+
+    Listed in the sitemap index so Google can find these via robots.txt
+    discovery, but NOT submitted directly in Search Console — we want
+    Google to spend crawl budget on the priority sitemaps first.
+    """
+    from datetime import date as _date, timedelta as _td
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    urls: list[dict] = []
+    seen: set[str] = set()
+
+    def _add(loc: str, lastmod: str, changefreq: str, priority: str) -> None:
+        if loc in seen:
+            return
+        seen.add(loc)
+        urls.append({"loc": loc, "lastmod": lastmod, "changefreq": changefreq, "priority": priority})
+
     try:
         from src.models import (
             SessionLocal,
@@ -5988,114 +6160,85 @@ def sitemap_xml():
         init_db()
         db = SessionLocal()
         try:
-            cutoff = _date.today() - _td(days=settings.report_lookback_days)
+            cutoff = _date.today() - _td(days=_PRIORITY_BRIEFING_DAYS)
 
-            blog_posts = (
+            older_posts = (
                 db.query(BlogPost)
+                .filter(BlogPost.published_date < cutoff)
                 .order_by(BlogPost.published_date.desc())
                 .limit(500)
                 .all()
             )
-            for p in blog_posts:
-                lastmod = (p.updated_at or p.created_at or p.published_date).strftime("%Y-%m-%d") if p.updated_at or p.created_at else p.published_date.isoformat()
-                dynamic_urls.append({
-                    "loc": f"{base}/briefing/{p.slug}",
-                    "lastmod": lastmod,
-                    "changefreq": "monthly",
-                    "priority": "0.7",
-                })
+            for p in older_posts:
+                lastmod_dt = p.updated_at or p.created_at
+                lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else p.published_date.isoformat()
+                _add(f"{base}/briefing/{p.slug}", lastmod, "monthly", "0.4")
 
-            landing_pages = db.query(LandingPage).all()
-            for lp in landing_pages:
-                lastmod = (lp.last_generated_at or lp.updated_at or lp.created_at)
-                lastmod_iso = lastmod.strftime("%Y-%m-%d") if lastmod else today_iso
-                priority = "0.9" if lp.page_type == "pillar" else "0.7"
-                changefreq = "weekly" if lp.page_type == "pillar" else "monthly"
-                dynamic_urls.append({
-                    "loc": f"{base}{lp.canonical_path}",
-                    "lastmod": lastmod_iso,
-                    "changefreq": changefreq,
-                    "priority": priority,
-                })
+            for lp in db.query(LandingPage).all():
+                lastmod_dt = lp.last_generated_at or lp.updated_at or lp.created_at
+                lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else today_iso
+                _add(f"{base}{lp.canonical_path}", lastmod, "monthly", "0.5")
 
-            try:
-                from src.data.sdn_profiles import list_all_profiles
-                for p in list_all_profiles():
-                    dynamic_urls.append({
-                        "loc": f"{base}{p.url_path}",
-                        "lastmod": p.designation_date or today_iso,
-                        "changefreq": "monthly",
-                        "priority": "0.6",
-                    })
-            except Exception as exc:
-                logger.warning("sitemap: failed to enumerate SDN profiles: %s", exc)
-
-            try:
-                from src.data.company_exposure import companies_for_sitemap
-                for entry in companies_for_sitemap():
-                    dynamic_urls.append({
-                        "loc": f"{base}{entry['url_path']}",
-                        "lastmod": today_iso,
-                        "changefreq": "weekly",
-                        "priority": "0.55",
-                    })
-            except Exception as exc:
-                logger.warning("sitemap: failed to enumerate company pages: %s", exc)
-
-            ext_articles = (
+            sector_cutoff = _date.today() - _td(days=settings.report_lookback_days)
+            ext = (
                 db.query(ExternalArticleEntry)
                 .filter(ExternalArticleEntry.status == GazetteStatus.ANALYZED)
-                .filter(ExternalArticleEntry.published_date >= cutoff)
+                .filter(ExternalArticleEntry.published_date >= sector_cutoff)
                 .order_by(ExternalArticleEntry.published_date.desc())
                 .limit(500)
                 .all()
             )
-            assembly = (
+            asm = (
                 db.query(AssemblyNewsEntry)
                 .filter(AssemblyNewsEntry.status == GazetteStatus.ANALYZED)
-                .filter(AssemblyNewsEntry.published_date >= cutoff)
+                .filter(AssemblyNewsEntry.published_date >= sector_cutoff)
                 .order_by(AssemblyNewsEntry.published_date.desc())
                 .limit(500)
                 .all()
             )
-
             import re as _re
+            sector_set: set[str] = set()
             min_score = settings.analysis_min_relevance
-            for item in list(ext_articles) + list(assembly):
+            for item in list(ext) + list(asm):
                 analysis = item.analysis_json or {}
                 if analysis.get("relevance_score", 0) < min_score:
                     continue
                 for sector in analysis.get("sectors", []) or []:
-                    sector_slug = _re.sub(r"[^a-z0-9]+", "-", str(sector).lower()).strip("-")
-                    if sector_slug:
-                        sector_set.add(sector_slug)
+                    slug = _re.sub(r"[^a-z0-9]+", "-", str(sector).lower()).strip("-")
+                    if slug:
+                        sector_set.add(slug)
+            for slug in sorted(sector_set):
+                _add(f"{base}/sectors/{slug}", today_iso, "weekly", "0.5")
         finally:
             db.close()
     except Exception as exc:
-        logger.warning("sitemap dynamic generation failed, using static only: %s", exc)
+        logger.warning("sitemap-archive (db section) failed: %s", exc)
 
-    existing_urls = {u["loc"] for u in static_urls + dynamic_urls}
-    for sector_slug in sorted(sector_set):
-        url = f"{base}/sectors/{sector_slug}"
-        if url not in existing_urls:
-            static_urls.append({
-                "loc": url,
-                "lastmod": today_iso,
-                "changefreq": "weekly",
-                "priority": "0.6",
-            })
+    try:
+        from src.data.sdn_profiles import list_profiles, ENTITY_BUCKETS
+        priority_entity_paths = {
+            f"{base}{p.url_path}"
+            for p in list_profiles("entities")[:_PRIORITY_SDN_LIMIT]
+        }
+        for bucket in ENTITY_BUCKETS:
+            for p in list_profiles(bucket):
+                loc = f"{base}{p.url_path}"
+                if loc in priority_entity_paths:
+                    continue
+                _add(loc, p.designation_date or today_iso, "monthly", "0.4")
+    except Exception as exc:
+        logger.warning("sitemap-archive (sdn section) failed: %s", exc)
 
-    parts = ['<?xml version="1.0" encoding="UTF-8"?>']
-    parts.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for u in static_urls + dynamic_urls:
-        parts.append("<url>")
-        parts.append(f"<loc>{_xml_escape(u['loc'])}</loc>")
-        parts.append(f"<lastmod>{u['lastmod']}</lastmod>")
-        parts.append(f"<changefreq>{u['changefreq']}</changefreq>")
-        parts.append(f"<priority>{u['priority']}</priority>")
-        parts.append("</url>")
-    parts.append("</urlset>")
-    return Response("".join(parts), mimetype="application/xml")
+    try:
+        from src.data.company_exposure import list_company_index_rows
+        for row in list_company_index_rows():
+            if row.has_curated or row.sdn_match_count > 0:
+                continue
+            _add(f"{base}/companies/{row.slug}/cuba-exposure", today_iso, "monthly", "0.3")
+    except Exception as exc:
+        logger.warning("sitemap-archive (company section) failed: %s", exc)
+
+    return _emit_urlset(urls)
 
 
 @app.route("/tearsheet/latest.pdf")
