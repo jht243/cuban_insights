@@ -5543,6 +5543,219 @@ def calendar_page():
         abort(500)
 
 
+# ──────────────────────────────────────────────────────────────────────
+# Venezuela signposting pages.
+#
+# /travel currently picks up ~12 imp/mo for "transport venezuela" and
+# a handful of other Venezuela-travel queries. They can never convert
+# on a Cuba publication. These thin landing pages capture the existing
+# search demand and forward it to caracasresearch.com (sister site)
+# rather than letting it fail silently on the Cuba travel page.
+# ──────────────────────────────────────────────────────────────────────
+
+CARACAS_RESEARCH_TRAVEL_URL = "https://caracasresearch.com/travel"
+
+_VENEZUELA_TOPICS: dict[str, dict] = {
+    "transport": {
+        "slug": "transport",
+        "h1": "Transport in Venezuela — Caracas Taxis, Metro, Domestic Flights & Security",
+        "short_title": "Transport in Venezuela",
+        "eyebrow": "Venezuela · Transport overview",
+        "title": "Transport in Venezuela 2026 — Caracas Taxis, Metro & Domestic Flights",
+        "description": (
+            "Overview of ground transport in Venezuela for 2026: pre-arranged "
+            "Caracas airport transfers, Metro de Caracas, intercity buses, "
+            "domestic flights, and security considerations. Full guide on "
+            "Caracas Research."
+        ),
+        "keywords": (
+            "transport venezuela, transport in venezuela, caracas taxis, "
+            "caracas airport transfer, venezuela domestic flights, "
+            "metro de caracas, venezuela ground transport, caracas research"
+        ),
+        "lede": (
+            "A short reference for U.S. travelers, journalists, and operators "
+            "asking how to move around Venezuela in 2026 — from Caracas "
+            "airport transfers to intercity bus and domestic flight options. "
+            "For the full Venezuela travel handbook, visit Caracas Research."
+        ),
+        "cta_url": CARACAS_RESEARCH_TRAVEL_URL,
+        "cta_label": "Open the full Caracas & Venezuela travel guide",
+        "sections": [
+            {
+                "heading": "Caracas airport (CCS / Maiquetía) transfers",
+                "body": (
+                    "Pre-arranged transfers booked through your hotel, an embassy "
+                    "list, or a vetted security provider are the standard option "
+                    "for foreign visitors arriving at Simón Bolívar International "
+                    "Airport (CCS / Maiquetía). The Caracas-airport corridor "
+                    "passes through Vargas state and the highway has historically "
+                    "had armed-robbery incidents at night; daylight arrivals and "
+                    "pre-arranged drivers are the dominant risk-mitigation pattern."
+                ),
+            },
+            {
+                "heading": "Caracas urban transport",
+                "items": [
+                    "<strong>Metro de Caracas:</strong> functional but service quality and security vary by line and time of day.",
+                    "<strong>Taxis:</strong> use radio-dispatched or app-based services arranged through your hotel; avoid hailing from the street.",
+                    "<strong>Walking:</strong> daylight and curated zones (Las Mercedes, Altamira, Chacao) only.",
+                ],
+            },
+            {
+                "heading": "Intercity and domestic flights",
+                "body": (
+                    "Domestic carriers serve Maracaibo, Valencia, Barcelona, "
+                    "Mérida, Porlamar (Margarita), and other regional hubs. "
+                    "Schedules and reliability change frequently; confirm with "
+                    "the carrier within 24 hours of departure. Intercity bus "
+                    "service exists but is generally not recommended for "
+                    "foreign visitors due to security and reliability concerns."
+                ),
+            },
+            {
+                "heading": "Security overview",
+                "body": (
+                    "The U.S. State Department maintains a Level 4: Do Not Travel "
+                    "advisory for Venezuela. Any in-country movement plan should "
+                    "assume vetted drivers, daylight movements where possible, "
+                    "and an in-country security contact. The full operational "
+                    "checklist (drivers, vehicles, comms, embassy contacts) lives "
+                    "in the Caracas Research travel guide."
+                ),
+            },
+        ],
+    },
+    "caracas-travel-advisory": {
+        "slug": "caracas-travel-advisory",
+        "h1": "Caracas Travel Advisory 2026 — Current U.S. State Department Guidance",
+        "short_title": "Caracas Travel Advisory",
+        "eyebrow": "Venezuela · Travel advisory",
+        "title": "Caracas Travel Advisory 2026 — U.S. State Dept Level & Risks",
+        "description": (
+            "Current U.S. State Department travel advisory for Caracas and "
+            "Venezuela in 2026, key risk categories, and where to find the "
+            "full operational travel guide on Caracas Research."
+        ),
+        "keywords": (
+            "caracas travel advisory, venezuela travel advisory, caracas safety "
+            "2026, is caracas safe, venezuela state department warning, "
+            "venezuela tourism, travel to caracas venezuela, caracas research"
+        ),
+        "lede": (
+            "A short signposting page for travelers and corporate-security teams "
+            "checking the current U.S. State Department Caracas / Venezuela "
+            "travel advisory and what it means in practice. The full guide "
+            "lives on Caracas Research."
+        ),
+        "cta_url": CARACAS_RESEARCH_TRAVEL_URL,
+        "cta_label": "Open the full Caracas travel guide",
+        "sections": [
+            {
+                "heading": "Current U.S. State Department advisory level",
+                "body": (
+                    "The U.S. Department of State maintains a <strong>Level 4: "
+                    "Do Not Travel</strong> advisory for Venezuela, citing "
+                    "wrongful detentions, terrorism, kidnapping, civil unrest, "
+                    "crime, poor health infrastructure, and the absence of a "
+                    "U.S. embassy presence to assist U.S. citizens in country. "
+                    "The advisory is reviewed periodically; check "
+                    "<a href=\"https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/venezuela-travel-advisory.html\" rel=\"nofollow noopener\" target=\"_blank\">travel.state.gov</a> for the live text."
+                ),
+            },
+            {
+                "heading": "Key risk categories cited",
+                "items": [
+                    "<strong>Wrongful detention:</strong> documented pattern of U.S. citizens being detained by Venezuelan authorities.",
+                    "<strong>Crime:</strong> violent crime including armed robbery, carjacking, and kidnapping in Caracas and other cities.",
+                    "<strong>Terrorism and civil unrest:</strong> intermittent demonstrations and irregular armed-group activity.",
+                    "<strong>Health:</strong> shortages of medicines, limited emergency services, and unreliable utilities.",
+                    "<strong>No U.S. embassy presence:</strong> the U.S. Embassy in Caracas is closed; U.S. citizens cannot expect routine consular assistance.",
+                ],
+            },
+            {
+                "heading": "What this means operationally",
+                "body": (
+                    "Travel decisions for Venezuela should be made with a vetted "
+                    "in-country security contact, evacuation insurance, and a "
+                    "documented communications plan. The Caracas Research "
+                    "travel guide covers airport transfer providers, lodging, "
+                    "communications, medical, and embassy-of-third-country "
+                    "contact paths in detail."
+                ),
+            },
+        ],
+    },
+}
+
+
+@app.route("/venezuela/<slug>")
+@app.route("/venezuela/<slug>/")
+def venezuela_topic_page(slug: str):
+    """Thin Venezuela-topic landing pages; CTA to caracasresearch.com."""
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import datetime as _dt
+    import json as _json
+
+    topic = _VENEZUELA_TOPICS.get(slug)
+    if not topic:
+        abort(404)
+
+    base = _base_url()
+    canonical = f"{base}/venezuela/{slug}"
+    seo = {
+        "title": topic["title"],
+        "description": topic["description"],
+        "keywords": topic["keywords"],
+        "canonical": canonical,
+        "site_name": _s.site_name,
+        "site_url": base,
+        "locale": _s.site_locale,
+        "og_image": f"{base}/static/og-image.png?v=3",
+        "og_type": "article",
+        "published_iso": _iso(_dt.utcnow()),
+        "modified_iso": _iso(_dt.utcnow()),
+    }
+    jsonld = _json.dumps({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                    {"@type": "ListItem", "position": 2, "name": "Venezuela", "item": f"{base}/venezuela/{slug}"},
+                    {"@type": "ListItem", "position": 3, "name": topic["short_title"], "item": canonical},
+                ],
+            },
+            {
+                "@type": "Article",
+                "@id": f"{canonical}#article",
+                "url": canonical,
+                "headline": topic["h1"],
+                "description": topic["description"],
+                "datePublished": _iso(_dt.utcnow()),
+                "dateModified": _iso(_dt.utcnow()),
+                "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+            },
+        ],
+    }, ensure_ascii=False)
+
+    template = _env.get_template("venezuela/topic.html.j2")
+    html = template.render(
+        h1=topic["h1"],
+        short_title=topic["short_title"],
+        eyebrow=topic["eyebrow"],
+        lede=topic["lede"],
+        sections=topic["sections"],
+        cta_url=topic["cta_url"],
+        cta_label=topic["cta_label"],
+        seo=seo,
+        jsonld=jsonld,
+    )
+    return Response(html, mimetype="text/html")
+
+
 @app.route("/travel")
 @app.route("/travel/")
 def travel_page():
@@ -6217,6 +6430,8 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/tools/havana-safety-by-neighborhood", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-investment-roi-calculator", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
         {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
+        {"loc": f"{base}/venezuela/transport", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
+        {"loc": f"{base}/venezuela/caracas-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
     ]
 
 

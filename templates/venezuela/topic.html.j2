@@ -1,0 +1,74 @@
+{#
+  Lightweight Venezuela landing pages on Cuban Insights.
+
+  Purpose: capture existing Venezuela search impressions hitting the
+  domain (mostly /travel) and route the user to caracasresearch.com,
+  which is the appropriate destination for Venezuela travel research.
+
+  We give a few paragraphs of accurate signposting so the page is not
+  a doorway page (Google penalises those). The CTA is the substantive
+  destination.
+#}
+{% extends "_base.html.j2" %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/venezuela">Venezuela</a>
+    <span>›</span>
+    <strong>{{ short_title }}</strong>
+  </nav>
+
+  <article>
+    <header style="margin: 16px 0 20px;">
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">{{ eyebrow }}</div>
+      <h1 style="font-family:var(--font-serif); font-size:34px; color:var(--sr-blue-dark); margin:8px 0 10px;">{{ h1 }}</h1>
+      <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:18px; max-width:820px;">{{ lede }}</p>
+    </header>
+
+    <div class="body" style="max-width:820px;">
+      {% for section in sections %}
+      <section style="margin:22px 0;">
+        <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); font-size:22px;">{{ section.heading }}</h2>
+        {% if section.body %}<p>{{ section.body|safe }}</p>{% endif %}
+        {% if section["items"] %}
+        <ul>
+          {% for item in section["items"] %}<li>{{ item|safe }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endfor %}
+
+      <section style="margin:30px 0; padding:22px 24px; border:1px solid #d6dde6; border-left:4px solid var(--sr-blue); border-radius:6px; background:#f7f9fc;">
+        <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); font-size:22px; margin-top:0;">For full Venezuela coverage, visit Caracas Research</h2>
+        <p style="margin:8px 0 14px;">
+          Cuban Insights is a Cuba-focused publication. For in-depth Venezuela
+          travel, security, and operational research, we recommend our sister
+          publication <strong>Caracas Research</strong>.
+        </p>
+        <p style="margin:0;">
+          <a href="{{ cta_url }}" rel="noopener" target="_blank"
+             style="display:inline-block; padding:10px 18px; background:var(--sr-blue-dark); color:#fff; font-weight:700; text-decoration:none; border-radius:4px;">
+            {{ cta_label }} &rarr;
+          </a>
+        </p>
+      </section>
+
+      <section style="margin:30px 0;">
+        <h2 style="font-family:var(--font-serif); color:var(--sr-blue-dark); font-size:22px;">Why Cuban Insights covers this</h2>
+        <p>
+          Cuba and Venezuela are linked through fuel-shipment corridors, joint
+          state enterprises, and overlapping U.S. sanctions exposure. We track
+          the Cuba side of that relationship — designations, vessels, and
+          policy events — through the
+          <a href="/sanctions-tracker">Cuba Sanctions Tracker</a> and
+          <a href="/companies">S&amp;P 500 Cuba Exposure List</a>. For
+          Venezuela-side reporting, see Caracas Research.
+        </p>
+      </section>
+    </div>
+  </article>
+</div>
+{% endblock %}
