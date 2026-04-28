@@ -1,0 +1,108 @@
+{#
+  One Cuba Prohibited Accommodations List property → one indexable page.
+  Title and H1 carry the property name verbatim so a search like
+  "hotel san alejandro sanctions" or "boutique la maison sanctions"
+  lands directly here.
+#}
+{% extends "_base.html.j2" %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/sanctions-tracker">Cuba Sanctions</a>
+    <span>›</span>
+    <a href="/tools/cuba-prohibited-hotels-checker">Prohibited Accommodations</a>
+    <span>›</span>
+    <strong>{{ name }}</strong>
+  </nav>
+
+  <article>
+    <header>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700; margin-bottom:6px;">
+        <span style="display:inline-block; padding:2px 8px; background:#cc0000; color:#fff; border-radius:3px; margin-right:8px;">PROHIBITED</span>
+        Verified active as of {{ today_human }}
+      </div>
+      <h1>{{ name }}</h1>
+      <p class="subtitle">
+        Cuba Prohibited Accommodations List (CPAL) entry —
+        {{ province or "Cuba" }}{% if neighborhood %}, {{ neighborhood }}{% endif %}
+      </p>
+      <div class="meta">
+        <span><strong>Status:</strong> Active CPAL listing</span>
+        <span><strong>Authority:</strong> CACR §515.210</span>
+        <span><strong>Listed by:</strong> U.S. Department of State</span>
+        <span><strong>Last verified:</strong> <time datetime="{{ today_iso }}">{{ today_human }}</time></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="takeaways">
+        <h3>Key Facts</h3>
+        <ul>
+          <li><strong>Property name:</strong> {{ name }}</li>
+          {% if province %}<li><strong>Province:</strong> {{ province }}</li>{% endif %}
+          {% if neighborhood %}<li><strong>Neighborhood:</strong> {{ neighborhood }}</li>{% endif %}
+          {% if address %}<li><strong>Address on file:</strong> {{ address }}</li>{% endif %}
+          {% if marker %}<li><strong>State-Department marker:</strong> {{ marker }} —
+            {% if "*" in marker %}marketed as a casa but state-owned.
+            {% elif "^" in marker %}genuine private casa nevertheless meeting CPAL inclusion criteria.
+            {% else %}see State Department CPAL legend.
+            {% endif %}
+          </li>{% endif %}
+          <li><strong>Source:</strong> <a href="https://www.state.gov/cuba-prohibited-accommodations-list/" rel="nofollow noopener" target="_blank">U.S. State Department CPAL</a></li>
+        </ul>
+      </div>
+
+      <section>
+        <h2>What this means for U.S. travelers</h2>
+        <p>
+          Because <strong>{{ name }}</strong> is on the State Department Cuba
+          Prohibited Accommodations List, U.S. persons are prohibited from
+          lodging at this property under §515.210 of the Cuban Assets Control
+          Regulations. The prohibition follows the U.S. person, not the booking
+          channel — booking through Booking.com, Airbnb, Expedia, or a Cuban or
+          third-country travel agent does not change the answer.
+        </p>
+        <p>
+          The CPAL is separate from both the OFAC Specially Designated Nationals
+          (SDN) list and the State Department Cuba Restricted List (CRL,
+          §515.209). A property may appear on CPAL because its operator is on
+          the CRL or SDN, but the lists are structurally distinct and U.S.
+          travelers and their compliance teams should check all three.
+        </p>
+      </section>
+
+      <section>
+        <h2>FAQ</h2>
+        {% for f in faq %}
+        <h3>{{ f.q }}</h3>
+        <p>{{ f.a }}</p>
+        {% endfor %}
+      </section>
+
+      {% if siblings %}
+      <section>
+        <h2>Other CPAL properties in {{ province }}</h2>
+        <ul>
+          {% for s in siblings %}
+          <li><a href="{{ s.url_path }}">{{ s.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      <section>
+        <h2>Verify and explore further</h2>
+        <ul>
+          <li><a href="/tools/cuba-prohibited-hotels-checker">Search the full CPAL</a> ({{ refreshed_on or today_iso }})</li>
+          <li><a href="/tools/cuba-restricted-list-checker">Cross-check against the Cuba Restricted List (CRL)</a></li>
+          <li><a href="/tools/ofac-cuba-sanctions-checker">Cross-check against the OFAC SDN list</a></li>
+          <li><a href="/sanctions-tracker">All Cuba sanctions designations</a></li>
+        </ul>
+      </section>
+    </div>
+  </article>
+</div>
+{% endblock %}

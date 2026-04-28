@@ -132,7 +132,7 @@
     {% for m in matches %}
     <article class="match-card">
       <div class="name">
-        {{ m.name }}
+        {% if m.url_path %}<a href="{{ m.url_path }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}
         {% if m.marker == '*' %}<span class="marker-badge">State-controlled &ldquo;casa&rdquo;</span>{% endif %}
         {% if m.marker == '^' %}<span class="marker-badge">Genuine casa particular</span>{% endif %}
       </div>
