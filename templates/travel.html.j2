@@ -7,6 +7,17 @@
   .travel-hero h1 { font-family: var(--font-serif); font-size: 36px; color: var(--sr-blue-dark); margin: 8px 0 12px; line-height: 1.2; }
   .travel-hero p.lead { font-family: var(--font-serif); font-style: italic; color: var(--sr-gray-text); font-size: 18px; max-width: 720px; }
 
+  .booking-check { background: #f4f8fb; border: 1px solid #cfdce8; border-left: 5px solid var(--sr-blue); border-radius: 4px; padding: 18px 20px; margin: 0 0 20px; }
+  .booking-check h2 { font-family: var(--font-serif); font-size: 23px; color: var(--sr-blue-dark); margin: 0 0 8px; line-height: 1.25; }
+  .booking-check p { font-size: 14.5px; color: var(--sr-dark-text); line-height: 1.6; max-width: 900px; margin: 0 0 14px; }
+  .booking-check-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 760px) { .booking-check-grid { grid-template-columns: repeat(4, 1fr); } }
+  .booking-check-grid a { display: block; min-height: 116px; padding: 13px 14px; border: 1px solid var(--sr-gray-light); border-radius: 4px; background: var(--white); color: var(--sr-dark-text); text-decoration: none; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .booking-check-grid a:hover { border-color: var(--sr-blue); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
+  .booking-check-grid .label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--sr-gray-text); font-weight: 700; margin-bottom: 4px; }
+  .booking-check-grid .title { display: block; font-family: var(--font-serif); font-size: 16px; line-height: 1.25; color: var(--sr-blue-dark); font-weight: 700; margin-bottom: 6px; }
+  .booking-check-grid .text { display: block; font-size: 12.5px; line-height: 1.45; color: var(--sr-gray-text); }
+
   .advisory { padding: 14px 18px; border-radius: 4px; margin: 16px 0 28px; }
   .advisory.l4 { background: #fdecea; border-left: 4px solid var(--sr-red); }
   .advisory.l3 { background: #fff3e0; border-left: 4px solid #f5b041; }
@@ -60,6 +71,10 @@
   .pillbar a { display: inline-block; padding: 6px 14px; background: var(--white); border: 1px solid var(--sr-gray-light); border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--sr-blue-dark); text-decoration: none; }
   .pillbar a:hover { border-color: var(--sr-blue); color: var(--sr-blue); }
 
+  .compliance-note { background: #fff8e1; border-left: 4px solid #f5b041; padding: 14px 18px; border-radius: 3px; margin: 14px 0 22px; font-size: 14px; line-height: 1.6; color: var(--sr-dark-text); }
+  .compliance-note strong { color: var(--sr-blue-dark); }
+  .compliance-note a { font-weight: 600; color: var(--sr-blue); }
+
   .page-share-row { display: flex; justify-content: flex-end; margin: 4px 0 -4px; }
 
   /* "Register your trip" callout — visually distinct and impossible to miss. */
@@ -106,16 +121,47 @@
 
   <header class="travel-hero">
     <div class="kicker">Travel hub · Updated {{ updated_label }}</div>
-    <h1>Travel to Cuba: Havana Operational Briefing</h1>
+    <h1>Cuba Travel Restrictions, Prohibited Hotels &amp; Havana Safety Guide</h1>
     <p class="lead">
-      Embassies, hotels and casas particulares, paladares, hospitals
-      (Cira García, CIMEQ), transport, Asistur 24/7 assistance, money
-      (no US-issued cards, MLC, CUP, USD cash), comms (ETECSA / eSIM /
-      D'Viajeros), CACR general-license posture, and the pre-trip and
-      on-the-ground checklists for foreign business travellers, journalists
-      and NGO staff visiting Havana.
+      Check whether your Cuba trip has a valid OFAC travel category, avoid
+      prohibited hotels and restricted Cuban counterparties, then plan Havana
+      safety, embassies, hospitals, airport transport, money, SIM cards,
+      D'Viajeros, and emergency contacts for foreign business travellers,
+      journalists, NGO staff, and researchers.
     </p>
   </header>
+
+  <section class="booking-check" aria-labelledby="booking-check-title">
+    <h2 id="booking-check-title">Before you book: run these Cuba travel checks</h2>
+    <p>
+      U.S. tourism to Cuba remains prohibited. Most compliant trips turn on a
+      narrow authorized travel category plus clean lodging, tour, payment, and
+      vendor choices. Start here before booking a hotel, casa, driver, meeting
+      venue, or guided itinerary.
+    </p>
+    <div class="booking-check-grid">
+      <a href="/tools/can-i-travel-to-cuba">
+        <span class="label">Travel category</span>
+        <span class="title">Can I travel to Cuba?</span>
+        <span class="text">Check the OFAC 12 categories, recordkeeping, and red/yellow/green trip posture.</span>
+      </a>
+      <a href="/tools/cuba-prohibited-hotels-checker">
+        <span class="label">Hotels &amp; casas</span>
+        <span class="title">Search the CPAL</span>
+        <span class="text">Avoid lodging properties U.S. persons may not use under CACR §515.210.</span>
+      </a>
+      <a href="/tools/cuba-restricted-list-checker">
+        <span class="label">Vendors</span>
+        <span class="title">Screen the CRL</span>
+        <span class="text">Check tour operators, hotel groups, marinas, stores, and state-linked counterparties.</span>
+      </a>
+      <a href="/tools/havana-safety-by-neighborhood">
+        <span class="label">Safety</span>
+        <span class="title">Map Havana neighborhoods</span>
+        <span class="text">Compare Miramar, Vedado, Habana Vieja, airport corridors, and business zones.</span>
+      </a>
+    </div>
+  </section>
 
   {% if advisory %}
   <div class="advisory l{{ advisory.level }}">
@@ -214,6 +260,9 @@
 
   <div class="pillbar">
     <a href="/travel/emergency-card">Printable emergency card &rarr;</a>
+    <a href="/tools/can-i-travel-to-cuba">Can I travel to Cuba? &rarr;</a>
+    <a href="/tools/cuba-prohibited-hotels-checker">Prohibited hotels checker &rarr;</a>
+    <a href="/tools/cuba-restricted-list-checker">Restricted List checker &rarr;</a>
     <a href="/tools/cuba-visa-requirements">Cuba Tourist Card &amp; entry tool &rarr;</a>
     <a href="/tools/havana-safety-by-neighborhood">Havana safety map &rarr;</a>
     <a href="/tools/eltoque-trmi-rate">elTOQUE TRMI CUP/USD rate &rarr;</a>
@@ -259,7 +308,7 @@
     <p class="sec-lead">
       The properties below are a mix of international-brand hotels, long-
       established Cuban hotels (most in the GAESA / Gaviota / Habaguanex
-      orbit &mdash; CACR sanctions implications below) and licensed
+      orbit &mdash; check the CPAL and CRL before booking) and licensed
       <em>casas particulares</em> in safer neighbourhoods (Vedado, Miramar
       (Playa), Habana Vieja, Nuevo Vedado). For US persons travelling under
       the §515.574 "Support for the Cuban People" general license, casas
@@ -268,6 +317,15 @@
       and casa hosts can arrange airport transfers, which is the single
       most important logistics call you make on this trip.
     </p>
+    <div class="compliance-note">
+      <strong>Booking rule:</strong> before paying for any hotel, casa, tour,
+      marina, meeting venue, or driver, check the
+      <a href="/tools/cuba-prohibited-hotels-checker">Cuba Prohibited Accommodations List</a>,
+      the <a href="/tools/cuba-restricted-list-checker">Cuba Restricted List</a>,
+      and the <a href="/tools/ofac-cuba-sanctions-checker">OFAC Cuba sanctions checker</a>.
+      A property can be prohibited even when it appears on a normal booking
+      platform or is paid through a non-U.S. intermediary.
+    </div>
     <div class="card-grid cols-2 section-collapsed" data-limit="4" id="hotels-grid">
       {% for h in hotels %}
       <div class="card">
@@ -500,7 +558,10 @@
   <section id="pretrip" class="sec">
     <h2>9. Pre-departure checklist</h2>
     <p class="sec-lead">
-      Work this list end-to-end at least two weeks before departure.
+      Work this list end-to-end at least two weeks before departure. For U.S.
+      persons, keep written records of your authorized travel category,
+      itinerary, lodging, private-sector support, and any counterparties you
+      screened against CPAL, CRL, and OFAC lists.
     </p>
     <ul class="checklist section-collapsed" data-limit="2" id="pretrip-list">
       {% for item in pre_trip %}
