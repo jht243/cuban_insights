@@ -2388,6 +2388,20 @@ def cpal_profile_page(slug: str):
         abort(500)
 
 
+@app.route("/sanctions/hotel-san-alejandro")
+@app.route("/sanctions/hotel-san-alejandro/")
+def hotel_san_alejandro_cpal_redirect():
+    """Short GSC-friendly alias for the indexed CPAL property page."""
+    return redirect("/sanctions/cpal/hotel-san-alejandro", code=301)
+
+
+@app.route("/travel/cuba-prohibited-accommodations-list")
+@app.route("/travel/cuba-prohibited-accommodations-list/")
+def cuba_prohibited_accommodations_list_redirect():
+    """Exact-query alias; canonical content lives on the CPAL checker."""
+    return redirect("/tools/cuba-prohibited-hotels-checker", code=301)
+
+
 @app.route("/tools/cuba-prohibited-hotels-checker")
 @app.route("/tools/cuba-prohibited-hotels-checker/")
 def tool_cpal_hotel_checker():
@@ -2482,13 +2496,12 @@ def tool_cpal_hotel_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
-            title="Cuba Prohibited Accommodations List (CPAL) — Free Hotel Lookup (§515.210)",
+            title="Cuba Prohibited Accommodations List 2026 — Search Hotels & Casas",
             description=(
-                f"Free Cuba Prohibited Accommodations List (CPAL) checker: "
-                f"instantly check any of the {total_entries} hotels, casas, or "
-                f"resorts U.S. travelers may not lodge at under §515.210 of the "
-                f"Cuban Assets Control Regulations. Filter by province, see "
-                f"address, identify state-controlled \u201ccasas\u201d."
+                f"Search the Cuba Prohibited Accommodations List (CPAL) for "
+                f"any of the {total_entries} hotels, casas, resorts, and "
+                f"lodging properties U.S. travelers may not use under CACR "
+                f"§515.210. Filter by province and check property pages."
             ),
             keywords=(
                 "Cuba prohibited hotels, CPAL hotel checker, State Department "
@@ -2757,14 +2770,12 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title="Cuba Restricted List (CRL) 2026 — Full GAESA, CIMEX, Gaviota Lookup",
+            title="Cuba Restricted List Checker 2026 — Search GAESA, Gaviota, CIMEX",
             description=(
-                f"Free State Department Cuba Restricted List (CRL) checker: "
-                f"search any of the {total_entries} entities U.S. persons "
-                f"may not engage in direct financial transactions with under "
-                f"§515.209 of the Cuban Assets Control Regulations. Covers "
-                f"GAESA, CIMEX, Gaviota, Habaguanex, MINFAR, MININT and "
-                f"every named subentity."
+                f"Search the State Department Cuba Restricted List (CRL) "
+                f"for GAESA, Gaviota, CIMEX, Habaguanex, FINCIMEX, hotels, "
+                f"marinas, ministries, and all {total_entries} entities "
+                f"restricted under CACR §515.209."
             ),
             keywords=(
                 "Cuba Restricted List checker, CRL Cuba lookup, GAESA "
@@ -5011,14 +5022,13 @@ def companies_index_page():
         canonical = f"{base}/companies"
         seo = {
             "title": (
-                f"S&P 500 Cuba Sanctions & Exposure List — {len(rows)} Companies Checked"
+                f"Public Company Cuba Exposure & Sanctions Check — S&P 500 List"
             ),
             "description": (
-                f"Free Cuba-exposure audit for every S&P 500 company. OFAC "
-                f"SDN matches, State Department Cuba Restricted List and "
-                f"CPAL hits, SEC filing disclosures (Helms-Burton, CACR "
-                f"§515), and Cuban Insights analyst notes for {len(rows)} "
-                f"tickers. Refreshed daily."
+                f"Search {len(rows)} S&P 500 companies for Cuba exposure, "
+                f"OFAC sanctions signals, Cuba Restricted List and CPAL "
+                f"links, Helms-Burton risk, CACR §515 issues, and SEC "
+                f"filing disclosures. Refreshed daily."
             ),
             "keywords": (
                 "S&P 500 Cuba exposure, public company Cuba exposure, "
@@ -5904,14 +5914,12 @@ def travel_page():
 
         base = _base_url()
         canonical = f"{base}/travel"
-        title = "Travel to Cuba 2026 — Havana Safety, Hotels, Money & Embassy Guide"
+        title = "Cuba Travel Restrictions, Prohibited Hotels & Safety Guide 2026"
         description = (
-            "Embassies, hotels, restaurants, hospitals, ground transport, "
-            "corporate security firms, SIM cards (ETECSA / Cubacel), money "
-            "(USD cash, MLC, no US-issued cards), pre-trip and safety "
-            "checklists for foreign business travellers, journalists and "
-            "NGO staff visiting Havana. Compiled from US State Department, "
-            "OSAC, MINREX and embassy sources."
+            "Check Cuba travel restrictions, prohibited hotels and "
+            "accommodations, Havana safety, embassy contacts, money rules "
+            "(USD cash, MLC, no US-issued cards), airport transport, SIM "
+            "cards, D'Viajeros, and pre-trip compliance steps."
         )
         seo = {
             "title": title,
@@ -6351,6 +6359,16 @@ def briefing_feed():
     except Exception as exc:
         logger.exception("briefing feed render failed: %s", exc)
         abort(500)
+
+
+@app.route("/briefing/us-cuba-diplomatic-meeting-2026")
+@app.route("/briefing/us-cuba-diplomatic-meeting-2026/")
+def us_cuba_diplomatic_meeting_2026_redirect():
+    """Exact-query alias for the diplomatic-talks briefing."""
+    return redirect(
+        "/briefing/us-cuba-diplomatic-talks-amid-rising-geopolitical-tensions-20260423-1627",
+        code=301,
+    )
 
 
 _BRIEFING_POST_CACHE: dict[str, dict] = {}

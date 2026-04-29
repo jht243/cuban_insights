@@ -43,6 +43,49 @@ def _iso(d: date | datetime | None) -> str:
     return datetime.combine(d, datetime.min.time(), tzinfo=timezone.utc).isoformat()
 
 
+_BRIEFING_SEO_OVERRIDES = {
+    "cuba-implements-new-customs-decrees-affecting-import-export-procedures": {
+        "title": "Cuba Customs Decrees 2026: Import and Export Rule Changes",
+        "description": (
+            "What Cuba's 2026 customs decrees mean for import and export "
+            "procedures, documentation, compliance risk, logistics, and "
+            "foreign companies moving goods through Cuban ports."
+        ),
+        "keywords": [
+            "Cuba customs decrees 2026",
+            "Cuba import export procedures",
+            "Cuba customs rules",
+            "Cuba trade compliance",
+            "Cuba import regulations",
+        ],
+    },
+    "us-cuba-diplomatic-talks-amid-rising-geopolitical-tensions": {
+        "title": "U.S.-Cuba Diplomatic Talks 2026: Recent Developments",
+        "description": (
+            "Recent developments in U.S.-Cuba diplomatic talks in 2026, "
+            "including sanctions context, bilateral risk, and what investors "
+            "and policy watchers should monitor next."
+        ),
+        "keywords": [
+            "US Cuba diplomatic meeting 2026",
+            "US Cuba diplomatic talks",
+            "US Cuba recent developments",
+            "Cuba diplomacy 2026",
+            "US Cuba relations",
+        ],
+    },
+}
+
+
+def _briefing_seo_override(slug: str | None) -> dict | None:
+    """Return a targeted search-facing override for known GSC opportunities."""
+    slug = slug or ""
+    for prefix, override in _BRIEFING_SEO_OVERRIDES.items():
+        if slug.startswith(prefix):
+            return override
+    return None
+
+
 def render_blog_post(post, *, related: list | None = None) -> str:
     """Render a single BlogPost row to HTML with full NewsArticle JSON-LD.
 
@@ -62,13 +105,24 @@ def render_blog_post(post, *, related: list | None = None) -> str:
         else f"{base}/static/og-image.png?v=3"
     )
 
+    override = _briefing_seo_override(post.slug)
+
     keywords = post.keywords_json or []
     if isinstance(keywords, str):
         keywords = [k.strip() for k in keywords.split(",") if k.strip()]
+    if override and override.get("keywords"):
+        keyword_seen = {str(k).lower() for k in keywords}
+        for keyword in override["keywords"]:
+            if keyword.lower() not in keyword_seen:
+                keywords.append(keyword)
+                keyword_seen.add(keyword.lower())
+
+    seo_title = (override.get("title") if override else None) or post.title or ""
+    seo_description = (override.get("description") if override else None) or post.summary or post.subtitle or ""
 
     seo = {
-        "title": (post.title or "")[:110],
-        "description": (post.summary or post.subtitle or "")[:300],
+        "title": seo_title[:110],
+        "description": seo_description[:300],
         "keywords": ", ".join(keywords) if keywords else "",
         "news_keywords": ", ".join(keywords[:10]) if keywords else "",
         "canonical": canonical,
@@ -96,9 +150,9 @@ def render_blog_post(post, *, related: list | None = None) -> str:
         "@type": "NewsArticle",
         "@id": f"{canonical}#article",
         "url": canonical,
-        "mainEntityOfPage": {"@type": "WebPage", "@id": canonical, "name": post.title},
-        "headline": (post.title or "")[:110],
-        "description": (post.summary or "")[:300],
+        "mainEntityOfPage": {"@type": "WebPage", "@id": canonical, "name": seo_title},
+        "headline": seo_title[:110],
+        "description": seo_description[:300],
         "image": [og_image],
         "datePublished": _iso(post.published_date),
         "dateModified": _iso(post.updated_at or post.created_at or post.published_date),
