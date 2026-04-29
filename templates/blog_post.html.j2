@@ -7,7 +7,7 @@
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
     <a href="/briefing">Analysis</a><span>/</span>
-    <span>{{ post.title }}</span>
+    <span>{{ post_display_title }}</span>
   </nav>
 
   <header>
@@ -16,14 +16,15 @@
       {{ post.primary_sector|replace('_',' ')|title }}
     </div>
     {% endif %}
-    <h1>{{ post.title }}</h1>
+    <h1>{{ post_display_title }}</h1>
     {% if post.subtitle %}<p class="subtitle">{{ post.subtitle }}</p>{% endif %}
     <div class="meta">
       <span><strong>Published</strong> {{ post.published_date.strftime('%B %d, %Y') }}</span>
+      <span><strong>Last updated</strong> {{ (post.updated_at or post.created_at or post.published_date).strftime('%B %d, %Y') }}</span>
       {% if post.reading_minutes %}<span><strong>Read</strong> {{ post.reading_minutes }} min</span>{% endif %}
       {% if post.word_count %}<span>{{ post.word_count }} words</span>{% endif %}
       <span><strong>By</strong> Cuban Insights</span>
-      <span style="margin-left:auto;">{{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post.title) }}</span>
+      <span style="margin-left:auto;">{{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post_display_title) }}</span>
     </div>
   </header>
 
@@ -51,7 +52,7 @@
 
   <div style="display:flex; align-items:center; gap:14px; margin: 24px 0 8px; padding: 14px 0; border-top: 1px solid var(--sr-gray-light);">
     <span style="font-size:13px; color: var(--sr-gray-text);">Found this useful?</span>
-    {{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post.title, label='Share analysis') }}
+    {{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post_display_title, label='Share analysis') }}
   </div>
 
   {% if related %}
@@ -60,8 +61,8 @@
     <ul>
       {% for r in related %}
       <li>
-        <a href="/briefing/{{ r.slug }}">{{ r.title }}</a>
-        <small>{{ r.published_date.strftime('%b %d, %Y') }}</small>
+        <a href="/briefing/{{ r.post.slug }}">{{ r.display_title }}</a>
+        <small>{{ r.post.published_date.strftime('%b %d, %Y') }}</small>
       </li>
       {% endfor %}
     </ul>

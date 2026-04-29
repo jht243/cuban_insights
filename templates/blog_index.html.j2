@@ -27,14 +27,15 @@
 
   {% if posts %}
   <div class="index-grid">
-    {% for p in posts %}
+    {% for card in posts %}
+    {% set p = card.post %}
     <article class="index-card">
       {% if p.primary_sector %}
       <div class="meta">{{ p.primary_sector|replace('_',' ')|title }} · {{ p.published_date.strftime('%b %d, %Y') }}</div>
       {% else %}
       <div class="meta">{{ p.published_date.strftime('%b %d, %Y') }}</div>
       {% endif %}
-      <a class="title-link" href="/briefing/{{ p.slug }}">{{ p.title }}</a>
+      <a class="title-link" href="/briefing/{{ p.slug }}">{{ card.display_title }}</a>
       {% if p.summary %}<p class="summary">{{ p.summary }}</p>{% endif %}
     </article>
     {% endfor %}

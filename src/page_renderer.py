@@ -86,6 +86,11 @@ def _briefing_seo_override(slug: str | None) -> dict | None:
     return None
 
 
+def _briefing_display_title(post) -> str:
+    override = _briefing_seo_override(getattr(post, "slug", ""))
+    return (override.get("title") if override else None) or getattr(post, "title", "") or ""
+
+
 def render_blog_post(post, *, related: list | None = None) -> str:
     """Render a single BlogPost row to HTML with full NewsArticle JSON-LD.
 
@@ -117,7 +122,7 @@ def render_blog_post(post, *, related: list | None = None) -> str:
                 keywords.append(keyword)
                 keyword_seen.add(keyword.lower())
 
-    seo_title = (override.get("title") if override else None) or post.title or ""
+    seo_title = _briefing_display_title(post)
     seo_description = (override.get("description") if override else None) or post.summary or post.subtitle or ""
 
     seo = {
@@ -178,11 +183,20 @@ def render_blog_post(post, *, related: list | None = None) -> str:
     )
 
     takeaways: list[str] = []
+    post_display_title = seo_title
+    related_display = [
+        {
+            "post": r,
+            "display_title": _briefing_display_title(r),
+        }
+        for r in (related or [])
+    ]
 
     template = _env.get_template("blog_post.html.j2")
     return template.render(
         post=post,
-        related=related or [],
+        post_display_title=post_display_title,
+        related=related_display,
         takeaways=takeaways,
         seo=seo,
         jsonld=jsonld,
@@ -195,6 +209,13 @@ def render_blog_index(posts: Iterable) -> str:
     canonical = f"{base}/briefing"
 
     posts_list = list(posts)
+    post_cards = [
+        {
+            "post": p,
+            "display_title": _briefing_display_title(p),
+        }
+        for p in posts_list
+    ]
 
     seo = {
         "title": "Cuba investment, embargo & sanctions analysis — long-form briefings",
@@ -223,7 +244,7 @@ def render_blog_index(posts: Iterable) -> str:
             {
                 "@type": "ListItem",
                 "position": idx,
-                "name": p.title,
+                "name": _briefing_display_title(p),
                 "url": f"{base}/briefing/{p.slug}",
             }
             for idx, p in enumerate(posts_list[:50], start=1)
@@ -243,7 +264,7 @@ def render_blog_index(posts: Iterable) -> str:
 
     template = _env.get_template("blog_index.html.j2")
     return template.render(
-        posts=posts_list,
+        posts=post_cards,
         seo=seo,
         jsonld=jsonld,
         current_year=date.today().year,
@@ -418,7 +439,7 @@ def render_blog_feed_xml(posts: Iterable) -> str:
     for p in posts_list[:50]:
         url = f"{base}/briefing/{p.slug}"
         parts.append("<entry>")
-        parts.append(f"<title>{_x(p.title or '')}</title>")
+        parts.append(f"<title>{_x(_briefing_display_title(p))}</title>")
         parts.append(f'<link href="{url}"/>')
         parts.append(f"<id>{url}</id>")
         parts.append(f"<published>{_iso(p.published_date)}</published>")

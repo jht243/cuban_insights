@@ -1860,6 +1860,7 @@ def tool_ofac_sanctions_checker():
             entries_alpha=entries_alpha,
             type_counts=type_counts,
             sector_counts=sector_counts,
+            today_human=_date.today().strftime("%B %Y"),
             seo=seo,
             jsonld=jsonld,
             cluster_ctx=cluster_ctx,
