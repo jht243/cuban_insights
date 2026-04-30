@@ -57,7 +57,7 @@
       Compliance tool · Live check against {{ total_entries }} prohibited entities · CACR §515.209
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Cuba Restricted List (CRL) Entity Checker
+      OFAC Cuba Restricted List (CRL) Entity Checker
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       Check any Cuban company, ministry, hotel, or marina against the State Department&rsquo;s Cuba Restricted List. Most entities here &mdash; GAESA, CIMEX, Gaviota, Habaguanex &mdash; are <em>not</em> on the OFAC SDN, so a clean SDN screen alone is not enough.
@@ -127,7 +127,7 @@
     </div>
     {% for m in matches %}
     <article class="match-card">
-      <div class="name">{{ m.name }}</div>
+      <div class="name">{% if m.url_path %}<a href="{{ m.url_path }}">{{ m.name }}</a>{% else %}{{ m.name }}{% endif %}</div>
       <div class="meta"><strong>Category:</strong> {{ m.section }}</div>
     </article>
     {% endfor %}

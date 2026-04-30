@@ -25,6 +25,12 @@
   .sdn-table .program { font-family: 'Menlo', monospace; font-size: 12px; color: var(--sr-gray-text); white-space: nowrap; }
   .sdn-table .remarks { color: var(--sr-gray-text); font-size: 13px; }
   .sdn-empty { padding: 32px; text-align: center; color: var(--sr-gray-text); }
+  .query-intent { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-red); padding: 14px 18px; margin: 0 0 24px; background: #fff; }
+  .query-intent__eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--sr-gray-text); font-weight: 700; margin-bottom: 8px; }
+  .query-intent__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+  .query-intent__grid a { display: block; border: 1px solid var(--sr-gray-light); border-radius: 3px; padding: 10px 12px; text-decoration: none; color: var(--sr-blue-dark); background: #fafbfd; font-size: 14px; line-height: 1.35; }
+  .query-intent__grid a:hover { border-color: var(--sr-blue); background: #f0f4f8; color: var(--sr-blue); }
+  .query-intent__grid small { display: block; color: var(--sr-gray-text); font-size: 12px; margin-top: 3px; }
 </style>
 {% endblock %}
 
@@ -100,6 +106,30 @@
     </div>
   </div>
   {% endif %}
+
+  <section class="query-intent" aria-labelledby="popular-sanctions-searches">
+    <div id="popular-sanctions-searches" class="query-intent__eyebrow">
+      Popular sanctions searches
+    </div>
+    <div class="query-intent__grid">
+      <a href="/sanctions/entities/boutique-la-maison">
+        Boutique La Maison sanctions
+        <small>OFAC SDN entity profile</small>
+      </a>
+      <a href="/sanctions/crl/la-maison-fashion">
+        La Maisón (Fashion) sanctions
+        <small>Cuba Restricted List entity profile</small>
+      </a>
+      <a href="/tools/cuba-restricted-list-checker">
+        OFAC Cuba Restricted List
+        <small>Search the full State Department CRL</small>
+      </a>
+      <a href="/sanctions/entities/trober-s-a">
+        Trober, S.A. sanctions
+        <small>OFAC SDN entity profile</small>
+      </a>
+    </div>
+  </section>
 
   {{ companion_links(companion_ctx) }}
 

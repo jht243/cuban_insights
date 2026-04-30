@@ -2170,6 +2170,8 @@ def _fuzzy_score(query: str, *fields: str) -> float:
 
 _CPAL_PROFILE_INDEX_CACHE: dict = {"loaded_at": 0.0, "by_slug": {}, "ordered": []}
 _CPAL_PROFILE_INDEX_TTL = 300.0
+_CRL_PROFILE_INDEX_CACHE: dict = {"loaded_at": 0.0, "by_slug": {}, "ordered": []}
+_CRL_PROFILE_INDEX_TTL = 300.0
 
 
 def _cpal_slug_for(name: str, province: str = "") -> str:
@@ -2243,6 +2245,72 @@ def list_cpal_profiles() -> list[dict]:
     """All CPAL rows with `slug` + `url_path` populated. Used by sitemap
     + per-hotel pages."""
     return [row for _, row in _cpal_profile_index()["ordered"]]
+
+
+def _crl_slug_for(name: str, section: str = "") -> str:
+    """Stable URL slug for a Cuba Restricted List entity."""
+    import re as _re
+    import unicodedata as _ud
+
+    def _s(value: str) -> str:
+        if not value:
+            return ""
+        norm = _ud.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        return _re.sub(r"[^a-z0-9]+", "-", norm.lower()).strip("-")
+
+    base_slug = _s(name) or "entity"
+    if section:
+        return f"{base_slug}-{_s(section)}"[:120].strip("-") or "entity"
+    return base_slug[:120]
+
+
+def _crl_profile_index() -> dict:
+    """Build / cache `{slug: row}` for every Cuba Restricted List entry."""
+    import time as _time
+
+    cache = _CRL_PROFILE_INDEX_CACHE
+    if cache.get("by_slug") and (_time.time() - cache["loaded_at"]) < _CRL_PROFILE_INDEX_TTL:
+        return cache
+
+    entries, refreshed_on = _load_state_dept_snapshot("crl")
+    rows = list(entries.values())
+
+    by_slug: dict[str, dict] = {}
+    name_seen: set[str] = set()
+    ordered: list[tuple[str, dict]] = []
+    for r in rows:
+        name = (r.get("name") or "").strip()
+        if not name:
+            continue
+        section = (r.get("section") or "").strip()
+        base = _crl_slug_for(name)
+        slug = base if base not in name_seen else _crl_slug_for(name, section)
+        suffix = 2
+        while slug in by_slug:
+            slug = f"{_crl_slug_for(name, section)}-{suffix}"
+            suffix += 1
+        name_seen.add(base)
+        row_with_slug = dict(r)
+        row_with_slug["slug"] = slug
+        row_with_slug["url_path"] = f"/sanctions/crl/{slug}"
+        row_with_slug["kind"] = _crl_kind_for_section(section)
+        row_with_slug["location"] = _crl_location_for_section(section)
+        by_slug[slug] = row_with_slug
+        ordered.append((slug, row_with_slug))
+
+    ordered.sort(key=lambda pair: (pair[1].get("name") or "").lower())
+    cache.update({
+        "loaded_at": _time.time(),
+        "by_slug": by_slug,
+        "ordered": ordered,
+        "refreshed_on": refreshed_on,
+    })
+    return cache
+
+
+def list_crl_profiles() -> list[dict]:
+    """All CRL rows with `slug` + `url_path` populated."""
+    return [row for _, row in _crl_profile_index()["ordered"]]
 
 
 @app.route("/sanctions/cpal/<slug>")
@@ -2396,6 +2464,158 @@ def hotel_san_alejandro_cpal_redirect():
     return redirect("/sanctions/cpal/hotel-san-alejandro", code=301)
 
 
+@app.route("/sanctions/hotel-san-fernando")
+@app.route("/sanctions/hotel-san-fernando/")
+def hotel_san_fernando_cpal_redirect():
+    """Short GSC-friendly alias for the indexed CPAL property page."""
+    return redirect("/sanctions/cpal/hotel-san-fernando", code=301)
+
+
+@app.route("/sanctions/crl/<slug>")
+@app.route("/sanctions/crl/<slug>/")
+def crl_profile_page(slug: str):
+    """One Cuba Restricted List entity -> one indexable page.
+
+    These pages cover exact-query intent such as "la maisón (fashion)
+    sanctions" where a searcher needs a definitive State Department CRL
+    answer, not just the broader checker UI.
+    """
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import date as _date, datetime as _dt
+    import json as _json
+
+    index = _crl_profile_index()
+    row = index["by_slug"].get(slug)
+    if not row:
+        abort(404)
+
+    try:
+        name = (row.get("name") or "").strip()
+        section = (row.get("section") or "").strip()
+        kind = row.get("kind") or _crl_kind_for_section(section)
+        location = row.get("location") or _crl_location_for_section(section)
+
+        siblings: list[dict] = []
+        if section:
+            for r in list_crl_profiles():
+                if r["slug"] == slug:
+                    continue
+                if (r.get("section") or "").strip() == section:
+                    siblings.append(r)
+                if len(siblings) >= 8:
+                    break
+
+        base = _base_url()
+        canonical = f"{base}/sanctions/crl/{slug}"
+        today_human = _date.today().strftime("%B %Y")
+        today_iso = _date.today().isoformat()
+        year = _date.today().year
+
+        title = f"{name} Sanctions — Cuba Restricted List ({year})"[:120]
+        section_phrase = f" in {section}" if section else ""
+        description = (
+            f"{name}{section_phrase} is on the U.S. State Department Cuba "
+            f"Restricted List (CRL, §515.209 CACR) as of {today_human}. "
+            "U.S. persons are generally prohibited from direct financial "
+            "transactions with CRL-listed Cuban entities."
+        )[:300]
+
+        seo = {
+            "title": title,
+            "description": description,
+            "keywords": (
+                f"{name} sanctions, {name} Cuba Restricted List, "
+                f"{name} CRL, is {name} sanctioned, OFAC Cuba Restricted List, "
+                "§515.209 CACR, State Department Cuba Restricted List"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "article",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+
+        breadcrumb = {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                {"@type": "ListItem", "position": 2, "name": "Cuba Sanctions", "item": f"{base}/sanctions-tracker"},
+                {"@type": "ListItem", "position": 3, "name": "Cuba Restricted List", "item": f"{base}/tools/cuba-restricted-list-checker"},
+                {"@type": "ListItem", "position": 4, "name": name, "item": canonical},
+            ],
+        }
+        entity_node = {
+            "@type": "Organization",
+            "@id": f"{canonical}#entity",
+            "name": name,
+            "url": canonical,
+            "description": description,
+            "subjectOf": {
+                "@type": "GovernmentService",
+                "name": "Cuba Restricted List",
+                "provider": {"@type": "GovernmentOrganization", "name": "U.S. Department of State"},
+            },
+        }
+        if section:
+            entity_node["additionalType"] = section
+
+        is_q = f"Is {name} on the Cuba Restricted List?"
+        is_a = (
+            f"Yes. As of {today_human}, {name} is listed on the U.S. "
+            f"State Department Cuba Restricted List under §515.209 of "
+            "the Cuban Assets Control Regulations. U.S. persons are "
+            "generally prohibited from engaging in direct financial "
+            "transactions with the entity unless a narrow OFAC "
+            "authorization applies."
+        )
+        sdn_q = f"Is {name} the same as an OFAC SDN listing?"
+        sdn_a = (
+            "Not necessarily. The Cuba Restricted List is maintained by "
+            "the State Department and is separate from the Treasury OFAC "
+            "SDN list. A Cuban entity can be restricted under §515.209 "
+            "even if it does not appear as an SDN."
+        )
+        faq = [{"q": is_q, "a": is_a}, {"q": sdn_q, "a": sdn_a}]
+        faq_node = {
+            "@type": "FAQPage",
+            "@id": f"{canonical}#faq",
+            "mainEntity": [
+                {"@type": "Question", "name": f["q"], "acceptedAnswer": {"@type": "Answer", "text": f["a"][:500]}}
+                for f in faq
+            ],
+        }
+
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [breadcrumb, entity_node, faq_node],
+        }, ensure_ascii=False)
+
+        template = _env.get_template("sanctions/crl_profile.html.j2")
+        html = template.render(
+            name=name,
+            section=section,
+            kind=kind,
+            location=location,
+            siblings=siblings,
+            seo=seo,
+            jsonld=jsonld,
+            today_human=today_human,
+            today_iso=today_iso,
+            year=year,
+            refreshed_on=index.get("refreshed_on", ""),
+            faq=faq,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("CRL profile render failed for slug=%s: %s", slug, exc)
+        abort(500)
+
+
 @app.route("/travel/cuba-prohibited-accommodations-list")
 @app.route("/travel/cuba-prohibited-accommodations-list/")
 def cuba_prohibited_accommodations_list_redirect():
@@ -2497,19 +2717,20 @@ def tool_cpal_hotel_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
-            title="Cuba Prohibited Accommodations List 2026 — Search Hotels & Casas",
+            title="Cuba Prohibited Accommodations List OFAC 2026 — Search CPAL Hotels",
             description=(
-                f"Search the Cuba Prohibited Accommodations List (CPAL) for "
-                f"any of the {total_entries} hotels, casas, resorts, and "
-                f"lodging properties U.S. travelers may not use under CACR "
-                f"§515.210. Filter by province and check property pages."
+                f"Search the Cuba Prohibited Accommodations List (CPAL / "
+                f"OFAC CACR §515.210) for any of the {total_entries} hotels, "
+                f"casas, resorts, and lodging properties U.S. travelers may "
+                f"not use in 2026. Includes indexable property pages."
             ),
             keywords=(
-                "Cuba prohibited hotels, CPAL hotel checker, State Department "
-                "Cuba accommodations, §515.210 CACR, Hotel Nacional CPAL, "
-                "Iberostar Cuba banned, Meliá Cuba sanctions, Habaguanex "
-                "OFAC, Gaviota hotels US prohibition, can US travelers stay "
-                "at Hotel Saratoga"
+                "Cuba prohibited accommodations list, Cuba prohibited "
+                "accommodations list OFAC 2026, CPAL hotel checker, State "
+                "Department Cuba accommodations, §515.210 CACR, Hotel San "
+                "Alejandro sanctions, Hotel San Fernando sanctions, Hotel "
+                "Nacional CPAL, Iberostar Cuba banned, Meliá Cuba sanctions, "
+                "Habaguanex OFAC, Gaviota hotels US prohibition"
             ),
             faq=[
                 {
@@ -2698,6 +2919,10 @@ def tool_crl_entity_checker():
         entries, refreshed_on = _load_state_dept_snapshot("crl")
         all_rows = list(entries.values())
         total_entries = len(all_rows)
+        crl_profile_by_key = {
+            ((r.get("name") or "").strip(), (r.get("section") or "").strip()): r
+            for r in list_crl_profiles()
+        }
 
         sections = sorted({r.get("section", "") for r in all_rows if r.get("section")})
         section_counter: Counter[str] = Counter(
@@ -2763,6 +2988,9 @@ def tool_crl_entity_checker():
                 matches.append({
                     "name": name,
                     "section": section,
+                    "url_path": (
+                        crl_profile_by_key.get((name, section), {}).get("url_path")
+                    ),
                     "score": int(round(score * 100)),
                 })
 
@@ -2771,15 +2999,16 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title="Cuba Restricted List Checker 2026 — Search GAESA, Gaviota, CIMEX",
+            title="OFAC Cuba Restricted List 2026 — Search GAESA, Gaviota, CIMEX",
             description=(
-                f"Search the State Department Cuba Restricted List (CRL) "
+                f"Search the OFAC Cuba Restricted List / State Department "
+                f"Cuba Restricted List (CRL) "
                 f"for GAESA, Gaviota, CIMEX, Habaguanex, FINCIMEX, hotels, "
                 f"marinas, ministries, and all {total_entries} entities "
                 f"restricted under CACR §515.209."
             ),
             keywords=(
-                "Cuba Restricted List checker, CRL Cuba lookup, GAESA "
+                "OFAC Cuba Restricted List, Cuba Restricted List checker, CRL Cuba lookup, GAESA "
                 "sanctions check, CIMEX OFAC, Gaviota CRL, Habaguanex "
                 "restricted, §515.209 CACR, State Department Cuba "
                 "entities, MINFAR sanctions, FINCIMEX prohibited"
@@ -4151,6 +4380,254 @@ def sources_page():
         raise
     except Exception as exc:
         logger.exception("sources page render failed: %s", exc)
+        abort(500)
+
+
+_US_CUBA_DIPLOMACY_TERMS = (
+    "us-cuba", "u.s.-cuba", "u.s. cuba", "united states and cuba",
+    "cuba and the united states", "eeuu-cuba", "ee.uu.-cuba",
+)
+_US_CUBA_SIGNAL_TERMS = (
+    "united states", "u.s.", "us-", "u.s.-", "eeuu", "ee.uu",
+    "washington", "state department", "embassy", "embajada",
+    "senate", "senado", "trump", "biden", "rubio", "marco rubio",
+    "bloqueo",
+)
+_CUBA_SIGNAL_TERMS = (
+    "cuba", "cuban", "cubano", "cubana", "cubanos", "cubanas",
+    "havana", "habana",
+)
+_DIPLOMACY_POLICY_TERMS = (
+    "bilateral", "diplomatic", "diplomacy", "diplomacia", "talks",
+    "meeting", "reunion", "reunión", "dialogue", "dialogo", "diálogo",
+    "negotiation", "negociacion", "negociación", "normalization",
+    "normalisation", "embassy", "embajada", "consular", "migration",
+    "migracion", "migración", "visa", "travel advisory", "policy",
+    "sanctions", "sanciones", "embargo", "permit", "licence", "license",
+)
+_US_CUBA_EXCLUDE_TERMS = (
+    "cuba restricted list baseline",
+    "cuba prohibited accommodations list baseline",
+    "cuba prohibited accommodations list",
+    "cuba restricted list",
+    "cpal",
+    "§515.209",
+    "§515.210",
+)
+
+
+def _is_us_cuba_diplomacy_row(*parts: str, sectors: list | None = None, source=None) -> bool:
+    haystack = " ".join(p or "" for p in parts).lower()
+    sector_set = {str(s).lower().replace("_", "-") for s in (sectors or [])}
+    if any(term in haystack for term in _US_CUBA_EXCLUDE_TERMS):
+        return False
+    if any(term in haystack for term in _US_CUBA_DIPLOMACY_TERMS):
+        return True
+    source_value = getattr(source, "value", source)
+    if source_value == "minrex" and any(t in haystack for t in ("united states", "u.s.", "us-", "washington", "bilateral", "migration")):
+        return True
+    has_cuba = any(term in haystack for term in _CUBA_SIGNAL_TERMS)
+    has_us = any(term in haystack for term in _US_CUBA_SIGNAL_TERMS)
+    has_policy = any(term in haystack for term in _DIPLOMACY_POLICY_TERMS)
+    if has_cuba and has_us and has_policy:
+        return True
+    return "diplomatic" in sector_set and has_cuba and has_us
+
+
+@app.route("/us-cuba-diplomatic-meeting-recent-developments-2026")
+@app.route("/us-cuba-diplomatic-meeting-recent-developments-2026/")
+def us_cuba_diplomatic_developments_tracker():
+    """Live tracker for the exact GSC query:
+    "us cuba diplomatic meeting recent developments 2026".
+    """
+    try:
+        from src.models import BlogPost, ExternalArticleEntry, AssemblyNewsEntry, SessionLocal, SourceType, init_db
+        from src.page_renderer import _env, _base_url, _iso, settings as _s
+        from datetime import date as _date, datetime as _dt, timedelta as _td
+        import json as _json
+
+        init_db()
+        db = SessionLocal()
+        try:
+            cutoff = _date.today() - _td(days=365)
+            external_rows = (
+                db.query(ExternalArticleEntry)
+                .filter(ExternalArticleEntry.published_date >= cutoff)
+                .order_by(ExternalArticleEntry.published_date.desc())
+                .limit(500)
+                .all()
+            )
+            assembly_rows = (
+                db.query(AssemblyNewsEntry)
+                .filter(AssemblyNewsEntry.published_date >= cutoff)
+                .order_by(AssemblyNewsEntry.published_date.desc())
+                .limit(150)
+                .all()
+            )
+            blog_lookup = {
+                (row.source_table, row.source_id): row.slug
+                for row in db.query(BlogPost.source_table, BlogPost.source_id, BlogPost.slug).all()
+            }
+
+            events: list[dict] = []
+            seen_event_keys: set[str] = set()
+            for row in external_rows:
+                analysis = row.analysis_json or {}
+                sectors = analysis.get("sectors") or []
+                relevance = int(analysis.get("relevance_score") or 0)
+                official_source = row.source in (SourceType.MINREX, SourceType.FEDERAL_REGISTER, SourceType.TRAVEL_ADVISORY)
+                if not official_source and relevance < 4:
+                    continue
+                body = row.body_text or ""
+                filter_body = body[:1200] if official_source else ""
+                filter_takeaway = analysis.get("takeaway", "") if official_source else ""
+                if not _is_us_cuba_diplomacy_row(
+                    row.headline,
+                    row.source_name or "",
+                    filter_body,
+                    filter_takeaway,
+                    sectors=sectors,
+                    source=row.source,
+                ):
+                    continue
+                dedupe_key = " ".join((row.headline or "").lower().split())[:180]
+                if dedupe_key in seen_event_keys:
+                    continue
+                seen_event_keys.add(dedupe_key)
+                source_label = (
+                    "MINREX" if row.source == SourceType.MINREX
+                    else "U.S. State Department" if row.source == SourceType.TRAVEL_ADVISORY
+                    else "Federal Register" if row.source == SourceType.FEDERAL_REGISTER
+                    else row.source_name or row.source.value.replace("_", " ").title()
+                )
+                events.append({
+                    "date": row.published_date,
+                    "date_iso": row.published_date.isoformat(),
+                    "date_display": row.published_date.strftime("%b %d, %Y"),
+                    "headline": row.headline,
+                    "summary": analysis.get("takeaway") or (body[:260] + ("..." if len(body) > 260 else "")),
+                    "source_label": source_label,
+                    "source_url": row.source_url,
+                    "blog_slug": blog_lookup.get(("external_articles", row.id)),
+                    "relevance": relevance,
+                    "kind": "Official" if row.source in (SourceType.MINREX, SourceType.FEDERAL_REGISTER, SourceType.TRAVEL_ADVISORY) else "Press",
+                })
+
+            for row in assembly_rows:
+                analysis = row.analysis_json or {}
+                sectors = analysis.get("sectors") or []
+                relevance = int(analysis.get("relevance_score") or 0)
+                if relevance < 4:
+                    continue
+                body = row.body_text or ""
+                if not _is_us_cuba_diplomacy_row(
+                    row.headline,
+                    row.commission or "",
+                    "",
+                    "",
+                    sectors=sectors,
+                ):
+                    continue
+                dedupe_key = " ".join((row.headline or "").lower().split())[:180]
+                if dedupe_key in seen_event_keys:
+                    continue
+                seen_event_keys.add(dedupe_key)
+                events.append({
+                    "date": row.published_date,
+                    "date_iso": row.published_date.isoformat(),
+                    "date_display": row.published_date.strftime("%b %d, %Y"),
+                    "headline": row.headline,
+                    "summary": analysis.get("takeaway") or (body[:260] + ("..." if len(body) > 260 else "")),
+                    "source_label": "Asamblea Nacional / Granma",
+                    "source_url": row.source_url,
+                    "blog_slug": blog_lookup.get(("assembly_news", row.id)),
+                    "relevance": relevance,
+                    "kind": "Official",
+                })
+
+            events.sort(key=lambda e: (e["date"], e["relevance"]), reverse=True)
+            events = events[:40]
+
+            base = _base_url()
+            canonical = f"{base}/us-cuba-diplomatic-meeting-recent-developments-2026"
+            generated_at = _dt.utcnow()
+            latest_date = events[0]["date_display"] if events else "awaiting first matching scrape"
+            seo = {
+                "title": "US-Cuba Diplomatic Meeting Recent Developments 2026 — Live Tracker",
+                "description": (
+                    "Live tracker of recent U.S.-Cuba diplomatic developments in 2026: "
+                    "meetings, migration talks, embassy and consular updates, MINREX "
+                    "statements, State Department actions, and investor implications."
+                ),
+                "keywords": (
+                    "us cuba diplomatic meeting recent developments 2026, "
+                    "US Cuba diplomatic talks 2026, US Cuba relations tracker, "
+                    "Cuba diplomacy 2026, MINREX United States, Havana Washington talks"
+                ),
+                "canonical": canonical,
+                "site_name": _s.site_name,
+                "site_url": base,
+                "locale": _s.site_locale,
+                "og_image": f"{base}/static/og-image.png?v=3",
+                "og_type": "website",
+                "published_iso": _iso(generated_at),
+                "modified_iso": _iso(generated_at),
+            }
+
+            item_list = {
+                "@type": "ItemList",
+                "name": "Latest US-Cuba diplomatic developments",
+                "itemListOrder": "https://schema.org/ItemListOrderDescending",
+                "numberOfItems": len(events),
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": idx,
+                        "url": ev.get("source_url") or canonical,
+                        "name": ev.get("headline") or "",
+                    }
+                    for idx, ev in enumerate(events[:20], start=1)
+                ],
+            }
+            jsonld = _json.dumps({
+                "@context": "https://schema.org",
+                "@graph": [
+                    {
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                            {"@type": "ListItem", "position": 2, "name": "US-Cuba Diplomatic Developments", "item": canonical},
+                        ],
+                    },
+                    {
+                        "@type": "WebPage",
+                        "@id": f"{canonical}#webpage",
+                        "url": canonical,
+                        "name": seo["title"],
+                        "description": seo["description"],
+                        "isAccessibleForFree": True,
+                        "dateModified": seo["modified_iso"],
+                    },
+                    item_list,
+                ],
+            }, ensure_ascii=False)
+
+            template = _env.get_template("us_cuba_diplomatic_developments.html.j2")
+            html = template.render(
+                seo=seo,
+                jsonld=jsonld,
+                events=events,
+                latest_date=latest_date,
+                generated_at=generated_at.strftime("%b %d, %Y %-I:%M %p UTC"),
+                current_year=_date.today().year,
+            )
+            return Response(html, mimetype="text/html")
+        finally:
+            db.close()
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("US-Cuba diplomatic developments tracker failed: %s", exc)
         abort(500)
 
 
@@ -6365,9 +6842,9 @@ def briefing_feed():
 @app.route("/briefing/us-cuba-diplomatic-meeting-2026")
 @app.route("/briefing/us-cuba-diplomatic-meeting-2026/")
 def us_cuba_diplomatic_meeting_2026_redirect():
-    """Exact-query alias for the diplomatic-talks briefing."""
+    """Legacy exact-query alias for the live diplomacy tracker."""
     return redirect(
-        "/briefing/us-cuba-diplomatic-talks-amid-rising-geopolitical-tensions-20260423-1627",
+        "/us-cuba-diplomatic-meeting-recent-developments-2026",
         code=301,
     )
 
@@ -6467,6 +6944,7 @@ def robots_txt():
         f"Sitemap: {base}/sitemap-companies-priority.xml\n"
         f"Sitemap: {base}/sitemap-sdn-priority.xml\n"
         f"Sitemap: {base}/sitemap-cpal.xml\n"
+        f"Sitemap: {base}/sitemap-crl.xml\n"
         f"Sitemap: {base}/news-sitemap.xml\n"
         f"Sitemap: {base}/curated-sitemap.xml\n"
     )
@@ -6516,6 +6994,7 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/export-to-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.9"},
         {"loc": f"{base}/sources", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/briefing", "lastmod": today_iso, "changefreq": "daily", "priority": "0.9"},
+        {"loc": f"{base}/us-cuba-diplomatic-meeting-recent-developments-2026", "lastmod": today_iso, "changefreq": "daily", "priority": "0.85"},
         {"loc": f"{base}/tools", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base}/explainers", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base}/tools/eltoque-trmi-rate", "lastmod": today_iso, "changefreq": "daily", "priority": "0.7"},
@@ -6555,7 +7034,8 @@ def _core_static_urls() -> list[dict]:
 # to Google and let the long-tail archive sit in robots discovery.
 #
 # Submitted to GSC:  sitemap-core, sitemap-briefings-recent,
-#                    sitemap-companies-priority, sitemap-sdn-priority
+#                    sitemap-companies-priority, sitemap-sdn-priority,
+#                    sitemap-cpal, sitemap-crl
 # Listed in index but NOT submitted:  sitemap-archive
 # ──────────────────────────────────────────────────────────────────────
 
@@ -6577,6 +7057,7 @@ def sitemap_xml():
         f"{base}/sitemap-companies-priority.xml",
         f"{base}/sitemap-sdn-priority.xml",
         f"{base}/sitemap-cpal.xml",
+        f"{base}/sitemap-crl.xml",
         f"{base}/sitemap-archive.xml",
     ]
     parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -6705,6 +7186,25 @@ def sitemap_cpal_xml():
             })
     except Exception as exc:
         logger.warning("sitemap-cpal failed: %s", exc)
+    return _emit_urlset(urls)
+
+
+@app.route("/sitemap-crl.xml")
+def sitemap_crl_xml():
+    """Per-entity pages from the Cuba Restricted List."""
+    base = settings.site_url.rstrip("/")
+    today_iso = _sitemap_today_iso()
+    urls: list[dict] = []
+    try:
+        for row in list_crl_profiles():
+            urls.append({
+                "loc": f"{base}{row['url_path']}",
+                "lastmod": today_iso,
+                "changefreq": "weekly",
+                "priority": "0.65",
+            })
+    except Exception as exc:
+        logger.warning("sitemap-crl failed: %s", exc)
     return _emit_urlset(urls)
 
 

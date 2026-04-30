@@ -1,0 +1,93 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .tracker-hero { margin: 20px 0 24px; }
+  .tracker-kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 1.3px; color: #cc0000; font-weight: 700; }
+  .tracker-hero h1 { font-family: var(--font-serif); font-size: 36px; line-height: 1.18; color: var(--sr-blue-dark); margin: 8px 0 12px; }
+  .tracker-subtitle { font-family: var(--font-serif); font-style: italic; color: var(--sr-gray-text); font-size: 18px; max-width: 780px; }
+  .tracker-status { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 14px; padding: 10px 14px; background: var(--sr-gray-bg); border-left: 3px solid var(--sr-blue); font-size: 13px; color: var(--sr-gray-text); }
+  .tracker-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 22px 0; }
+  .tracker-stat { background: var(--sr-gray-bg); border-left: 3px solid var(--sr-blue); padding: 12px 14px; }
+  .tracker-stat .num { display: block; font-family: var(--font-serif); font-size: 26px; font-weight: 700; color: var(--sr-blue-dark); line-height: 1; }
+  .tracker-stat .label { display: block; margin-top: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--sr-gray-text); }
+  .event-list { border-top: 1px solid var(--sr-gray-light); margin: 24px 0 36px; }
+  .event-card { display: grid; grid-template-columns: 120px 1fr; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--sr-gray-light); }
+  .event-date { font-size: 13px; color: var(--sr-gray-text); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .event-kind { display: inline-block; margin-top: 7px; padding: 2px 8px; border-radius: 999px; background: #eef2f7; color: var(--sr-blue-dark); font-size: 11px; font-weight: 700; }
+  .event-card h2 { font-family: var(--font-serif); font-size: 21px; line-height: 1.25; margin: 0 0 8px; color: var(--sr-blue-dark); }
+  .event-card p { margin: 0 0 10px; font-size: 15px; color: #333; }
+  .event-links { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 13px; font-weight: 600; }
+  .empty-state { background: var(--sr-gray-bg); border-left: 3px solid var(--sr-blue); padding: 18px 22px; margin: 24px 0; color: var(--sr-gray-text); }
+  @media (max-width: 640px) {
+    .event-card { grid-template-columns: 1fr; gap: 6px; }
+    .tracker-hero h1 { font-size: 30px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/briefing">Analysis</a><span>/</span>
+    <span>US-Cuba Diplomatic Developments</span>
+  </nav>
+
+  <header class="tracker-hero">
+    <div class="tracker-kicker">Live tracker - refreshed from daily scrapers</div>
+    <h1>Latest US-Cuba Diplomatic Developments 2026</h1>
+    <p class="tracker-subtitle">
+      Recent U.S.-Cuba diplomatic meetings, migration talks, embassy and
+      consular updates, MINREX statements, State Department actions, and
+      bilateral signals that matter for investors and policy watchers.
+    </p>
+    <div class="tracker-status">
+      <span><strong style="color:var(--sr-dark-text);">Latest matching item:</strong> {{ latest_date }}</span>
+      <span><strong style="color:var(--sr-dark-text);">Generated:</strong> {{ generated_at }}</span>
+      <span><strong style="color:var(--sr-dark-text);">Sources:</strong> MINREX, State Department, Federal Register, ANPP, GDELT, Cuban press RSS</span>
+    </div>
+  </header>
+
+  <div class="tracker-stats">
+    <div class="tracker-stat"><span class="num">{{ events|length }}</span><span class="label">Recent developments</span></div>
+    <div class="tracker-stat"><span class="num">2026</span><span class="label">Current-year tracker</span></div>
+    <div class="tracker-stat"><span class="num">Daily</span><span class="label">Scraper cadence</span></div>
+  </div>
+
+  {% if events %}
+  <div class="event-list" aria-label="Latest US-Cuba diplomatic events">
+    {% for ev in events %}
+    <article class="event-card">
+      <div>
+        <time class="event-date" datetime="{{ ev.date_iso }}">{{ ev.date_display }}</time>
+        <span class="event-kind">{{ ev.kind }}</span>
+      </div>
+      <div>
+        <h2>{{ ev.headline }}</h2>
+        {% if ev.summary %}<p>{{ ev.summary | safe }}</p>{% endif %}
+        <div class="event-links">
+          {% if ev.source_url %}<a href="{{ ev.source_url }}" rel="nofollow noopener" target="_blank">{{ ev.source_label }}</a>{% endif %}
+          {% if ev.blog_slug %}<a href="/briefing/{{ ev.blog_slug }}">Read full analysis</a>{% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    No matching U.S.-Cuba diplomatic developments are in the local snapshot yet.
+    The page will populate automatically as MINREX, State Department, Federal
+    Register, GDELT, ANPP, and press RSS scrapers ingest relevant items.
+  </div>
+  {% endif %}
+
+  <section class="source-citation">
+    <strong>Methodology:</strong> this tracker filters the same scraped corpus
+    that powers Cuban Insights daily briefings, emphasizing diplomatic-sector
+    tags, MINREX and State Department material, bilateral U.S.-Cuba keywords,
+    and analyzed items about migration, embassy operations, talks, and
+    sanctions-adjacent diplomatic activity.
+  </section>
+</section>
+{% endblock %}

@@ -46,6 +46,7 @@ STATIC_TOP_LEVEL: list[tuple[str, str, str]] = [
     ("/",                                              "daily",   "1.0"),
     ("/invest-in-cuba",                                "weekly",  "0.95"),
     ("/sanctions-tracker",                             "daily",   "0.95"),
+    ("/us-cuba-diplomatic-meeting-recent-developments-2026", "daily", "0.9"),
     ("/briefing",                                      "daily",   "0.9"),
     ("/tools",                                         "weekly",  "0.9"),
     ("/companies",                                     "weekly",  "0.9"),
@@ -71,6 +72,16 @@ SANCTIONS_HUBS: list[tuple[str, str, str]] = [
     ("/sanctions/entities",                            "daily", "0.85"),
     ("/sanctions/vessels",                             "daily", "0.8"),
     ("/sanctions/aircraft",                            "daily", "0.8"),
+]
+
+
+# ── Tier 2b: high-intent entity SERP targets from Search Console ────
+HIGH_INTENT_SANCTIONS: list[tuple[str, str, str]] = [
+    ("/sanctions/entities/boutique-la-maison",         "monthly", "0.75"),
+    ("/sanctions/crl/la-maison-fashion",              "weekly",  "0.75"),
+    ("/sanctions/entities/trober-s-a",                "monthly", "0.75"),
+    ("/sanctions/cpal/hotel-san-alejandro",           "weekly",  "0.75"),
+    ("/sanctions/cpal/hotel-san-fernando",            "weekly",  "0.75"),
 ]
 
 
@@ -196,6 +207,7 @@ def build_url_list(target: int = 100) -> list[tuple[str, str, str, str]]:
     bag: list[tuple[str, str, str]] = []
     bag += STATIC_TOP_LEVEL
     bag += SANCTIONS_HUBS
+    bag += HIGH_INTENT_SANCTIONS
     bag += TOOLS
     bag += [(f"/sectors/{s}", "weekly", "0.7") for s in SECTOR_HUBS]
     bag += _company_urls()
@@ -224,6 +236,12 @@ def build_priority_indexing(target: int = 20) -> list[str]:
         "/",
         "/invest-in-cuba",
         "/sanctions-tracker",
+        "/us-cuba-diplomatic-meeting-recent-developments-2026",
+        "/sanctions/entities/boutique-la-maison",
+        "/sanctions/crl/la-maison-fashion",
+        "/sanctions/entities/trober-s-a",
+        "/sanctions/cpal/hotel-san-alejandro",
+        "/sanctions/cpal/hotel-san-fernando",
         "/briefing",
         "/tools",
         "/companies",

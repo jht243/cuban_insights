@@ -44,6 +44,12 @@
   .province-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
   .marker-key { background: #f9f9f9; border: 1px solid var(--sr-gray-light); padding: 12px 16px; border-radius: 3px; font-size: 13px; margin: 16px 0; }
   .marker-key strong { color: #7a1f1a; }
+  .query-intent { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-red); padding: 14px 18px; margin: 0 0 18px; background: #fff; }
+  .query-intent__eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--sr-gray-text); font-weight: 700; margin-bottom: 8px; }
+  .query-intent__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+  .query-intent__grid a { display: block; border: 1px solid var(--sr-gray-light); border-radius: 3px; padding: 10px 12px; text-decoration: none; color: var(--sr-blue-dark); background: #fafbfd; font-size: 14px; line-height: 1.35; }
+  .query-intent__grid a:hover { border-color: var(--sr-blue); background: #f0f4f8; color: var(--sr-blue); }
+  .query-intent__grid small { display: block; color: var(--sr-gray-text); font-size: 12px; margin-top: 3px; }
 </style>
 {% endblock %}
 
@@ -61,7 +67,7 @@
       Compliance tool · Live check against {{ total_entries }} prohibited properties · CACR §515.210
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Cuba Prohibited Hotels &amp; Accommodations Checker (CPAL)
+      Cuba Prohibited Accommodations List OFAC 2026
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       Check any Cuban hotel, casa, or resort against the State Department&rsquo;s prohibited list (CPAL). U.S. persons can&rsquo;t lawfully stay at properties on this list &mdash; even via a third-country booking.
@@ -81,6 +87,30 @@
     <a href="?q=saratoga">Saratoga</a>
     <a href="?q=parque+central">Parque Central</a>
   </div>
+
+  <section class="query-intent" aria-labelledby="popular-cpal-searches">
+    <div id="popular-cpal-searches" class="query-intent__eyebrow">
+      Popular CPAL searches
+    </div>
+    <div class="query-intent__grid">
+      <a href="/tools/cuba-prohibited-hotels-checker">
+        Cuba prohibited accommodations list
+        <small>Search the full CPAL dataset</small>
+      </a>
+      <a href="/sanctions/cpal/hotel-san-alejandro">
+        Hotel San Alejandro sanctions
+        <small>Indexable CPAL property page</small>
+      </a>
+      <a href="/tools/cuba-prohibited-hotels-checker">
+        Cuba prohibited accommodations list OFAC 2026
+        <small>CACR §515.210 lodging restrictions</small>
+      </a>
+      <a href="/sanctions/cpal/hotel-san-fernando">
+        Hotel San Fernando sanctions
+        <small>Indexable CPAL property page</small>
+      </a>
+    </div>
+  </section>
 
   <div class="picker-block" id="cpal-picker" data-base="/tools/cuba-prohibited-hotels-checker">
     <div class="picker-row">

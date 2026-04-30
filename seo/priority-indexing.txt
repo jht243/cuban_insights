@@ -1,6 +1,12 @@
 https://cubaninsights.com/
 https://cubaninsights.com/invest-in-cuba
 https://cubaninsights.com/sanctions-tracker
+https://cubaninsights.com/us-cuba-diplomatic-meeting-recent-developments-2026
+https://cubaninsights.com/sanctions/entities/boutique-la-maison
+https://cubaninsights.com/sanctions/crl/la-maison-fashion
+https://cubaninsights.com/sanctions/entities/trober-s-a
+https://cubaninsights.com/sanctions/cpal/hotel-san-alejandro
+https://cubaninsights.com/sanctions/cpal/hotel-san-fernando
 https://cubaninsights.com/briefing
 https://cubaninsights.com/tools
 https://cubaninsights.com/companies
@@ -12,9 +18,3 @@ https://cubaninsights.com/tools/cuba-trade-leads-for-us-companies
 https://cubaninsights.com/tools/cuba-export-controls-sanctions-process-map
 https://cubaninsights.com/tools/can-my-us-company-export-to-cuba
 https://cubaninsights.com/tools/eltoque-trmi-rate
-https://cubaninsights.com/tools/ofac-cuba-sanctions-checker
-https://cubaninsights.com/tools/cuba-restricted-list-checker
-https://cubaninsights.com/tools/cuba-prohibited-hotels-checker
-https://cubaninsights.com/tools/public-company-cuba-exposure-check
-https://cubaninsights.com/tools/sec-edgar-cuba-impairment-search
-https://cubaninsights.com/tools/ofac-cuba-general-licenses

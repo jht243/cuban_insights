@@ -1,0 +1,99 @@
+{#
+  One Cuba Restricted List entity -> one indexable page.
+  Title and H1 carry the entity name verbatim so exact searches like
+  "la maisón (fashion) sanctions" can land on a page whose metadata
+  matches the query instead of the broader checker UI.
+#}
+{% extends "_base.html.j2" %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/sanctions-tracker">Cuba Sanctions</a>
+    <span>›</span>
+    <a href="/tools/cuba-restricted-list-checker">Cuba Restricted List</a>
+    <span>›</span>
+    <strong>{{ name }}</strong>
+  </nav>
+
+  <article>
+    <header>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700; margin-bottom:6px;">
+        <span style="display:inline-block; padding:2px 8px; background:#cc0000; color:#fff; border-radius:3px; margin-right:8px;">RESTRICTED</span>
+        Verified active as of {{ today_human }}
+      </div>
+      <h1>{{ name }}</h1>
+      <p class="subtitle">
+        Cuba Restricted List (CRL) entry{% if section %} - {{ section }}{% endif %}
+      </p>
+      <div class="meta">
+        <span><strong>Status:</strong> Active CRL listing</span>
+        <span><strong>Authority:</strong> CACR &sect;515.209</span>
+        <span><strong>Listed by:</strong> U.S. Department of State</span>
+        <span><strong>Last verified:</strong> <time datetime="{{ today_iso }}">{{ today_human }}</time></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <div class="takeaways">
+        <h3>Key Facts</h3>
+        <ul>
+          <li><strong>Entity name:</strong> {{ name }}</li>
+          {% if section %}<li><strong>CRL category:</strong> {{ section }}</li>{% endif %}
+          {% if kind %}<li><strong>Kind:</strong> {{ kind }}</li>{% endif %}
+          {% if location %}<li><strong>Location:</strong> {{ location }}</li>{% endif %}
+          <li><strong>Source:</strong> <a href="https://www.state.gov/cuba-sanctions/cuba-restricted-list/" rel="nofollow noopener" target="_blank">U.S. State Department Cuba Restricted List</a></li>
+        </ul>
+      </div>
+
+      <section>
+        <h2>What this means for U.S. persons</h2>
+        <p>
+          <strong>{{ name }}</strong> appears on the State Department's Cuba
+          Restricted List. Under &sect;515.209 of the Cuban Assets Control
+          Regulations, U.S. persons are generally prohibited from direct
+          financial transactions with entities on this list unless a narrow
+          OFAC authorization or exception applies.
+        </p>
+        <p>
+          The CRL is separate from the OFAC Specially Designated Nationals
+          (SDN) list and from the Cuba Prohibited Accommodations List (CPAL).
+          A clean SDN screen does not clear a Cuba counterparty if the entity
+          is listed here.
+        </p>
+      </section>
+
+      <section>
+        <h2>FAQ</h2>
+        {% for f in faq %}
+        <h3>{{ f.q }}</h3>
+        <p>{{ f.a }}</p>
+        {% endfor %}
+      </section>
+
+      {% if siblings %}
+      <section>
+        <h2>Other CRL entries in {{ section }}</h2>
+        <ul>
+          {% for s in siblings %}
+          <li><a href="{{ s.url_path }}">{{ s.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      <section>
+        <h2>Verify and explore further</h2>
+        <ul>
+          <li><a href="/tools/cuba-restricted-list-checker">Search the full Cuba Restricted List</a> ({{ refreshed_on or today_iso }})</li>
+          <li><a href="/tools/ofac-cuba-sanctions-checker">Cross-check against the OFAC SDN list</a></li>
+          <li><a href="/tools/cuba-prohibited-hotels-checker">Cross-check Cuba prohibited accommodations</a></li>
+          <li><a href="/sanctions-tracker">All Cuba sanctions designations</a></li>
+        </ul>
+      </section>
+    </div>
+  </article>
+</div>
+{% endblock %}

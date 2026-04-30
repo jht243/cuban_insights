@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import unicodedata
 from datetime import date, datetime, timedelta
 from typing import Iterable
 
@@ -112,9 +113,26 @@ _ALLOWED_TAGS_RE = re.compile(
 _ANY_TAG_RE = re.compile(r"<[^>]+>")
 
 
-def _slugify(text: str, *, max_len: int = 80) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return slug[:max_len] or "briefing"
+def _slugify(text: str, *, max_len: int = 110) -> str:
+    """Build a clean, keyword-preserving URL slug.
+
+    Briefing slugs used to append date + source id to every post, which
+    prevented collisions but produced noisy URLs and sometimes cut the
+    final keyword mid-word. New posts should keep the readable headline
+    slug unless a collision actually exists.
+    """
+    if not text:
+        return "briefing"
+    normalized = (
+        unicodedata.normalize("NFKD", text)
+        .encode("ascii", "ignore")
+        .decode("ascii")
+        .lower()
+    )
+    slug = re.sub(r"[^a-z0-9]+", "-", normalized).strip("-")
+    if len(slug) > max_len:
+        slug = slug[:max_len].rsplit("-", 1)[0].strip("-") or slug[:max_len].strip("-")
+    return slug or "briefing"
 
 
 def _count_words(html: str) -> int:
@@ -291,9 +309,38 @@ def _entry_metadata(item, source_table: str) -> dict:
     }
 
 
-def _post_url_slug(headline: str, source_table: str, source_id: int, published: date) -> str:
+def _post_url_slug(db, headline: str, source_table: str, source_id: int, published: date) -> str:
+    """Resolve the public /briefing slug for a new post.
+
+    The default is now the SEO slug itself:
+
+        /briefing/cuba-develops-technology-to-refine-its-own-crude-oil
+
+    Only if that slug is already taken do we append a compact numeric
+    suffix (`-2`, `-3`, ...). This keeps new URLs readable while
+    preserving the unique constraint on BlogPost.slug.
+    """
     base = _slugify(headline)
-    return f"{base}-{published.strftime('%Y%m%d')}-{source_id}"
+    existing = {
+        row.slug
+        for row in db.query(BlogPost.slug)
+        .filter(BlogPost.slug.like(f"{base}%"))
+        .all()
+    }
+    if base not in existing:
+        return base
+
+    max_len = 110
+    for n in range(2, 1000):
+        suffix = f"-{n}"
+        candidate_base = base[: max_len - len(suffix)].rstrip("-")
+        candidate = f"{candidate_base}{suffix}"
+        if candidate not in existing:
+            return candidate
+
+    # Extremely defensive fallback; should never happen, but keeps
+    # generation from failing if a title has hundreds of duplicates.
+    return f"{base[:96].rstrip('-')}-{published.strftime('%Y%m%d')}-{source_id}"
 
 
 def _persist_post(
@@ -310,8 +357,7 @@ def _persist_post(
     reading_minutes = max(1, round(word_count / 220))
 
     title = (payload.get("title") or item.headline)[:300]
-    slug_base = _slugify(title)
-    slug = f"{slug_base}-{item.published_date.strftime('%Y%m%d')}-{source_id}"
+    slug = _post_url_slug(db, title, source_table, source_id, item.published_date)
 
     keywords = payload.get("keywords") or []
     if isinstance(keywords, str):
