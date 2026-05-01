@@ -1,0 +1,160 @@
+{#
+  /people/<slug> — one Cuban power figure → one indexable page.
+  Title and h1 carry the canonical name verbatim so a name-search
+  ("Miguel Diaz-Canel", "Bruno Rodriguez Cuba foreign minister")
+  lands here directly.
+#}
+{% extends "_base.html.j2" %}
+{% from "_cluster_nav.html.j2" import cluster_nav %}
+
+{% block content %}
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/people">Cuban power figures</a>
+    <span>›</span>
+    <a href="{{ cohort_url }}">{{ cohort_label }}</a>
+    <span>›</span>
+    <strong>{{ person.name }}</strong>
+  </nav>
+
+  <article>
+    <header>
+      {% if badge.text %}
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:{{ badge.color }}; font-weight:700; margin-bottom:6px;">
+        <span style="display:inline-block; padding:2px 8px; background:{{ badge.color }}; color:#fff; border-radius:3px; margin-right:8px;">
+          {{ badge.text }}
+        </span>
+      </div>
+      {% endif %}
+      {% if person.sanctioned %}
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700; margin-bottom:6px;">
+        <span style="display:inline-block; padding:2px 8px; background:#cc0000; color:#fff; border-radius:3px; margin-right:8px;">
+          SANCTIONED BY OFAC
+        </span>
+        {{ person.sanctioning_program }}
+      </div>
+      {% endif %}
+      <h1>{{ person.name }}</h1>
+      <p class="subtitle">
+        {{ person.role }}{% if person.in_office_since %} — in office since {{ person.in_office_since }}{% endif %}
+      </p>
+      <div class="meta">
+        {% if person.spanish_title %}<span><strong>Spanish title:</strong> {{ person.spanish_title }}</span>{% endif %}
+        {% if person.born %}<span><strong>Born:</strong> {{ person.born }}{% if person.birthplace %}, {{ person.birthplace }}{% endif %}</span>{% endif %}
+        <span><strong>Nationality:</strong> {{ person.nationality }}</span>
+        <span><strong>Last verified:</strong> <time datetime="{{ verified_iso }}">{{ verified_human }}</time></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <p>{{ person.one_liner }}</p>
+
+      <div class="takeaways">
+        <h3>Quick facts</h3>
+        <ul>
+          <li><strong>Role:</strong> {{ person.role }}</li>
+          {% if person.spanish_title %}<li><strong>Spanish title:</strong> {{ person.spanish_title }}</li>{% endif %}
+          {% if person.in_office_since %}<li><strong>In office since:</strong> {{ person.in_office_since }}</li>{% endif %}
+          {% if person.born %}<li><strong>Born:</strong> {{ person.born }}{% if person.birthplace %} — {{ person.birthplace }}{% endif %}</li>{% endif %}
+          <li><strong>Nationality:</strong> {{ person.nationality }}</li>
+          {% if person.affiliations %}<li><strong>Affiliations:</strong> {{ person.affiliations|join('; ') }}</li>{% endif %}
+          <li><strong>Sanctioned by OFAC:</strong> {% if person.sanctioned %}Yes — {{ person.sanctioning_program }}{% else %}No{% endif %}</li>
+        </ul>
+      </div>
+
+      <h2>Biography</h2>
+      {% for para in person.bio %}
+      <p>{{ para }}</p>
+      {% endfor %}
+
+      {% if person.timeline %}
+      <h2>Career timeline</h2>
+      <ul>
+        {% for entry in person.timeline %}
+        <li><strong><time datetime="{{ entry.year }}">{{ entry.year }}</time>:</strong> {{ entry.event }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if person.sanctioned %}
+      <h2>OFAC sanctions cross-reference</h2>
+      <div class="source-citation" style="background:#fdecea;border-left-color:#cc0000;">
+        <strong>{{ person.name }}</strong> is currently designated by the U.S. Treasury
+        Office of Foreign Assets Control under <em>{{ person.sanctioning_program }}</em>.
+        See the
+        <a href="/sanctions/individuals">live OFAC Cuba SDN list of individuals</a>
+        and the
+        <a href="/sanctions-tracker">Cuba Sanctions Tracker</a>
+        for the active designation record.
+      </div>
+      {% endif %}
+
+      {% if related %}
+      <h2>Related people</h2>
+      <ul class="related">
+        {% for r in related %}
+        <li>
+          <a href="{{ r.url_path }}"><strong>{{ r.name }}</strong></a>
+          <small>— {{ r.role }}</small>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% if person.faqs %}
+      <h2 id="faq">Frequently asked questions</h2>
+      <section>
+        {% for f in person.faqs %}
+        <details {% if loop.first %}open{% endif %} style="border:1px solid #d8dde6; border-left:3px solid #002b5e; border-radius:3px; padding:12px 16px; margin-bottom:8px; background:#fff;">
+          <summary style="font-family:var(--font-serif); color:#002b5e; font-weight:700; font-size:16px; cursor:pointer; list-style:none;">
+            <span style="color:#cc0000; font-weight:700;">▸</span> {{ f.q }}
+          </summary>
+          <div style="font-size:14px; color:#222; margin-top:10px; line-height:1.55;">
+            {{ f.a }}
+          </div>
+        </details>
+        {% endfor %}
+      </section>
+      {% endif %}
+
+      {% if person.sources %}
+      <h2>Sources and further reading</h2>
+      <ul>
+        {% for s in person.sources %}
+        <li><a href="{{ s.url }}" rel="nofollow">{{ s.title }}</a></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <h2>Useful tools and explainers</h2>
+      <ul>
+        {% if person.sector_path %}
+        <li><a href="{{ person.sector_path }}">Sector context for {{ person.name }}'s role</a></li>
+        {% endif %}
+        <li><a href="/tools/ofac-cuba-sanctions-checker">OFAC Cuba sanctions checker (search any name)</a></li>
+        <li><a href="/sanctions-tracker">OFAC Cuba Sanctions Tracker (live SDN list)</a></li>
+        <li><a href="{{ cohort_url }}">More figures: {{ cohort_label }}</a></li>
+        <li><a href="/people">Back to the full Cuban power-figures directory</a></li>
+      </ul>
+    </div>
+
+    {% if siblings %}
+    <div class="related">
+      <h3>Other figures in {{ cohort_label }}</h3>
+      <ul>
+        {% for s in siblings %}
+        <li><a href="{{ s.url_path }}">{{ s.name }}</a> <small>— {{ s.role }}</small></li>
+        {% endfor %}
+      </ul>
+      <p style="margin-top:14px;font-size:14px;">
+        <a href="{{ cohort_url }}"><strong>See all in {{ cohort_label }} →</strong></a>
+      </p>
+    </div>
+    {% endif %}
+  </article>
+
+  {{ cluster_nav(cluster_ctx) }}
+</div>
+{% endblock %}

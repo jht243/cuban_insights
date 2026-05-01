@@ -94,6 +94,13 @@ _ANCHOR: dict[str, str] = {
     "/explainers/helms-burton-title-iii": "Helms-Burton Title III explained — confiscated-property lawsuits against US-listed companies",
     "/explainers/cuba-restricted-list": "The Cuba Restricted List explained — GAESA, CIMEX, Gaviota and the prohibited-counterparty regime",
 
+    "/people": "Cuban power figures — verified profiles of who runs Cuba (executive, PCC, military, judiciary, opposition)",
+    "/people/by-role/executive": "Cuba's executive & Council of Ministers — President, Prime Minister, Vice Presidents, ministers",
+    "/people/by-role/pcc": "Communist Party of Cuba (PCC) — Politburo, Secretariat, Central Committee leadership",
+    "/people/by-role/military": "Cuban military & MININT leadership — FAR, Interior Ministry, intelligence services",
+    "/people/by-role/judiciary": "Cuban judiciary & prosecution — Fiscal General, Tribunal Supremo Popular",
+    "/people/by-role/opposition": "Cuban opposition, dissident & exile leaders — UNPACU, Damas de Blanco",
+
     "/invest-in-cuba": "How to invest in Cuba (2026 sanctions-safe guide — CACR, Helms-Burton, Mariel ZED)",
     "/sectors/tourism": "Cuba tourism sector — cruise lines, airlines, hotels, OFAC Cuba Restricted List exposure",
     "/sectors/biotech": "Cuba biotech & pharma sector — BioCubaFarma, vaccines, OFAC medical-device licensing",
@@ -299,6 +306,32 @@ CLUSTERS: dict[str, Cluster] = {
         ),
     ),
 
+    "people": Cluster(
+        key="people",
+        name="Cuban Power Figures",
+        summary=(
+            "The people inside the Cuban government, the Communist "
+            "Party (PCC), the FAR and MININT security services, the "
+            "judiciary, and the opposition — verified profiles built "
+            "for name-search intent, with sanctions cross-references "
+            "and bidirectional links into the wider Cuba coverage."
+        ),
+        pillar=_ck(
+            "/people",
+            "Verified profiles of the people who run Cuba — and those who oppose them.",
+        ),
+        members=(
+            _ck("/people/by-role/executive",  "President, Prime Minister, Vice Presidents and ministers — the executive branch."),
+            _ck("/people/by-role/pcc",        "PCC Politburo and Secretariat — the leading force of the Cuban state."),
+            _ck("/people/by-role/military",   "FAR and MININT leadership — the security and intelligence apparatus."),
+            _ck("/people/by-role/judiciary",  "Cuban prosecutors and judges — Fiscalía General, Tribunal Supremo Popular."),
+            _ck("/people/by-role/opposition", "Opposition, dissident and exile leaders — UNPACU, Damas de Blanco."),
+            _ck("/sanctions/sector/governance", "All sanctioned Cuban political and judicial officials (PCC, ANPP, Council of State, TSP)."),
+            _ck("/sanctions/sector/military",   "All sanctioned Cuban military, intelligence and security officials."),
+            _ck("/sanctions/individuals",       "Browse every sanctioned Cuban individual A-Z, each with a full profile."),
+        ),
+    ),
+
     "fx": Cluster(
         key="fx",
         name="Cuba FX, MLC & BCC",
@@ -359,6 +392,10 @@ _PATH_TO_CLUSTER: tuple[tuple[str, str], ...] = (
     ("/tools/cuba-trade-events-matchmaking-calendar", "export"),
     ("/tools/cuba-trade-barriers-tracker", "export"),
     ("/tools/cuba-export-compliance-checklist", "export"),
+
+    ("/people/by-role/",       "people"),
+    ("/people/",               "people"),
+    ("/people",                "people"),
 
     ("/travel",                "travel"),
     ("/tools/cuba-visa-requirements",         "travel"),

@@ -1,0 +1,97 @@
+{#
+  /people pillar — the directory landing page for the Cuban
+  power-figures cluster. Renders the cohort grid plus a flat A-Z
+  index so every per-figure profile is one click away.
+#}
+{% extends "_base.html.j2" %}
+{% from "_cluster_nav.html.j2" import cluster_nav %}
+
+{% block content %}
+<div class="container-wide">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <strong>Cuban power figures</strong>
+  </nav>
+
+  <article>
+    <header>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#6c757d; font-weight:700; margin-bottom:6px;">
+        Verified {{ verified_human }}
+      </div>
+      <h1>Cuban power figures — who actually runs Cuba in {{ current_year }}</h1>
+      <p class="subtitle">
+        Profiles of the people inside the Cuban government, the Communist Party,
+        the security services, the judiciary, and the opposition — verified
+        against current news, with sanctions cross-references where they apply.
+      </p>
+      <div class="meta">
+        <span><strong>{{ people|length }} figures</strong> across {{ cohorts|length }} cohorts</span>
+        <span><strong>Last verified:</strong> <time datetime="{{ verified_iso }}">{{ verified_human }}</time></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <p>
+        Every name below is a permanent profile page with a journalistic
+        bio, a career timeline, the sanctions context where it applies,
+        and source links you can verify yourself. Use the cohort grid for
+        the structural view, or the A–Z index further down to jump to a
+        specific person.
+      </p>
+
+      <h2>Browse by cohort</h2>
+      <div class="index-grid">
+        {% for c in cohort_cards %}
+        <div class="index-card">
+          <a class="card-link" href="{{ c.path }}">{{ c.label }}</a>
+          <a class="title-link" href="{{ c.path }}">{{ c.label }}</a>
+          <div class="meta">{{ c.count }} {% if c.count == 1 %}figure{% else %}figures{% endif %}</div>
+          <div class="summary">{{ c.description }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <h2>All figures (A–Z)</h2>
+      <ul class="related">
+        {% for p in people %}
+        <li>
+          <a href="{{ p.url_path }}"><strong>{{ p.name }}</strong></a>
+          <small>— {{ p.role }}{% if p.sanctioned %} · sanctioned by OFAC{% endif %}</small>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <h2>How to read these profiles</h2>
+      <p>
+        Each profile leads with a status badge above the fold (current,
+        former, in exile, in custody) so the reader sees current state at
+        a glance. Below that: a one-sentence answer to "who is this
+        person", a quick-fact box, a 2–4 paragraph bio, a career timeline,
+        the sanctions cross-reference if any, and an FAQ block answering
+        the questions readers actually search. Sources are linked at the
+        bottom of every profile so claims can be checked.
+      </p>
+
+      <p>
+        Cuban titles in Spanish do not always translate cleanly into
+        English. Where a title has more than one common rendering — for
+        example <em>Fiscal General de la República</em> (Attorney
+        General, criminal prosecution) — we show the Spanish form and
+        explain the office in the FAQ to keep diligence searches honest.
+      </p>
+
+      <h2>Related coverage on Cuban Insights</h2>
+      <ul>
+        <li><a href="/sanctions/sector/governance">Sanctioned Cuban government, judicial &amp; PCC officials</a></li>
+        <li><a href="/sanctions/sector/military">Sanctioned Cuban military, intelligence &amp; security officials</a></li>
+        <li><a href="/sanctions/individuals">All individuals on the OFAC Cuba SDN list</a></li>
+        <li><a href="/sanctions-tracker">OFAC Cuba Sanctions Tracker (live SDN list)</a></li>
+        <li><a href="/explainers">Cuba investor explainers — OFAC, Helms-Burton, BCC, MLC</a></li>
+      </ul>
+    </div>
+  </article>
+
+  {{ cluster_nav(cluster_ctx) }}
+</div>
+{% endblock %}
