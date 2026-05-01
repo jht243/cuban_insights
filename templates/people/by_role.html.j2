@@ -1,0 +1,62 @@
+{#
+  /people/by-role/<cohort> — cohort hub page. Renders the people in
+  one cohort with brief one-liners and a link out to each profile.
+#}
+{% extends "_base.html.j2" %}
+{% from "_cluster_nav.html.j2" import cluster_nav %}
+
+{% block content %}
+<div class="container-wide">
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span>›</span>
+    <a href="/people">Cuban power figures</a>
+    <span>›</span>
+    <strong>{{ cohort_label }}</strong>
+  </nav>
+
+  <article>
+    <header>
+      <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#6c757d; font-weight:700; margin-bottom:6px;">
+        Verified {{ verified_human }}
+      </div>
+      <h1>{{ cohort_label }} — Cuban power figures ({{ current_year }})</h1>
+      <p class="subtitle">{{ cohort_description }}</p>
+      <div class="meta">
+        <span><strong>{{ people|length }}</strong> {% if people|length == 1 %}figure{% else %}figures{% endif %} in this cohort</span>
+        <span><strong>Last verified:</strong> <time datetime="{{ verified_iso }}">{{ verified_human }}</time></span>
+      </div>
+    </header>
+
+    <div class="body">
+      <h2>People in this cohort</h2>
+      <ul class="related">
+        {% for p in people %}
+        <li>
+          <a href="{{ p.url_path }}"><strong>{{ p.name }}</strong></a>
+          <small>— {{ p.role }}{% if p.sanctioned %} · sanctioned by OFAC{% endif %}</small>
+          <p style="margin: 6px 0 0; font-size: 14px; color: #495057;">{{ p.one_liner }}</p>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <h2>Other cohorts</h2>
+      <ul>
+        {% for c in other_cohorts %}
+        <li><a href="{{ c.path }}"><strong>{{ c.label }}</strong></a> — {{ c.description }}</li>
+        {% endfor %}
+      </ul>
+
+      <h2>Useful tools and explainers</h2>
+      <ul>
+        <li><a href="/people">Back to the full Cuban power-figures directory</a></li>
+        <li><a href="/sanctions/sector/governance">Sanctioned Cuban government &amp; PCC officials</a></li>
+        <li><a href="/sanctions/sector/military">Sanctioned Cuban military, intelligence &amp; security officials</a></li>
+        <li><a href="/tools/ofac-cuba-sanctions-checker">OFAC Cuba sanctions checker (search any name)</a></li>
+      </ul>
+    </div>
+  </article>
+
+  {{ cluster_nav(cluster_ctx) }}
+</div>
+{% endblock %}

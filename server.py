@@ -5463,6 +5463,364 @@ def sanctions_profile_page(bucket: str, slug: str):
         abort(500)
 
 
+# ──────────────────────────────────────────────────────────────────────
+# /people — Cuban power figures directory
+# ──────────────────────────────────────────────────────────────────────
+#
+# Editorial-magazine treatment of the people inside the Cuban
+# government, the PCC, the security services, the judiciary, and the
+# opposition. Every figure has a permanent, name-titled profile so a
+# Google search like "miguel diaz canel" or "bruno rodriguez cuba"
+# lands directly here, with the matching name in the SERP snippet.
+# ──────────────────────────────────────────────────────────────────────
+
+@app.route("/people")
+@app.route("/people/")
+def people_index_page():
+    """Pillar page for the Cuban power-figures cluster."""
+    from src.data.people import (
+        all_people, COHORTS, COHORT_ORDER, VERIFIED_AS_OF,
+        people_in_cohort, cohort_url,
+    )
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import date as _date, datetime as _dt
+    import json as _json
+
+    try:
+        people = all_people()
+        cohort_cards = []
+        for key in COHORT_ORDER:
+            meta = COHORTS[key]
+            cohort_cards.append({
+                "key": key,
+                "label": meta["label"],
+                "description": meta["description"],
+                "path": cohort_url(key),
+                "count": len(people_in_cohort(key)),
+            })
+
+        base = _base_url()
+        canonical = f"{base}/people"
+        verified_iso = VERIFIED_AS_OF
+        verified_dt = _dt.strptime(VERIFIED_AS_OF, "%Y-%m-%d")
+        verified_human = verified_dt.strftime("%B %Y")
+        current_year = _date.today().year
+
+        seo = {
+            "title": (
+                f"Cuban Power Figures — Who Actually Runs Cuba in {current_year} "
+                f"(Verified Profiles)"
+            )[:120],
+            "description": (
+                f"Profiles of {len(people)} people inside the Cuban government, "
+                f"the Communist Party (PCC), the FAR and MININT security "
+                f"services, the judiciary, and the opposition — verified "
+                f"against current news as of {verified_human}, with sanctions "
+                f"cross-references where they apply."
+            )[:300],
+            "keywords": (
+                "Cuba president, Cuba prime minister, who runs Cuba, Cuban "
+                "Communist Party, PCC Politburo, Cuba MINFAR, Cuba MININT, "
+                "Cuba Fiscal General, Cuba opposition, UNPACU, Damas de Blanco"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "website",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                        {"@type": "ListItem", "position": 2, "name": "Cuban power figures", "item": canonical},
+                    ],
+                },
+                {
+                    "@type": "ItemList",
+                    "@id": f"{canonical}#list",
+                    "name": "Cuban power figures",
+                    "numberOfItems": len(people),
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": idx + 1,
+                            "url": f"{base}{p.url_path}",
+                            "name": p.name,
+                        }
+                        for idx, p in enumerate(people)
+                    ],
+                },
+            ],
+        }, ensure_ascii=False)
+
+        from src.seo.cluster_topology import build_cluster_ctx
+        cluster_ctx = build_cluster_ctx("/people")
+
+        template = _env.get_template("people/index.html.j2")
+        html = template.render(
+            people=people,
+            cohorts=COHORTS,
+            cohort_cards=cohort_cards,
+            verified_iso=verified_iso,
+            verified_human=verified_human,
+            current_year=current_year,
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("people index render failed: %s", exc)
+        abort(500)
+
+
+@app.route("/people/by-role/<cohort>")
+@app.route("/people/by-role/<cohort>/")
+def people_cohort_page(cohort: str):
+    """Cohort hub — every person tagged with this cohort key."""
+    from src.data.people import (
+        COHORTS, COHORT_ORDER, VERIFIED_AS_OF,
+        people_in_cohort, cohort_url,
+    )
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import date as _date, datetime as _dt
+    import json as _json
+
+    if cohort not in COHORTS:
+        abort(404)
+
+    try:
+        meta = COHORTS[cohort]
+        people = people_in_cohort(cohort)
+        other_cohorts = [
+            {
+                "key": k,
+                "label": COHORTS[k]["label"],
+                "description": COHORTS[k]["description"],
+                "path": cohort_url(k),
+            }
+            for k in COHORT_ORDER if k != cohort
+        ]
+
+        base = _base_url()
+        canonical = f"{base}/people/by-role/{cohort}"
+        verified_iso = VERIFIED_AS_OF
+        verified_human = _dt.strptime(VERIFIED_AS_OF, "%Y-%m-%d").strftime("%B %Y")
+        current_year = _date.today().year
+
+        seo = {
+            "title": (
+                f"{meta['label']} — Cuban Power Figures ({current_year})"
+            )[:120],
+            "description": (
+                f"{meta['description']} Verified profiles of "
+                f"{len(people)} {'figure' if len(people) == 1 else 'figures'} "
+                f"as of {verified_human}."
+            )[:300],
+            "keywords": f"Cuba {meta['short'].lower()}, who runs Cuba, Cuban government officials",
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "website",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                        {"@type": "ListItem", "position": 2, "name": "Cuban power figures", "item": f"{base}/people"},
+                        {"@type": "ListItem", "position": 3, "name": meta["label"], "item": canonical},
+                    ],
+                },
+                {
+                    "@type": "ItemList",
+                    "@id": f"{canonical}#list",
+                    "name": meta["label"],
+                    "numberOfItems": len(people),
+                    "itemListElement": [
+                        {
+                            "@type": "ListItem",
+                            "position": idx + 1,
+                            "url": f"{base}{p.url_path}",
+                            "name": p.name,
+                        }
+                        for idx, p in enumerate(people)
+                    ],
+                },
+            ],
+        }, ensure_ascii=False)
+
+        from src.seo.cluster_topology import build_cluster_ctx
+        cluster_ctx = build_cluster_ctx(f"/people/by-role/{cohort}")
+
+        template = _env.get_template("people/by_role.html.j2")
+        html = template.render(
+            cohort_key=cohort,
+            cohort_label=meta["label"],
+            cohort_description=meta["description"],
+            people=people,
+            other_cohorts=other_cohorts,
+            verified_iso=verified_iso,
+            verified_human=verified_human,
+            current_year=current_year,
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("people cohort render failed for %s: %s", cohort, exc)
+        abort(500)
+
+
+@app.route("/people/<slug>")
+@app.route("/people/<slug>/")
+def people_profile_page(slug: str):
+    """One Cuban power figure → one permanent, name-titled profile."""
+    from src.data.people import (
+        get_person, cohort_label, cohort_url, related_people,
+        cohort_siblings, status_badge, VERIFIED_AS_OF,
+    )
+    from src.page_renderer import _env, _base_url, _iso, settings as _s
+    from datetime import date as _date, datetime as _dt
+    import json as _json
+
+    person = get_person(slug)
+    if person is None:
+        abort(404)
+
+    try:
+        related = related_people(person)
+        siblings = cohort_siblings(person, limit=6)
+        badge = status_badge(person.status)
+
+        base = _base_url()
+        canonical = f"{base}{person.url_path}"
+        verified_iso = VERIFIED_AS_OF
+        verified_human = _dt.strptime(VERIFIED_AS_OF, "%Y-%m-%d").strftime("%B %Y")
+        current_year = _date.today().year
+
+        title = f"{person.name} — {person.role} ({current_year})"
+        seo = {
+            "title": title[:120],
+            "description": person.one_liner[:300],
+            "keywords": (
+                f"who is {person.name}, {person.name} biography, "
+                f"{person.name} role, {person.name} Cuba"
+                f"{', ' + person.name + ' OFAC sanctions' if person.sanctioned else ''}"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "profile",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+
+        person_node = {
+            "@type": "Person",
+            "@id": f"{canonical}#person",
+            "name": person.name,
+            "url": canonical,
+            "jobTitle": person.role,
+            "nationality": person.nationality,
+            "description": person.one_liner,
+        }
+        if person.aliases:
+            person_node["alternateName"] = list(person.aliases)
+        if person.born:
+            person_node["birthDate"] = person.born
+        if person.birthplace:
+            person_node["birthPlace"] = person.birthplace
+        if person.affiliations:
+            person_node["affiliation"] = [
+                {"@type": "Organization", "name": a} for a in person.affiliations
+            ]
+        same_as: list[str] = []
+        if person.wikidata_id:
+            same_as.append(f"https://www.wikidata.org/wiki/{person.wikidata_id}")
+        if person.wikipedia_url:
+            same_as.append(person.wikipedia_url)
+        if same_as:
+            person_node["sameAs"] = same_as
+
+        breadcrumb = {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                {"@type": "ListItem", "position": 2, "name": "Cuban power figures", "item": f"{base}/people"},
+                {"@type": "ListItem", "position": 3, "name": cohort_label(person.primary_cohort), "item": f"{base}{cohort_url(person.primary_cohort)}"},
+                {"@type": "ListItem", "position": 4, "name": person.name, "item": canonical},
+            ],
+        }
+
+        graph = [breadcrumb, person_node]
+        if person.faqs:
+            graph.append({
+                "@type": "FAQPage",
+                "@id": f"{canonical}#faq",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": f.q,
+                        "acceptedAnswer": {"@type": "Answer", "text": f.a[:500]},
+                    }
+                    for f in person.faqs
+                ],
+            })
+
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": graph,
+        }, ensure_ascii=False)
+
+        from src.seo.cluster_topology import build_cluster_ctx
+        cluster_ctx = build_cluster_ctx(person.url_path)
+
+        template = _env.get_template("people/profile.html.j2")
+        html = template.render(
+            person=person,
+            related=related,
+            siblings=siblings,
+            badge=badge,
+            cohort_label=cohort_label(person.primary_cohort),
+            cohort_url=cohort_url(person.primary_cohort),
+            verified_iso=verified_iso,
+            verified_human=verified_human,
+            current_year=current_year,
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("people profile render failed for slug=%s: %s", slug, exc)
+        abort(500)
+
+
 def _company_index_letter(name: str) -> str:
     letter = (name[:1] or "#").upper()
     return letter if letter.isalpha() else "#"
@@ -6973,6 +7331,34 @@ def _emit_urlset(urls: list[dict]) -> Response:
     return resp
 
 
+def _people_sitemap_urls() -> list[dict]:
+    """Pillar + every cohort hub + every per-figure profile, walked
+    from the registry so adding a person to src/data/people.py auto-
+    adds them to the sitemap (no duplicate hand-curated list)."""
+    from src.data.people import (
+        all_people, COHORT_ORDER, VERIFIED_AS_OF, cohort_url,
+    )
+    base = settings.site_url.rstrip("/")
+    out: list[dict] = [
+        {"loc": f"{base}/people", "lastmod": VERIFIED_AS_OF, "changefreq": "weekly", "priority": "0.85"},
+    ]
+    for cohort in COHORT_ORDER:
+        out.append({
+            "loc": f"{base}{cohort_url(cohort)}",
+            "lastmod": VERIFIED_AS_OF,
+            "changefreq": "weekly",
+            "priority": "0.8",
+        })
+    for p in all_people():
+        out.append({
+            "loc": f"{base}{p.url_path}",
+            "lastmod": VERIFIED_AS_OF,
+            "changefreq": "monthly",
+            "priority": "0.75",
+        })
+    return out
+
+
 def _core_static_urls() -> list[dict]:
     base = settings.site_url.rstrip("/")
     today_iso = _sitemap_today_iso()
@@ -7075,8 +7461,10 @@ def sitemap_xml():
 
 @app.route("/sitemap-core.xml")
 def sitemap_core_xml():
-    """Hand-curated home, hubs, tools, sector roots. Highest priority."""
-    return _emit_urlset(_core_static_urls())
+    """Hand-curated home, hubs, tools, sector roots. Highest priority.
+    Also walks the /people registry so every per-figure profile is in
+    the submitted sitemap from the moment it ships."""
+    return _emit_urlset(_core_static_urls() + _people_sitemap_urls())
 
 
 @app.route("/sitemap-briefings-recent.xml")
