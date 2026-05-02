@@ -40,6 +40,12 @@
   .section-grid a:hover { background: #f0f4fa; border-color: var(--sr-blue); }
   .section-grid a .count { float: right; color: var(--sr-gray-text); font-size: 12px; }
   .context-box { background: #f5f7fb; border-left: 4px solid var(--sr-blue); padding: 14px 18px; font-size: 14px; margin: 16px 0; border-radius: 3px; }
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
 </style>
 {% endblock %}
 
@@ -57,7 +63,7 @@
       Compliance tool · Live check against {{ total_entries }} prohibited entities · CACR §515.209
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      OFAC Cuba Restricted List (CRL) Entity Checker
+      Cuba Restricted List Checker &mdash; Search {{ total_entries }} CRL Entities
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       Check any Cuban company, ministry, hotel, or marina against the State Department&rsquo;s Cuba Restricted List. Most entities here &mdash; GAESA, CIMEX, Gaviota, Habaguanex &mdash; are <em>not</em> on the OFAC SDN, so a clean SDN screen alone is not enough.
@@ -150,6 +156,28 @@
   </div>
   {% endif %}
   </div>{# /#crl-results #}
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">About the Cuba Restricted List</h2>
+  <section class="faq-section">
+    <details>
+      <summary>What is the Cuba Restricted List (CRL)?</summary>
+      <div class="show-more__body">
+        <p>The CRL is maintained by the U.S. State Department under &sect;515.209 of the Cuban Assets Control Regulations. It lists Cuban government and Communist Party-affiliated entities that U.S. persons are prohibited from engaging in direct financial transactions with. The list centers on <strong>GAESA</strong> (Grupo de Administraci&oacute;n Empresarial, S.A.), the Cuban military holding company that controls a large share of Cuba&rsquo;s tourism economy, and its dozens of subentities &mdash; CIMEX, Gaviota, Habaguanex, FINCIMEX, AT Comercial, ALMEST, BFI, and many more.</p>
+      </div>
+    </details>
+    <details>
+      <summary>How is the CRL different from the OFAC SDN list?</summary>
+      <div class="show-more__body">
+        <p>The <strong>SDN (Specially Designated Nationals) list</strong> is a Treasury/OFAC-maintained sanctions list covering parties across all U.S. sanctions programs. The <strong>CRL</strong> is a State Department list covering only Cuba. Crucially, most CRL entities &mdash; including GAESA, CIMEX, Gaviota, and Habaguanex &mdash; are <strong>NOT on the SDN</strong>. A clean SDN screen does not mean a Cuban counterparty is safe to transact with. You must check <a href="/tools/ofac-cuba-sanctions-checker">both lists</a> independently, along with the <a href="/tools/cuba-prohibited-hotels-checker">CPAL hotel list</a>.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What counts as a &ldquo;direct financial transaction&rdquo; with a CRL entity?</summary>
+      <div class="show-more__body">
+        <p>Examples include: paying for a hotel room at a CRL-controlled property, paying a CRL tour operator, transferring funds to a CRL ministry or holding company, or routing payments through a CRL-listed bank such as BFI. Some transactions are carved out &mdash; notably those authorized by &sect;515.578 (telecom/internet), &sect;515.533 (agricultural/medical exports), and certain remittances and educational activities &mdash; but the carve-outs are narrow and fact-specific.</p>
+      </div>
+    </details>
+  </section>
 
   <div class="disclaimer">
     <strong>Important:</strong> Cached snapshot of the U.S. State Department&rsquo;s

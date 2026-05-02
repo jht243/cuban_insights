@@ -102,6 +102,12 @@
   .nbh-card .meta strong { color: var(--sr-blue-dark); }
   .nbh-card .avoid { font-size: 12px; color: #7a1f1a; background: #fdecea; padding: 6px 10px; border-radius: 3px; margin-top: 6px; }
   .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
 </style>
 {% endblock %}
 
@@ -119,7 +125,7 @@
       Travel tool · Curated, expert-reviewed
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Havana Safety Score by Neighborhood
+      Is Cuba Safe? Havana Safety Map by Neighborhood ({{ current_year }})
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       A first-pass safety reference for visitors. Each neighborhood gets a 1&ndash;5 score, a recommended business use, and the specific risks to avoid.
@@ -174,6 +180,40 @@
     </article>
     {% endfor %}
   </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Cuba safety: frequently asked questions</h2>
+  <section class="faq-section">
+    <details open>
+      <summary>Is Cuba safe to visit in {{ current_year }}?</summary>
+      <div class="show-more__body">
+        <p>Cuba is generally one of the <strong>safer Caribbean destinations</strong> for tourists. The U.S. State Department rates Cuba at <strong>Level 2</strong> (&ldquo;Exercise Increased Caution&rdquo;) &mdash; the same level as France, the UK, and Germany. Violent crime against tourists is rare; the island's authoritarian security apparatus keeps street crime comparatively low. The main practical risks are petty theft in tourist zones, rolling blackouts (4&ndash;8 hours/day outside Havana), crumbling infrastructure, and the fact that <strong>U.S.-issued bank cards do not work</strong> anywhere in Cuba.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is it safe to travel to Cuba as an American?</summary>
+      <div class="show-more__body">
+        <p>Physically, yes &mdash; American tourists face the same low-crime environment as Canadians or Europeans. The extra risks for Americans are <strong>legal and logistical</strong>: you must travel under one of OFAC's <a href="/tools/can-i-travel-to-cuba">12 authorized categories</a>, avoid <a href="/tools/cuba-prohibited-hotels-checker">CPAL-listed hotels</a>, and bring <strong>cash</strong> (no U.S.-issued Visa, Mastercard, or Amex works). The U.S. Embassy in Havana resumed limited services in 2023 but cannot provide full consular assistance in emergencies. Purchase travel-medical insurance with <strong>evacuation coverage</strong> before departure.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What are the biggest safety risks in Cuba?</summary>
+      <div class="show-more__body">
+        <ol style="font-size:14px; margin:8px 0 8px 22px;">
+          <li><strong>Petty theft &amp; scams</strong> &mdash; pickpocketing, distraction theft, &ldquo;jinetero&rdquo; hustles, short-change at informal exchanges. Worst in Old Havana, Obispo Street, and the Malec&oacute;n at night.</li>
+          <li><strong>Power outages (&ldquo;apagones&rdquo;)</strong> &mdash; rolling blackouts kill AC, elevators, water pumps, and street lighting. Carry a headlamp; keep your phone charged.</li>
+          <li><strong>Road conditions</strong> &mdash; poorly lit, no guardrails, animals on highways, rare seatbelts in older taxis. Night driving outside Havana is dangerous.</li>
+          <li><strong>Medical care</strong> &mdash; Cuban doctors are well-trained but hospitals lack supplies, medications, and modern imaging. Pharmacies may not stock common drugs. Evacuation insurance is non-negotiable.</li>
+          <li><strong>Arbitrary detention</strong> &mdash; the State Dept warns of risk for journalists, activists, and Cuban-Americans with perceived political ties.</li>
+        </ol>
+      </div>
+    </details>
+    <details>
+      <summary>What is the U.S. State Department travel advisory for Cuba?</summary>
+      <div class="show-more__body">
+        <p>As of {{ current_year }}, Cuba is rated <strong>Level 2: Exercise Increased Caution</strong>. The advisory cites: civil unrest risk (July 2021 protests context), arbitrary enforcement of local laws, limited U.S. Embassy services, and internet/communications disruptions during political tensions. Cuba is <strong>not</strong> at Level 3 (&ldquo;Reconsider Travel&rdquo;) or Level 4 (&ldquo;Do Not Travel&rdquo;).</p>
+      </div>
+    </details>
+  </section>
 
   <div class="disclaimer">
     <strong>Important:</strong> Scores reflect aggregated, expert-reviewed

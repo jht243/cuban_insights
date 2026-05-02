@@ -50,6 +50,12 @@
   .query-intent__grid a { display: block; border: 1px solid var(--sr-gray-light); border-radius: 3px; padding: 10px 12px; text-decoration: none; color: var(--sr-blue-dark); background: #fafbfd; font-size: 14px; line-height: 1.35; }
   .query-intent__grid a:hover { border-color: var(--sr-blue); background: #f0f4f8; color: var(--sr-blue); }
   .query-intent__grid small { display: block; color: var(--sr-gray-text); font-size: 12px; margin-top: 3px; }
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
 </style>
 {% endblock %}
 
@@ -67,7 +73,7 @@
       Compliance tool · Live check against {{ total_entries }} prohibited properties · CACR §515.210
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Cuba Prohibited Accommodations List OFAC 2026
+      Cuba Prohibited Accommodations List &mdash; CPAL Checker ({{ total_entries }} Properties)
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       Check any Cuban hotel, casa, or resort against the State Department&rsquo;s prohibited list (CPAL). U.S. persons can&rsquo;t lawfully stay at properties on this list &mdash; even via a third-country booking.
@@ -195,6 +201,34 @@
   </div>
   {% endif %}
   </div>{# /#cpal-results #}
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">About the Cuba Prohibited Accommodations List</h2>
+  <section class="faq-section">
+    <details>
+      <summary>What is the CPAL and who maintains it?</summary>
+      <div class="show-more__body">
+        <p>The Cuba Prohibited Accommodations List (CPAL) is maintained by the U.S. State Department under &sect;515.210 of the Cuban Assets Control Regulations. It identifies specific hotels, hostales, casas particulares, and resorts in Cuba at which U.S. persons are prohibited from staying or paying for lodging &mdash; regardless of whether the booking is made through a U.S. or third-country platform like Booking.com or Airbnb. Properties are listed because they are owned or controlled by a Cuban government entity, military holding company (GAESA), or a Communist Party official.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is the CPAL the same as the Cuba Restricted List (CRL)?</summary>
+      <div class="show-more__body">
+        <p>No. They are separate lists published under different sections of the CACR. The <strong>CRL (&sect;515.209)</strong> lists Cuban entities you cannot transact with (e.g. GAESA, CIMEX, Gaviota). The <strong>CPAL (&sect;515.210)</strong> lists specific lodging properties. A hotel may be on the CPAL because its operator is on the CRL, but the lists are structurally distinct and you must <a href="/tools/cuba-restricted-list-checker">check both</a>. Neither fully overlaps with the <a href="/tools/ofac-cuba-sanctions-checker">OFAC SDN list</a>.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Can I stay at a casa particular in Cuba?</summary>
+      <div class="show-more__body">
+        <p>Genuine independently-owned casas particulares are generally permissible under &sect;515.574 (&ldquo;Support for the Cuban People&rdquo;) and are the recommended compliance pattern for U.S. travelers. However, the State Department flags two subcategories on the CPAL: properties marketed as casas but actually state-owned (<strong>* marker</strong>), and genuine private casas that meet CPAL inclusion criteria (<strong>^ marker</strong>). Both types are prohibited. Always search this tool before booking.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What if I book through Airbnb or a non-U.S. travel agent?</summary>
+      <div class="show-more__body">
+        <p>The &sect;515.210 prohibition follows the <strong>U.S. person</strong>, not the booking channel. A U.S. citizen staying at a CPAL-listed property is in violation even when the reservation, payment, or platform is foreign. Airbnb operates under separate authorizations (&sect;515.578 telecoms / internet services), but the underlying lodging prohibition still applies to the traveler.</p>
+      </div>
+    </details>
+  </section>
 
   <div class="disclaimer">
     <strong>Important:</strong> Cached snapshot of <a href="https://www.state.gov/cuba-sanctions/cuba-prohibited-accommodations-list/" rel="noopener" target="_blank">state.gov &mdash; CPAL</a> (last refreshed {{ refreshed_on }}). The State Department updates the list between our refreshes &mdash; verify with the official source for high-stakes bookings. Not legal advice.

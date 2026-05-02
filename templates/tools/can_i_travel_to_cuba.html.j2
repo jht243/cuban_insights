@@ -25,6 +25,12 @@
   .restart { display: inline-block; margin-top: 16px; padding: 8px 16px; border: 1px solid var(--sr-blue); border-radius: 3px; color: var(--sr-blue-dark); text-decoration: none; font-size: 13px; }
   .restart:hover { background: var(--sr-blue); color: var(--white); }
   .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
 </style>
 {% endblock %}
 
@@ -42,10 +48,10 @@
       Decision tool · 12 OFAC categories · CACR §515.560–.578
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      Can I Legally Travel to Cuba?
+      Can Americans Travel to Cuba? ({{ current_year }})
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
-      Three quick questions to find out whether your trip is authorised, which OFAC category covers it, and what records you need to keep.
+      Answer three quick questions to find out if your Cuba trip is legal, which of the 12 OFAC categories covers it, and what records you need to keep for 5 years.
     </p>
   </header>
 
@@ -128,6 +134,55 @@
   <a class="restart" href="?step=passport">&#8635; Start over</a>
 
   {% endif %}
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-section">
+    <details>
+      <summary>Can Americans travel to Cuba in {{ current_year }}?</summary>
+      <div class="show-more__body">
+        <p>Yes &mdash; U.S. citizens can legally travel to Cuba, but only under one of OFAC&rsquo;s 12 authorized categories defined in the Cuban Assets Control Regulations (CACR &sect;515.560&ndash;.578). Pure tourism is <strong>not</strong> one of them. The most common category for individual travelers is <strong>&sect;515.574 &ldquo;Support for the Cuban People,&rdquo;</strong> which requires a full-time schedule of activities supporting the Cuban private sector &mdash; staying at casas particulares, eating at paladares, and engaging with MIPYME businesses.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What are the 12 requirements to travel to Cuba?</summary>
+      <div class="show-more__body">
+        <p>The &ldquo;12 requirements&rdquo; refer to the 12 OFAC-authorized travel categories. You must qualify under at least one:</p>
+        <ol style="font-size:14px; margin:8px 0 8px 22px;">
+          <li>Family visits (&sect;515.561)</li>
+          <li>Official U.S. government business (&sect;515.562)</li>
+          <li>Journalistic activity (&sect;515.563)</li>
+          <li>Professional research (&sect;515.564)</li>
+          <li>Educational activities (&sect;515.565)</li>
+          <li>Religious activities (&sect;515.566)</li>
+          <li>Public performances (&sect;515.567)</li>
+          <li>Support for the Cuban people (&sect;515.574)</li>
+          <li>Humanitarian projects (&sect;515.575)</li>
+          <li>Private foundation activities (&sect;515.576)</li>
+          <li>Exportation transactions (&sect;515.533)</li>
+          <li>Informational materials (&sect;515.545)</li>
+        </ol>
+        <p>Additionally, all travelers need a <strong>Cuban Tourist Card</strong> (~$50&ndash;100), <strong>travel-medical insurance</strong> valid in Cuba, and must complete the <strong>D&rsquo;Viajeros</strong> online customs/health declaration within 72 hours of arrival.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Why can&rsquo;t Americans go to Cuba as tourists?</summary>
+      <div class="show-more__body">
+        <p>The U.S. trade embargo on Cuba, codified in the Cuban Assets Control Regulations (31 CFR Part 515) since 1963, prohibits most financial transactions between U.S. persons and Cuba. Tourism per se is not one of the 12 authorized categories. However, the &ldquo;Support for the Cuban People&rdquo; category (&sect;515.574) allows individual travel with a full-time schedule of activities that directly engage Cuba&rsquo;s private sector &mdash; this is how most individual U.S. travelers visit legally.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is it safe to travel to Cuba?</summary>
+      <div class="show-more__body">
+        <p>Cuba is generally considered safe for tourists compared to other Caribbean destinations, with low rates of violent crime against visitors. The U.S. State Department rates Cuba at <strong>Level 2</strong> (&ldquo;Exercise Increased Caution&rdquo;), citing civil unrest risk and arbitrary detention. Practical concerns include rolling blackouts (especially outside Havana), limited ATM/card infrastructure (U.S.-issued Visa and Mastercard do <strong>not</strong> work in Cuba), a cash-only economy, and intermittent internet. See our <a href="/tools/havana-safety-by-neighborhood">Havana Safety Map</a> for neighborhood-level guidance.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What records must I keep after a Cuba trip?</summary>
+      <div class="show-more__body">
+        <p>Under CACR &sect;515.601, U.S. travelers must retain records for <strong>5 years</strong>: your full-time schedule of qualifying activities, all hotel and transportation receipts, a list of Cubans you engaged with, export documentation if applicable, and any sponsor letter for educational/religious/humanitarian travel. OFAC can audit at any time &mdash; failure to produce records can be treated as evidence of unauthorized travel.</p>
+      </div>
+    </details>
+  </section>
 
   <div class="disclaimer">
     <strong>Important:</strong> Educational decision aid, not legal advice. CACR (31 CFR Part 515) and the State Department&rsquo;s Cuba Restricted &amp; Prohibited Accommodations Lists change periodically &mdash; verify before booking, and keep full-time-schedule + transaction records for five years per §515.601.

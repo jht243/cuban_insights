@@ -1,0 +1,256 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .timeline { position: relative; padding-left: 28px; margin: 24px 0; }
+  .timeline::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--sr-gray-light); }
+  .tl-item { position: relative; margin-bottom: 18px; }
+  .tl-item::before { content: ""; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--sr-blue); border: 2px solid var(--white); }
+  .tl-item.active::before { background: #cc0000; }
+  .tl-year { font-family: var(--font-serif); font-weight: 700; color: var(--sr-blue-dark); font-size: 15px; }
+  .tl-body { font-size: 14px; color: var(--sr-dark-text); margin-top: 3px; line-height: 1.55; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stat-card { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 14px 18px; border-radius: 3px; text-align: center; }
+  .stat-card .num { font-family: var(--font-serif); font-size: 28px; color: #cc0000; font-weight: 700; }
+  .stat-card .label { font-size: 12px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+
+  .law-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; margin: 16px 0 28px; }
+  .law-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-blue); padding: 16px 18px; border-radius: 3px; background: var(--white); }
+  .law-card h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 16px; margin: 0 0 6px; }
+  .law-card .cite { font-size: 12px; color: var(--sr-gray-text); font-family: monospace; margin-bottom: 8px; }
+  .law-card p { font-size: 14px; margin: 0; }
+
+  .key-box { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 18px 22px; margin: 20px 0; border-radius: 3px; }
+  .key-box h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 18px; margin: 0 0 8px; }
+  .key-box ul { margin: 0 0 0 20px; font-size: 14px; }
+  .key-box li { margin: 6px 0; }
+
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
+
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Cuba Embargo Explained</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Explainer &middot; U.S. Trade Embargo on Cuba &middot; Last updated {{ current_year }}
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Cuba Embargo Explained: History, Laws, Sanctions &amp; Current Status ({{ current_year }})
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      The U.S. embargo on Cuba is the longest-running trade embargo in modern history &mdash; in effect since 1962. This guide covers what the embargo prohibits, the laws that enforce it, its history across 12 U.S. presidents, and what it means for travelers, businesses, and investors today.
+    </p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num">62+</div>
+      <div class="label">Years in effect</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">$130B+</div>
+      <div class="label">Cuba&rsquo;s claimed damages</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">5,913</div>
+      <div class="label">Certified U.S. property claims</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">187&ndash;2</div>
+      <div class="label">UN vote to end embargo (2023)</div>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">What the Cuba embargo actually prohibits</h2>
+
+  <p>The embargo is a <strong>near-total commercial, financial, and travel ban</strong> on U.S. persons (citizens, residents, and companies) engaging in transactions involving Cuba. Specifically:</p>
+
+  <ul style="font-size:14px; margin:8px 0 8px 22px; line-height:1.7;">
+    <li><strong>Trade:</strong> Virtually all exports to and imports from Cuba are prohibited, except food, medicine, and certain agricultural products under the Trade Sanctions Reform and Export Enhancement Act (TSRA, 2000).</li>
+    <li><strong>Financial transactions:</strong> U.S. persons cannot engage in financial transactions with Cuba, its nationals, or entities on the Cuba Restricted List (CRL) and OFAC SDN list, without authorization.</li>
+    <li><strong>Travel:</strong> U.S. persons can only travel to Cuba under one of <a href="/tools/can-i-travel-to-cuba">12 OFAC-authorized categories</a>. Pure tourism is prohibited.</li>
+    <li><strong>Investment:</strong> U.S. persons cannot invest in Cuban enterprises, purchase Cuban government bonds, or acquire real property in Cuba.</li>
+    <li><strong>Banking:</strong> U.S.-issued Visa, Mastercard, and Amex cards do not work in Cuba. Cuban banks cannot access the U.S. financial system.</li>
+    <li><strong>Shipping:</strong> Vessels that dock in Cuba are banned from entering U.S. ports for 180 days (the &ldquo;180-day rule&rdquo;).</li>
+  </ul>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Laws that enforce the embargo</h2>
+
+  <div class="law-grid">
+    <div class="law-card">
+      <h3>Trading with the Enemy Act (TWEA)</h3>
+      <div class="cite">50 U.S.C. &sect;4301&ndash;4341 &middot; 1917</div>
+      <p>The original statutory basis. Grants the president emergency powers to restrict trade with hostile nations. Cuba is the <strong>only country</strong> still sanctioned under TWEA (all others moved to IEEPA in 1977).</p>
+    </div>
+    <div class="law-card">
+      <h3>Cuban Assets Control Regulations (CACR)</h3>
+      <div class="cite">31 CFR Part 515 &middot; 1963</div>
+      <p>Treasury/OFAC regulations implementing the embargo. Defines all prohibited transactions, the <a href="/tools/ofac-cuba-general-licenses">12 general licenses</a> for travel, remittance rules, and the enforcement framework. The primary day-to-day compliance reference.</p>
+    </div>
+    <div class="law-card">
+      <h3>Cuban Democracy Act (Torricelli Act)</h3>
+      <div class="cite">22 U.S.C. &sect;6001&ndash;6010 &middot; 1992</div>
+      <p>Prohibits foreign subsidiaries of U.S. companies from trading with Cuba. Extended the embargo&rsquo;s extraterritorial reach and banned ships that have docked in Cuba from U.S. ports for 180 days.</p>
+    </div>
+    <div class="law-card">
+      <h3>Helms-Burton Act (LIBERTAD Act)</h3>
+      <div class="cite">22 U.S.C. &sect;6021&ndash;6091 &middot; 1996</div>
+      <p><strong>Codified the embargo into law</strong> &mdash; no president can lift it without Congress. Created <a href="/tools/helms-burton-act-explained">Title III private lawsuits</a> for confiscated property. Sets conditions for lifting (free elections, property restitution).</p>
+    </div>
+    <div class="law-card">
+      <h3>Trade Sanctions Reform Act (TSRA)</h3>
+      <div class="cite">Pub. L. 106&ndash;387 &middot; 2000</div>
+      <p>The major carve-out: authorizes one-way export of U.S. agricultural products and medicine to Cuba on a cash-in-advance basis. Cuba is now a significant buyer of U.S. chicken, soybeans, and corn under TSRA.</p>
+    </div>
+    <div class="law-card">
+      <h3>State Sponsor of Terrorism designation</h3>
+      <div class="cite">Department of State &middot; Re-listed Jan 2021</div>
+      <p>Separate from the embargo but compounds it: triggers additional banking restrictions, aid prohibitions, and arms export controls. Cuba was removed from the list in 2015 (Obama), re-listed in 2021 (Trump), briefly removed in Jan 2025 (Biden), then re-listed days later by the incoming administration.</p>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Timeline: 62 years of the Cuba embargo</h2>
+
+  <div class="timeline">
+    <div class="tl-item active">
+      <div class="tl-year">1960</div>
+      <div class="tl-body">Eisenhower reduces Cuba's sugar import quota to zero after Cuba nationalizes U.S.-owned oil refineries (Esso, Texaco, Shell). First economic sanctions.</div>
+    </div>
+    <div class="tl-item active">
+      <div class="tl-year">1962</div>
+      <div class="tl-body">JFK signs Executive Order 3447 imposing a full trade embargo on February 3. Treasury issues the Cuban Import Regulations (later replaced by CACR). Cuba becomes fully blockaded.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1963</div>
+      <div class="tl-body">Treasury publishes the <strong>Cuban Assets Control Regulations</strong> (31 CFR Part 515) under TWEA authority. Freezes all Cuban government assets in U.S. jurisdiction.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1992</div>
+      <div class="tl-body"><strong>Cuban Democracy Act</strong> (Torricelli): extends embargo to foreign subsidiaries of U.S. firms, bans ships docking in Cuba from U.S. ports for 180 days.</div>
+    </div>
+    <div class="tl-item active">
+      <div class="tl-year">1996</div>
+      <div class="tl-body"><strong>Helms-Burton Act</strong>: codifies embargo into federal statute (no president can unilaterally lift it). Creates Title III private-action lawsuits for confiscated property. Title III immediately suspended.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2000</div>
+      <div class="tl-body"><strong>TSRA</strong>: carves out agricultural and medical exports (cash-in-advance). Cuba begins purchasing U.S. food commodities.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2009</div>
+      <div class="tl-body">Obama lifts travel and remittance restrictions for Cuban Americans; allows U.S. telecom companies to provide services.</div>
+    </div>
+    <div class="tl-item active">
+      <div class="tl-year">2014&ndash;2015</div>
+      <div class="tl-body"><strong>Obama-Raúl Castro rapprochement</strong>: diplomatic relations restored, embassies reopen, Cuba removed from State Sponsor of Terrorism list. Regulatory changes expand the 12 travel categories and authorize U.S. cruise ships.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2017</div>
+      <div class="tl-body">Trump rolls back Obama openings: restricts &ldquo;people-to-people&rdquo; group travel, bans transactions with military-linked entities (publishes first Cuba Restricted List targeting GAESA).</div>
+    </div>
+    <div class="tl-item active">
+      <div class="tl-year">2019</div>
+      <div class="tl-body"><strong>Title III activated</strong> for first time (22 years after enactment). Havana Docks sues Carnival. Dozens of confiscated-property lawsuits filed. Cruise travel to Cuba banned.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2021</div>
+      <div class="tl-body">Cuba re-designated as State Sponsor of Terrorism. Additional sanctions follow July 2021 protests (largest since 1994). Remittance cap reinstated.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2022&ndash;2023</div>
+      <div class="tl-body">Biden partially relaxes: lifts family-remittance cap, restores some consular services, expands support-for-the-Cuban-people travel. Embargo&rsquo;s statutory core unchanged.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">{{ current_year }}</div>
+      <div class="tl-body"><strong>Current status:</strong> Full embargo remains in force. Helms-Burton Title III active. Cuba on State Sponsor of Terrorism list. 12 OFAC travel categories available. Agricultural exports continue under TSRA. No significant legislative movement toward lifting.</div>
+    </div>
+  </div>
+
+  <div class="key-box">
+    <h3>Why can&rsquo;t any president just lift the embargo?</h3>
+    <ul>
+      <li>The <strong>Helms-Burton Act (1996)</strong> codified the embargo into federal law &mdash; it can only be lifted by an act of Congress.</li>
+      <li>Congress would need to certify that Cuba has: (1) held free and fair elections, (2) released all political prisoners, (3) legalized independent media and political parties, (4) made progress toward returning confiscated property or compensating claimants.</li>
+      <li>Presidents can <strong>tighten or loosen enforcement</strong> via executive action (as Obama and Trump demonstrated), but cannot eliminate the statutory prohibitions.</li>
+      <li>Even without Helms-Burton, the TWEA emergency declaration would need to be terminated &mdash; Cuba is the last country under TWEA sanctions.</li>
+    </ul>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Impact on Cuba&rsquo;s economy</h2>
+  <p>Cuba estimates the embargo has cost its economy over <strong>$130 billion</strong> (at current prices) since 1962. Independent estimates vary but confirm massive economic distortion:</p>
+  <ul style="font-size:14px; margin:8px 0 20px 22px; line-height:1.7;">
+    <li><strong>Trade:</strong> Cuba cannot access U.S. consumer goods, industrial equipment, spare parts, or technology except under narrow TSRA licenses.</li>
+    <li><strong>Finance:</strong> Cuba is largely cut off from the international banking system due to U.S. secondary sanctions and SSOT designation. Foreign banks fear U.S. penalties for Cuba transactions.</li>
+    <li><strong>Investment:</strong> Foreign direct investment is suppressed by Helms-Burton Title III litigation risk &mdash; any investment touching confiscated property faces lawsuits in U.S. courts.</li>
+    <li><strong>Oil:</strong> The embargo prevents U.S. oil companies from developing Cuba&rsquo;s offshore reserves and restricts third-country drilling companies from using U.S. equipment.</li>
+    <li><strong>Tourism:</strong> The ban on U.S. tourists (Cuba&rsquo;s closest potential market) removes an estimated 3&ndash;5 million annual visitors and $5&ndash;10 billion in potential revenue.</li>
+  </ul>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-section">
+    <details open>
+      <summary>What is the Cuba embargo?</summary>
+      <div class="show-more__body">
+        <p>The Cuba embargo (also called &ldquo;el bloqueo&rdquo; in Cuba) is a comprehensive U.S. commercial, economic, and financial sanctions regime that has been in continuous effect since 1962. It prohibits nearly all trade, investment, travel, and financial transactions between U.S. persons and Cuba. It is the longest-running embargo in modern history and is enforced by OFAC through the Cuban Assets Control Regulations (31 CFR Part 515).</p>
+      </div>
+    </details>
+    <details>
+      <summary>Why is there an embargo on Cuba?</summary>
+      <div class="show-more__body">
+        <p>The embargo was originally imposed in 1960&ndash;1962 in response to Cuba&rsquo;s nationalization of U.S.-owned businesses (sugar mills, oil refineries, banks, utilities) without adequate compensation, Cuba&rsquo;s alignment with the Soviet Union during the Cold War, and the failed Bay of Pigs invasion. It was subsequently reinforced by the Cuban Missile Crisis (1962), Cuba&rsquo;s support for revolutionary movements in Latin America and Africa, human rights abuses, the Brothers to the Rescue shoot-down (1996, prompting Helms-Burton), and ongoing political repression.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is the Cuba embargo still in effect in {{ current_year }}?</summary>
+      <div class="show-more__body">
+        <p><strong>Yes.</strong> The core embargo remains fully in force. The Helms-Burton Act (1996) codified it into statute, meaning it cannot be lifted by executive order alone &mdash; it requires an act of Congress. Title III lawsuits are active since 2019. Cuba remains on the State Sponsor of Terrorism list. The 12 OFAC general-license travel categories are available, but tourism remains prohibited.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Can Americans travel to Cuba despite the embargo?</summary>
+      <div class="show-more__body">
+        <p>Yes, but only under one of <a href="/tools/can-i-travel-to-cuba">12 OFAC-authorized categories</a>. The most common for individual travelers is &sect;515.574 &ldquo;Support for the Cuban People,&rdquo; requiring a full-time schedule engaging Cuba&rsquo;s private sector. Tourism per se is prohibited. See our <a href="/tools/can-i-travel-to-cuba">decision tool</a> for which category fits your trip.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What is the difference between the embargo and OFAC sanctions?</summary>
+      <div class="show-more__body">
+        <p>The &ldquo;embargo&rdquo; refers to the overall policy of economic isolation. &ldquo;OFAC sanctions&rdquo; refers to the specific enforcement mechanism: OFAC (Office of Foreign Assets Control, U.S. Treasury) administers the Cuban Assets Control Regulations (CACR, 31 CFR Part 515), which define what&rsquo;s prohibited, what&rsquo;s licensed, and penalties for violations. The <a href="/sanctions-tracker">OFAC SDN list</a> names specific sanctioned individuals, entities, and vessels. The <a href="/tools/cuba-restricted-list-checker">Cuba Restricted List (CRL)</a> and <a href="/tools/cuba-prohibited-hotels-checker">CPAL</a> are additional State Department enforcement tools.</p>
+      </div>
+    </details>
+    <details>
+      <summary>How does the UN vote on the Cuba embargo?</summary>
+      <div class="show-more__body">
+        <p>Every year since 1992, the UN General Assembly has voted overwhelmingly to condemn the U.S. embargo on Cuba. The most recent vote (2023) was <strong>187&ndash;2</strong> (only the U.S. and Israel voting against). The resolution is non-binding and has no legal effect on U.S. domestic law, but it underscores the near-universal international opposition to the embargo.</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="disclaimer">
+    <strong>Important:</strong> This is an educational explainer, not legal advice. The Cuba embargo is enforced through multiple overlapping laws and regulations that change with administrations. For compliance, investment, or litigation purposes, retain qualified U.S. counsel with Cuba sanctions experience.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+{% endblock %}

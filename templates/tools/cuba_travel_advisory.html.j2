@@ -1,0 +1,182 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .advisory-card { background: #fff3e0; border-left: 6px solid #f5b041; padding: 24px 28px; border-radius: 4px; margin: 20px 0; }
+  .advisory-card.level-2 { border-left-color: #f5b041; background: #fff8e1; }
+  .advisory-card.level-3 { border-left-color: #e65100; background: #fff3e0; }
+  .advisory-card.level-4 { border-left-color: #c62828; background: #fdecea; }
+  .advisory-card .level { font-family: var(--font-serif); font-size: 28px; font-weight: 700; color: #e65100; margin: 0 0 6px; }
+  .advisory-card .level-text { font-size: 18px; font-weight: 600; color: var(--sr-blue-dark); margin-bottom: 12px; }
+  .advisory-card p { font-size: 14px; margin: 0; color: #5d4037; }
+
+  .level-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 20px 0; }
+  @media (max-width: 600px) { .level-grid { grid-template-columns: repeat(2, 1fr); } }
+  .level-badge { text-align: center; padding: 14px 10px; border-radius: 4px; font-size: 13px; font-weight: 600; }
+  .level-badge .num { font-size: 24px; font-family: var(--font-serif); display: block; margin-bottom: 4px; }
+  .level-badge.l1 { background: #e8f5e9; color: #2e7d32; }
+  .level-badge.l2 { background: #fff8e1; color: #e65100; border: 2px solid #f5b041; }
+  .level-badge.l3 { background: #fff3e0; color: #bf360c; }
+  .level-badge.l4 { background: #fdecea; color: #c62828; }
+
+  .risk-list { margin: 16px 0; }
+  .risk-item { border: 1px solid var(--sr-gray-light); border-left: 4px solid #f5b041; padding: 14px 18px; margin-bottom: 8px; border-radius: 3px; background: var(--white); }
+  .risk-item h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 16px; margin: 0 0 6px; }
+  .risk-item p { font-size: 14px; margin: 0; color: var(--sr-dark-text); }
+
+  .compare-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .compare-table th { background: var(--sr-blue); color: var(--white); padding: 10px 14px; text-align: left; font-weight: 600; }
+  .compare-table td { padding: 10px 14px; border-bottom: 1px solid var(--sr-gray-light); }
+  .compare-table tr:nth-child(even) td { background: #f7f9fc; }
+
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
+
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Cuba Travel Advisory</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Travel Advisory &middot; U.S. State Department &middot; Updated {{ current_year }}
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Cuba Travel Advisory {{ current_year }}: Level 2 &mdash; Exercise Increased Caution
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      The U.S. State Department rates Cuba at <strong>Level 2</strong> out of 4. Here&rsquo;s what that means, what risks to prepare for, how Cuba compares to other Caribbean destinations, and what additional rules apply to American travelers under OFAC.
+    </p>
+  </header>
+
+  <div class="advisory-card level-2">
+    <div class="level">Level 2 of 4</div>
+    <div class="level-text">&ldquo;Exercise Increased Caution&rdquo;</div>
+    <p>The State Department cites: civil unrest, crime, arbitrary enforcement of local laws, and limited U.S. Embassy services. Cuba is <strong>not</strong> at Level 3 (&ldquo;Reconsider Travel&rdquo;) or Level 4 (&ldquo;Do Not Travel&rdquo;). The same Level 2 applies to countries like France, the UK, Germany, Italy, and Spain.</p>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Understanding the 4 advisory levels</h2>
+
+  <div class="level-grid">
+    <div class="level-badge l1"><span class="num">1</span>Exercise Normal Precautions</div>
+    <div class="level-badge l2"><span class="num">2</span>Exercise Increased Caution<br><strong>(Cuba)</strong></div>
+    <div class="level-badge l3"><span class="num">3</span>Reconsider Travel</div>
+    <div class="level-badge l4"><span class="num">4</span>Do Not Travel</div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Specific risks cited in the Cuba advisory</h2>
+
+  <div class="risk-list">
+    <div class="risk-item">
+      <h3>Civil unrest</h3>
+      <p>Protests (most notably July 11, 2021) can erupt with limited warning. The government has responded with mass arrests, internet shutdowns, and in some cases physical force. Foreigners have been detained near protest sites. Avoid gatherings and monitor local news.</p>
+    </div>
+    <div class="risk-item">
+      <h3>Crime</h3>
+      <p>Petty crime (pickpocketing, bag-snatching, distraction theft) is the primary risk, concentrated in tourist areas of Havana — Old Havana, Obispo Street, and the Malecón at night. Violent crime against tourists is rare but not absent. Use hotel safes, avoid displaying valuables, and don't walk alone after dark in unfamiliar neighborhoods.</p>
+    </div>
+    <div class="risk-item">
+      <h3>Arbitrary enforcement of local laws</h3>
+      <p>Cuban law criminalizes &ldquo;disrespect&rdquo; of authorities, unauthorized public gatherings, photographing military/police installations, and importing certain materials. Enforcement can be unpredictable. Journalists and Cuban-Americans with political ties face elevated detention risk.</p>
+    </div>
+    <div class="risk-item">
+      <h3>Limited U.S. Embassy services</h3>
+      <p>The U.S. Embassy in Havana resumed limited services in 2023 after the 2017 &ldquo;Havana Syndrome&rdquo; drawdown, but staffing remains below normal. Emergency assistance may be delayed. Register with the <a href="https://step.state.gov/" rel="nofollow noopener" target="_blank">Smart Traveler Enrollment Program (STEP)</a> before departure.</p>
+    </div>
+    <div class="risk-item">
+      <h3>Infrastructure &amp; medical</h3>
+      <p>Not explicitly in the advisory but critical: rolling blackouts (4-12 hours/day in provinces), hospitals lack basic supplies despite skilled doctors, no emergency airlift infrastructure outside Havana, and roads outside the capital are poorly lit with no guardrails. Travel-medical insurance with <strong>evacuation coverage</strong> is essential.</p>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Cuba vs. other Caribbean destinations</h2>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th>State Dept Level</th>
+        <th>Advisory Summary</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Cuba</strong></td><td>Level 2</td><td>Civil unrest, crime, limited embassy services</td></tr>
+      <tr><td>Jamaica</td><td>Level 3</td><td>Reconsider travel — violent crime in certain areas</td></tr>
+      <tr><td>Haiti</td><td>Level 4</td><td>Do not travel — kidnapping, crime, civil unrest</td></tr>
+      <tr><td>Dominican Republic</td><td>Level 2</td><td>Crime</td></tr>
+      <tr><td>Bahamas</td><td>Level 2</td><td>Crime</td></tr>
+      <tr><td>Mexico</td><td>Level 2 (varies by state)</td><td>Violent crime, kidnapping in some states (L3–L4)</td></tr>
+      <tr><td>Puerto Rico</td><td>N/A (U.S. territory)</td><td>No advisory</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px; color:var(--sr-gray-text); margin:4px 0 20px;">Cuba's Level 2 is the <strong>same or safer</strong> than most popular Caribbean destinations. Jamaica is rated <em>higher risk</em> than Cuba.</p>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Additional rules for American travelers</h2>
+
+  <p>Beyond the standard travel advisory, U.S. citizens face additional legal requirements under the <a href="/tools/cuba-embargo-explained">Cuba embargo</a>:</p>
+  <ul style="font-size:14px; margin:8px 0 20px 22px; line-height:1.7;">
+    <li>Must travel under one of <a href="/tools/can-i-travel-to-cuba">12 OFAC-authorized categories</a> (tourism is prohibited)</li>
+    <li>Cannot stay at <a href="/tools/cuba-prohibited-hotels-checker">CPAL-listed hotels</a> or transact with <a href="/tools/cuba-restricted-list-checker">CRL entities</a></li>
+    <li>U.S.-issued Visa, Mastercard, and Amex cards <strong>do not work</strong> — bring cash</li>
+    <li>Must keep trip records for 5 years (§515.601)</li>
+    <li>Need a pink Tourist Card (~$50-100) + travel-medical insurance + D'Viajeros declaration</li>
+  </ul>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-section">
+    <details open>
+      <summary>What is the current U.S. travel advisory for Cuba?</summary>
+      <div class="show-more__body">
+        <p>As of {{ current_year }}, Cuba is rated <strong>Level 2: Exercise Increased Caution</strong> by the U.S. State Department. This is the second-lowest of four risk levels. The advisory cites civil unrest, crime, arbitrary enforcement of local laws, and limited U.S. Embassy services in Havana.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is Cuba safe to travel to right now?</summary>
+      <div class="show-more__body">
+        <p>Yes, for most travelers. Cuba&rsquo;s Level 2 advisory is the same as France, Germany, Italy, and Spain. Violent crime against tourists is rare. The main practical concerns are petty theft, rolling power outages, limited medical care, and (for Americans) the fact that U.S. bank cards don&rsquo;t work. See our <a href="/tools/havana-safety-by-neighborhood">Havana safety map</a> for neighborhood-level detail.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is there a travel ban on Cuba?</summary>
+      <div class="show-more__body">
+        <p>There is <strong>no blanket travel ban</strong> to Cuba. U.S. citizens can legally travel under one of <a href="/tools/can-i-travel-to-cuba">12 OFAC-authorized categories</a>. What&rsquo;s prohibited is <em>tourism</em> specifically &mdash; spending money for leisure purposes with no qualifying activity. The most-used category for individual travelers is &sect;515.574 (&ldquo;Support for the Cuban People&rdquo;), which requires a full-time schedule engaging Cuba&rsquo;s private sector. Non-U.S. citizens face <strong>no U.S. restrictions</strong> and can visit Cuba freely as tourists.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What happens if I travel to Cuba illegally?</summary>
+      <div class="show-more__body">
+        <p>OFAC can impose civil penalties of up to <strong>$330,000 per violation</strong> or criminal penalties of up to $1,000,000 and 20 years imprisonment for willful violations of the Cuban Assets Control Regulations. In practice, most enforcement involves warning letters or modest civil settlements for first-time individual travelers. However, OFAC has historically prioritized enforcement during policy-tightening periods. Keep your records for 5 years in case of audit.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Can I get travel insurance for Cuba?</summary>
+      <div class="show-more__body">
+        <p>Yes &mdash; and you <strong>must</strong>. Cuba requires all visitors to carry travel-medical insurance valid on the island. Most major U.S. travel-insurance providers (World Nomads, IMG, Allianz) offer Cuba-specific policies that comply with both Cuban entry requirements and OFAC regulations. Cuban immigration may ask for proof at the border. Make sure your policy includes <strong>medical evacuation</strong> to a third country (most evacuations go to Cancún or Miami).</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="disclaimer">
+    <strong>Important:</strong> Travel advisories change without notice. Always check the current advisory at <a href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cuba-travel-advisory.html" rel="nofollow noopener" target="_blank">travel.state.gov</a> before departure. This page is not affiliated with the U.S. Department of State and is not legal or travel advice.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stat-card { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 14px 18px; border-radius: 3px; text-align: center; }
+  .stat-card .num { font-family: var(--font-serif); font-size: 26px; color: #cc0000; font-weight: 700; }
+  .stat-card .label { font-size: 12px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+
+  .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 16px 0 28px; }
+  .program-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-blue); padding: 14px 18px; border-radius: 3px; background: var(--white); }
+  .program-card.cuba { border-left-color: #cc0000; background: #fef9f8; }
+  .program-card h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 15px; margin: 0 0 6px; }
+  .program-card p { font-size: 13px; margin: 0; color: var(--sr-dark-text); }
+  .program-card .tag { display: inline-block; padding: 2px 8px; background: var(--sr-gray-light); color: var(--sr-dark-text); border-radius: 10px; font-size: 11px; margin-top: 8px; }
+  .program-card.cuba .tag { background: #fdecea; color: #cc0000; }
+
+  .key-box { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 18px 22px; margin: 20px 0; border-radius: 3px; }
+  .key-box h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 18px; margin: 0 0 8px; }
+  .key-box ul { margin: 0 0 0 20px; font-size: 14px; }
+  .key-box li { margin: 6px 0; }
+
+  .penalty-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .penalty-table th { background: var(--sr-blue); color: var(--white); padding: 10px 14px; text-align: left; font-weight: 600; }
+  .penalty-table td { padding: 10px 14px; border-bottom: 1px solid var(--sr-gray-light); }
+  .penalty-table tr:nth-child(even) td { background: #f7f9fc; }
+
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
+
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>What Is OFAC?</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Explainer &middot; Office of Foreign Assets Control &middot; U.S. Treasury
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      What Is OFAC? The U.S. Sanctions Agency Explained ({{ current_year }} Guide)
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      OFAC (the Office of Foreign Assets Control) is the U.S. Treasury bureau that enforces economic and trade sanctions. It administers the SDN list, issues general and specific licenses, and can impose penalties of up to $20 million per violation. Here&rsquo;s how it works and what it means for you.
+    </p>
+  </header>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="num">1950</div>
+      <div class="label">Year established</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">30+</div>
+      <div class="label">Active sanctions programs</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">~12,000</div>
+      <div class="label">SDN list entries</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">$20M+</div>
+      <div class="label">Max civil penalty per violation</div>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">What does OFAC do?</h2>
+
+  <p>OFAC is a bureau within the U.S. Department of the Treasury responsible for:</p>
+  <ul style="font-size:14px; margin:8px 0 20px 22px; line-height:1.7;">
+    <li><strong>Administering U.S. sanctions programs</strong> targeting countries (Cuba, Iran, North Korea, Russia, etc.), terrorist organizations, narcotics traffickers, and proliferators of weapons of mass destruction.</li>
+    <li><strong>Maintaining the SDN list</strong> (Specially Designated Nationals and Blocked Persons) &mdash; the master list of ~12,000 individuals, entities, vessels, and aircraft whose assets are frozen and with whom U.S. persons cannot transact.</li>
+    <li><strong>Issuing licenses</strong> &mdash; both general licenses (blanket authorizations for categories of activity) and specific licenses (case-by-case approvals).</li>
+    <li><strong>Enforcing compliance</strong> &mdash; investigating violations, imposing civil monetary penalties, and referring criminal cases to the Department of Justice.</li>
+    <li><strong>Interpreting sanctions regulations</strong> through guidance, FAQs, and advisory opinions published on treasury.gov/ofac.</li>
+  </ul>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">OFAC&rsquo;s major sanctions programs</h2>
+
+  <div class="program-grid">
+    <div class="program-card cuba">
+      <h3>Cuba (CACR)</h3>
+      <p>Comprehensive embargo since 1962. Cuban Assets Control Regulations (31 CFR Part 515). Prohibits nearly all trade, investment, travel, and financial transactions. 12 general-license travel categories.</p>
+      <span class="tag">Comprehensive</span>
+    </div>
+    <div class="program-card">
+      <h3>Iran</h3>
+      <p>Comprehensive sanctions. Iranian Transactions and Sanctions Regulations (ITSR). Prohibits most trade and financial transactions. Secondary sanctions on non-U.S. persons.</p>
+      <span class="tag">Comprehensive</span>
+    </div>
+    <div class="program-card">
+      <h3>Russia / Ukraine</h3>
+      <p>Targeted and sectoral sanctions since 2014 (expanded 2022). Blocks major Russian banks, energy companies, oligarchs. Secondary sanctions on military-industrial supplies.</p>
+      <span class="tag">Targeted + Sectoral</span>
+    </div>
+    <div class="program-card">
+      <h3>North Korea (DPRK)</h3>
+      <p>Comprehensive embargo. Nearly total trade and financial isolation. Heavy secondary sanctions enforcement against facilitators.</p>
+      <span class="tag">Comprehensive</span>
+    </div>
+    <div class="program-card">
+      <h3>Venezuela</h3>
+      <p>Targeted sanctions on individuals and PdVSA (state oil). General License 44 authorizes certain oil transactions by Chevron. Evolving program.</p>
+      <span class="tag">Targeted</span>
+    </div>
+    <div class="program-card">
+      <h3>Syria</h3>
+      <p>Comprehensive embargo. Syrian Sanctions Regulations. Caesar Syria Civilian Protection Act adds secondary sanctions.</p>
+      <span class="tag">Comprehensive</span>
+    </div>
+  </div>
+  <p style="font-size:13px; color:var(--sr-gray-text);">OFAC administers 30+ programs total, including counter-terrorism (SDT/SDGT), counter-narcotics (Kingpin Act), cyber, non-proliferation, and more.</p>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">The SDN list explained</h2>
+
+  <div class="key-box">
+    <h3>What is the SDN list?</h3>
+    <ul>
+      <li>The <strong>Specially Designated Nationals and Blocked Persons List (SDN)</strong> is OFAC&rsquo;s primary enforcement tool.</li>
+      <li>Lists ~12,000 individuals, companies, vessels, aircraft, and crypto wallets.</li>
+      <li>All assets of SDN-listed parties within U.S. jurisdiction are <strong>frozen</strong>.</li>
+      <li>U.S. persons (and often non-U.S. persons for secondary sanctions) are <strong>prohibited</strong> from any dealings with SDN parties.</li>
+      <li>The <strong>50% Rule</strong>: any entity 50%+ owned by one or more SDN-listed persons is itself treated as blocked, even if not explicitly on the list.</li>
+      <li>Banks, payment processors, and compliance teams screen all transactions against the SDN daily.</li>
+    </ul>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">OFAC penalties</h2>
+
+  <table class="penalty-table">
+    <thead>
+      <tr><th>Type</th><th>Maximum Penalty</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Civil (strict liability)</td>
+        <td>Up to ~$330,000 per violation <em>or</em> twice the transaction value</td>
+        <td>No intent required. &ldquo;Should have known&rdquo; standard. Most common enforcement.</td>
+      </tr>
+      <tr>
+        <td>Criminal (willful)</td>
+        <td>Up to $20,000,000 fine + 20 years imprisonment</td>
+        <td>Requires willful violation. DOJ prosecution. Rare for individuals; used for institutional evasion.</td>
+      </tr>
+      <tr>
+        <td>Warning / no-action letter</td>
+        <td>$0</td>
+        <td>First-time, low-value, self-disclosed. Most common outcome for individual travelers.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="font-size:14px; margin:12px 0 24px;">Notable settlements: BNP Paribas ($963M, 2014 — Cuba/Sudan/Iran), Société Générale ($54M, 2018 — Cuba), Standard Chartered ($1.1B, 2019 — Iran/Cuba/Myanmar).</p>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">OFAC and Cuba: how it applies</h2>
+
+  <p>Cuba is one of OFAC&rsquo;s <strong>comprehensive sanctions programs</strong> &mdash; meaning virtually all transactions are prohibited unless specifically authorized. Key Cuba-specific OFAC tools:</p>
+  <ul style="font-size:14px; margin:8px 0 20px 22px; line-height:1.7;">
+    <li><a href="/tools/ofac-cuba-general-licenses"><strong>12 General Licenses for travel</strong></a> (&sect;515.560&ndash;.578) &mdash; the only legal way for Americans to visit Cuba</li>
+    <li><a href="/sanctions-tracker"><strong>Cuba SDN designations</strong></a> &mdash; 77 currently designated individuals, entities, and vessels</li>
+    <li><a href="/tools/cuba-restricted-list-checker"><strong>Cuba Restricted List (CRL)</strong></a> &mdash; 247 State Department-listed entities (GAESA, CIMEX, Gaviota, etc.)</li>
+    <li><a href="/tools/cuba-prohibited-hotels-checker"><strong>Cuba Prohibited Accommodations List (CPAL)</strong></a> &mdash; 431 hotels and lodging properties banned for U.S. persons</li>
+    <li><a href="/tools/helms-burton-act-explained"><strong>Helms-Burton Act</strong></a> &mdash; Title III confiscated-property lawsuits (activated 2019)</li>
+    <li><a href="/tools/cuba-embargo-explained"><strong>Cuba embargo</strong></a> &mdash; the comprehensive regulatory framework since 1962</li>
+  </ul>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-section">
+    <details open>
+      <summary>What does OFAC stand for?</summary>
+      <div class="show-more__body">
+        <p><strong>OFAC</strong> stands for the <strong>Office of Foreign Assets Control</strong>. It is a bureau within the U.S. Department of the Treasury, headquartered in Washington, D.C. OFAC was established in 1950 (successor to the WWII-era Office of Foreign Funds Control) and is responsible for administering and enforcing U.S. economic and trade sanctions.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What is OFAC compliance?</summary>
+      <div class="show-more__body">
+        <p>OFAC compliance refers to the processes businesses use to ensure they do not violate U.S. sanctions. This typically includes: screening customers, counterparties, and transactions against the SDN list; implementing a written sanctions compliance program (SCP); training employees; conducting due diligence on new business relationships; filing blocked-property or rejected-transaction reports; and self-disclosing any potential violations. Banks, fintech companies, exporters, insurers, law firms, and any business with international exposure must maintain OFAC compliance.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Is Cuba sanctioned by OFAC?</summary>
+      <div class="show-more__body">
+        <p><strong>Yes.</strong> Cuba is under one of OFAC&rsquo;s most restrictive programs &mdash; a comprehensive embargo enforced through the Cuban Assets Control Regulations (31 CFR Part 515). Nearly all trade, investment, travel, and financial transactions between U.S. persons and Cuba are prohibited unless specifically authorized by a <a href="/tools/ofac-cuba-general-licenses">general license</a> or individual specific license. Cuba is also designated as a State Sponsor of Terrorism, which compounds banking and aid restrictions.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What happens if you violate OFAC sanctions?</summary>
+      <div class="show-more__body">
+        <p>Penalties depend on severity: warning letters for minor, self-disclosed violations; civil monetary penalties up to ~$330,000 per violation (or twice the transaction value, whichever is greater) under strict liability; and criminal prosecution for willful violations (up to $20 million fine and 20 years imprisonment). OFAC considers factors like voluntary self-disclosure, compliance program quality, cooperation, and remediation when determining penalties.</p>
+      </div>
+    </details>
+    <details>
+      <summary>How do I check if someone is on the OFAC list?</summary>
+      <div class="show-more__body">
+        <p>Use OFAC&rsquo;s official <a href="https://sanctionssearch.ofac.treas.gov/" rel="nofollow noopener" target="_blank">Sanctions List Search</a> tool on treasury.gov, or use our <a href="/tools/ofac-cuba-sanctions-checker">Cuba SDN checker</a> for Cuba-specific searches with fuzzy matching. For comprehensive compliance, many organizations use commercial screening tools (Dow Jones, Refinitiv World-Check, LexisNexis) that integrate the SDN, sectoral lists, non-SDN lists, and international sanctions from the EU, UK, and UN.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Does OFAC apply to non-U.S. persons?</summary>
+      <div class="show-more__body">
+        <p>Increasingly, yes. &ldquo;Secondary sanctions&rdquo; allow OFAC to penalize non-U.S. persons who facilitate significant transactions with sanctioned parties. This is most aggressively enforced for Iran and Russia programs. For Cuba, secondary sanctions are limited, but any transaction that touches the U.S. financial system (USD clearing, U.S. correspondent banks) brings non-U.S. parties under OFAC jurisdiction. The EU, UK, and Canada have their own sanctions regimes that non-U.S. persons must also comply with.</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="disclaimer">
+    <strong>Important:</strong> This is an educational explainer, not legal advice. OFAC regulations, enforcement guidance, and the SDN list change frequently. For compliance program design or specific transaction analysis, retain qualified U.S. counsel with sanctions experience. Official OFAC guidance is at <a href="https://www.treasury.gov/ofac" rel="nofollow noopener" target="_blank">treasury.gov/ofac</a>.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+{% endblock %}

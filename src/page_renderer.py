@@ -31,6 +31,16 @@ _env = Environment(
 )
 
 
+def _link_people_filter(html: str) -> str:
+    if not html:
+        return html
+    from src.data.people import link_people_in_html
+    return link_people_in_html(html)
+
+
+_env.filters["link_people"] = _link_people_filter
+
+
 def _base_url() -> str:
     return settings.site_url.rstrip("/")
 

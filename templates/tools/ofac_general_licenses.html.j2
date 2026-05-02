@@ -29,6 +29,13 @@
   .gl-tag { display: inline-block; padding: 2px 8px; background: var(--sr-gray-light); color: var(--sr-dark-text); border-radius: 10px; font-size: 11px; margin-right: 4px; }
   .gl-empty { text-align: center; padding: 32px; color: var(--sr-gray-text); }
   .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 32px 0; border-radius: 3px; }
+  .faq-block details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-block details[open] { border-left-color: #cc0000; }
+  .faq-block summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-block summary::-webkit-details-marker { display: none; }
+  .faq-block summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-block details[open] summary::before { content: "▾ "; }
+  .faq-answer { margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; font-size: 14px; line-height: 1.6; color: #495057; }
 </style>
 {% endblock %}
 
@@ -46,7 +53,7 @@
       Compliance tool · Updated when OFAC publishes
     </div>
     <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
-      OFAC Cuba General License Lookup (CACR §515.560–.578)
+      OFAC General License List for Cuba &mdash; All CACR &sect;515 Licenses ({{ current_year }})
     </h1>
     <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
       Searchable reference for every active CACR general license &mdash; the 12 travel categories, plus telecom, remittances, financial services, and informational materials.
@@ -105,6 +112,22 @@
     </article>
     {% endfor %}
   </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-block">
+    <details>
+      <summary>Which OFAC general license covers Cuba travel?</summary>
+      <div class="faq-answer">There is no general license for tourism. U.S. travel to Cuba is only legal under one of the 12 categories at &sect;515.560&ndash;.578. The most-used by individual travelers is <strong>&sect;515.574 &ldquo;Support for the Cuban People,&rdquo;</strong> which requires a full-time schedule of activities engaging Cuba&rsquo;s private sector (casas, paladares, MIPYMEs). Use our <a href="/tools/can-i-travel-to-cuba">travel decision tool</a> to find which category fits your trip.</div>
+    </details>
+    <details>
+      <summary>Are OFAC Cuba general licenses permanent?</summary>
+      <div class="faq-answer">No. They have been amended repeatedly across the Obama, Trump, Biden, and current administrations. Notable changes include the 2017 rescission of people-to-people group travel under &sect;515.565, the 2020 revocation of specific licenses for U.S. hotel operations, and the 2022 reauthorization of certain remittance categories. Always verify on <a href="https://www.treasury.gov/ofac" rel="nofollow noopener" target="_blank">treasury.gov/ofac</a>.</div>
+    </details>
+    <details>
+      <summary>Do I need to apply for an OFAC general license?</summary>
+      <div class="faq-answer">No &mdash; that&rsquo;s what makes them &ldquo;general.&rdquo; A general license is a published blanket authorization. If your activity falls within the defined scope, you are automatically authorized without filing an application. A <strong>specific license</strong>, by contrast, requires a formal application to OFAC and is only needed when no general license covers your planned activity. Most U.S. travelers and businesses engaging with Cuba operate under general licenses.</div>
+    </details>
+  </section>
 
   <div class="disclaimer">
     <strong>Important:</strong> Navigation aid only. CACR provisions and the State Department CRL change with administrations &mdash; sometimes intra-week. Always confirm by reading the full 31 CFR Part 515 text linked in each card. Not legal advice.

@@ -1,0 +1,217 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .timeline { position: relative; padding-left: 28px; margin: 24px 0; }
+  .timeline::before { content: ""; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--sr-gray-light); }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-item::before { content: ""; position: absolute; left: -24px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--sr-blue); border: 2px solid var(--white); }
+  .tl-item.active::before { background: #cc0000; }
+  .tl-year { font-family: var(--font-serif); font-weight: 700; color: var(--sr-blue-dark); font-size: 16px; }
+  .tl-body { font-size: 14px; color: var(--sr-dark-text); margin-top: 4px; line-height: 1.55; }
+
+  .key-box { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 18px 22px; margin: 20px 0; border-radius: 3px; }
+  .key-box h3 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 18px; margin: 0 0 8px; }
+  .key-box ul { margin: 0 0 0 20px; font-size: 14px; }
+  .key-box li { margin: 6px 0; }
+
+  .warn-box { background: #fdecea; border-left: 4px solid var(--sr-red); padding: 16px 20px; border-radius: 3px; margin: 20px 0; }
+  .warn-box h3 { font-family: var(--font-serif); color: #7a1f1a; font-size: 18px; margin: 0 0 8px; }
+
+  .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; margin: 16px 0 28px; }
+  .case-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid #cc0000; padding: 16px 18px; border-radius: 3px; background: var(--white); }
+  .case-card h4 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 16px; margin: 0 0 6px; }
+  .case-card .meta { font-size: 12px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .case-card p { font-size: 14px; margin: 0; }
+  .case-card .outcome { font-size: 13px; font-weight: 600; margin-top: 8px; }
+  .case-card .outcome.active { color: #cc0000; }
+  .case-card .outcome.settled { color: #f5b041; }
+  .case-card .outcome.dismissed { color: #2e7d32; }
+
+  .faq-section details { border: 1px solid var(--sr-gray-light); border-left: 3px solid var(--sr-blue); border-radius: 3px; padding: 12px 16px; margin-bottom: 8px; background: var(--white); }
+  .faq-section details[open] { border-left-color: #cc0000; }
+  .faq-section summary { font-family: var(--font-serif); color: var(--sr-blue-dark); font-weight: 700; font-size: 16px; cursor: pointer; list-style: none; }
+  .faq-section summary::-webkit-details-marker { display: none; }
+  .faq-section summary::before { content: "▸ "; color: #cc0000; font-weight: 700; }
+  .faq-section details[open] summary::before { content: "▾ "; }
+
+  .disclaimer { background: #fff3e0; border-left: 4px solid #f5b041; padding: 14px 18px; font-size: 13px; color: #7c4a03; margin: 24px 0; border-radius: 3px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/tools/">Tools</a><span>/</span>
+    <span>Helms-Burton Act Explained</span>
+  </nav>
+
+  <header style="margin: 16px 0 20px;">
+    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
+      Explainer &middot; Cuban Liberty and Democratic Solidarity Act of 1996 &middot; 22 U.S.C. &sect;6021&ndash;6091
+    </div>
+    <h1 style="font-family:var(--font-serif); font-size:32px; color:var(--sr-blue-dark); margin:8px 0 10px;">
+      Helms-Burton Act Explained: Title III Lawsuits, Confiscated Property &amp; What It Means in {{ current_year }}
+    </h1>
+    <p style="font-family:var(--font-serif); font-style:italic; color:var(--sr-gray-text); font-size:17px;">
+      The Helms-Burton Act (officially the Cuban Liberty and Democratic Solidarity Act) lets U.S. nationals sue anyone who &ldquo;traffics&rdquo; in property the Cuban government confiscated after 1959. Title III was suspended for 22 years before activation in 2019 &mdash; here is how it works, who has been sued, and what it means for investors.
+    </p>
+  </header>
+
+  <div class="key-box">
+    <h3>Key facts</h3>
+    <ul>
+      <li><strong>Signed:</strong> March 12, 1996 by President Clinton (Pub. L. 104&ndash;114)</li>
+      <li><strong>Full name:</strong> Cuban Liberty and Democratic Solidarity (LIBERTAD) Act of 1996</li>
+      <li><strong>Citation:</strong> 22 U.S.C. &sect;&sect;6021&ndash;6091</li>
+      <li><strong>Title III activated:</strong> May 2, 2019 by the Trump administration (first time since enactment)</li>
+      <li><strong>Certified claims:</strong> ~5,913 claims valued at ~$1.9 billion (1996 dollars) certified by the Foreign Claims Settlement Commission; actual current value estimated at $8&ndash;10 billion</li>
+      <li><strong>Uncertified claims:</strong> ~200,000+ potential claims from Cuban Americans who became U.S. citizens after confiscation</li>
+    </ul>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">What the Helms-Burton Act does (four titles)</h2>
+
+  <p>The Act has four titles, each with distinct legal consequences:</p>
+
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px; margin:16px 0 28px;">
+    <div class="key-box" style="margin:0;">
+      <h3>Title I &mdash; Embargo codification</h3>
+      <p style="font-size:14px;">Codified the existing Cuba trade embargo into statutory law, making it impossible for any president to lift sanctions without Congressional approval. Requires six conditions for lifting, including free elections and property restitution.</p>
+    </div>
+    <div class="key-box" style="margin:0; border-left-color:#cc0000;">
+      <h3>Title II &mdash; Transition plan</h3>
+      <p style="font-size:14px;">Sets conditions the U.S. would require before recognizing a &ldquo;transition government&rdquo; in Cuba: release of political prisoners, legalization of political parties, scheduling of free elections, and return (or compensation for) confiscated property.</p>
+    </div>
+    <div class="key-box" style="margin:0; border-left-color:#cc0000;">
+      <h3>Title III &mdash; Private right of action</h3>
+      <p style="font-size:14px;">Creates a private cause of action in U.S. federal courts for any U.S. national whose property was confiscated by the Cuban government to sue anyone who &ldquo;traffics&rdquo; in that property. This is the most consequential title &mdash; <strong>activated May 2, 2019</strong> after 22 years of successive presidential suspensions.</p>
+    </div>
+    <div class="key-box" style="margin:0;">
+      <h3>Title IV &mdash; Visa denial</h3>
+      <p style="font-size:14px;">Requires the State Department to deny U.S. visas to foreign nationals (and their families) who traffic in confiscated Cuban property. Has been enforced selectively since 1996 against executives of companies like Sherritt International.</p>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Title III: the lawsuits</h2>
+
+  <p>Title III is what investors care about. The legal standard:</p>
+  <ol style="font-size:14px; margin:8px 0 8px 22px;">
+    <li><strong>Confiscation:</strong> The Cuban government seized property belonging to a person who was, or later became, a U.S. national.</li>
+    <li><strong>Trafficking:</strong> A third party &ldquo;knowingly and intentionally&rdquo; uses, benefits from, or facilitates transactions involving that property (including operating a hotel built on confiscated land).</li>
+    <li><strong>Damages:</strong> The plaintiff can recover the greater of the certified claim value or the current fair market value, plus interest, court costs, and attorney fees. Treble damages are available.</li>
+  </ol>
+
+  <div class="warn-box">
+    <h3>Why this matters for investors</h3>
+    <p style="font-size:14px;">Any company operating in Cuba &mdash; or deriving revenue from confiscated Cuban property &mdash; faces potential Title III liability in U.S. courts. This includes hotel chains operating properties on confiscated land (e.g., the Meli&aacute; lawsuits), cruise lines docking at confiscated ports (e.g., Carnival&rsquo;s Havana Docks case), airlines using confiscated airport terminals, and mining companies operating confiscated nickel facilities (e.g., Sherritt at Moa). U.S.-listed S&amp;P 500 companies with Cuba exposure must disclose this litigation risk in their SEC filings.</p>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Notable Title III cases</h2>
+
+  <div class="case-grid">
+    <div class="case-card">
+      <h4>Havana Docks Corp. v. Carnival Corp.</h4>
+      <div class="meta">S.D. Fla. &middot; Filed 2019 &middot; Cruise terminal (Port of Havana)</div>
+      <p>Havana Docks Corporation sued Carnival Corporation (CCL) for docking cruise ships at the Port of Havana terminal built on land the family owned pre-1959. Carnival earned ~$40M revenue from Cuba cruises.</p>
+      <p class="outcome active">Status: active litigation (appealed to 11th Circuit; remanded)</p>
+    </div>
+    <div class="case-card">
+      <h4>Gonzalez v. Amazon / Trivago / Booking.com</h4>
+      <div class="meta">S.D. Fla. &middot; Filed 2019&ndash;2020 &middot; Online booking platforms</div>
+      <p>Cuban-American plaintiffs sued online travel agencies for listing and facilitating bookings at CPAL-listed hotels built on confiscated property, arguing the platforms &ldquo;trafficked&rdquo; by earning commissions.</p>
+      <p class="outcome active">Status: multiple cases consolidated; proceedings ongoing</p>
+    </div>
+    <div class="case-card">
+      <h4>Glen v. Meli&aacute; Hotels International</h4>
+      <div class="meta">S.D. Fla. &middot; Filed 2019 &middot; Hotels on confiscated beachfront</div>
+      <p>The Sanchez-Hill family sued Spanish hotel chain Meli&aacute; for operating resort properties in Varadero and Havana on land the family owned before 1959. Meli&aacute; operates 30+ hotels in Cuba via joint ventures with Gaviota (GAESA subsidiary).</p>
+      <p class="outcome active">Status: active &mdash; Meli&aacute; challenged jurisdiction; court upheld Title III standing</p>
+    </div>
+    <div class="case-card">
+      <h4>Exxon Mobil v. PDVSA / Cuba (related)</h4>
+      <div class="meta">Title III context &middot; Oil refinery assets</div>
+      <p>While primarily a Venezuela case, the Helms-Burton framework applies to confiscated Cuban oil refinery assets. ExxonMobil&rsquo;s certified claims against confiscated refinery operations in Cuba remain among the largest in the FCSC registry.</p>
+      <p class="outcome settled">Status: certified claim on file; no active Title III suit</p>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:28px 0 12px;">Timeline</h2>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-year">1959&ndash;1960</div>
+      <div class="tl-body">Castro government nationalizes ~$1.8 billion in U.S.-owned property (sugar mills, oil refineries, banks, real estate, utilities). The Foreign Claims Settlement Commission certifies 5,913 claims.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1996</div>
+      <div class="tl-body">President Clinton signs the Cuban Liberty and Democratic Solidarity (LIBERTAD) Act (Helms-Burton) on March 12, prompted by Cuba&rsquo;s shoot-down of two Brothers to the Rescue aircraft in international airspace. Title III is immediately suspended for 6 months &mdash; a suspension renewed by every president through early 2019.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">1996&ndash;2019</div>
+      <div class="tl-body">Presidents Clinton, Bush, Obama, and initially Trump each renew the Title III waiver every 6 months, bowing to European and Canadian diplomatic pressure (the EU filed a WTO complaint in 1996; the U.S. reached an &ldquo;Understanding&rdquo; with the EU to keep Title III suspended in exchange for EU sanctions coordination).</div>
+    </div>
+    <div class="tl-item active">
+      <div class="tl-year">May 2, 2019</div>
+      <div class="tl-body"><strong>Title III activated.</strong> Secretary of State Pompeo allows Title III to take full effect for the first time, ending 22 years of suspensions. Dozens of lawsuits are filed within weeks.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-year">2019&ndash;{{ current_year }}</div>
+      <div class="tl-body">Active docket of Title III cases in federal courts, primarily in the Southern District of Florida. Cases against Meli&aacute;, Carnival, Booking.com, Trivago, and others progress through motions to dismiss, discovery, and appeals. No administration since has re-suspended Title III.</div>
+    </div>
+  </div>
+
+  <h2 style="font-family:var(--font-serif); font-size:22px; color:var(--sr-blue-dark); margin:32px 0 12px;">Frequently asked questions</h2>
+  <section class="faq-section">
+    <details open>
+      <summary>What is the Helms-Burton Act?</summary>
+      <div class="show-more__body">
+        <p>The Helms-Burton Act (formally the Cuban Liberty and Democratic Solidarity Act of 1996, 22 U.S.C. &sect;&sect;6021&ndash;6091) is a U.S. federal law that codifies the Cuba trade embargo into statute and creates a private right of action (Title III) allowing U.S. nationals to sue anyone who &ldquo;traffics&rdquo; in property confiscated by the Cuban government after 1959.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What does &ldquo;trafficking&rdquo; mean under Title III?</summary>
+      <div class="show-more__body">
+        <p>&ldquo;Trafficking&rdquo; is broadly defined: knowingly and intentionally selling, transferring, distributing, dispensing, brokering, managing, or otherwise disposing of confiscated property, or purchasing, leasing, receiving, possessing, obtaining control of, managing, using, or otherwise acquiring or holding an interest in confiscated property. Operating a hotel on confiscated land, docking a cruise ship at a confiscated port, or mining nickel at a confiscated facility all qualify.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Can European or Canadian companies be sued under Helms-Burton?</summary>
+      <div class="show-more__body">
+        <p>Yes. Title III applies to any person or entity that traffics in confiscated property, regardless of nationality. Meli&aacute; Hotels International (Spain), Sherritt International (Canada), and Bouygues (France) have all faced Title III exposure. The EU passed a &ldquo;Blocking Statute&rdquo; (Regulation 2271/96) that prohibits EU companies from complying with Helms-Burton, creating a legal conflict. In practice, foreign companies face the choice between risking U.S. litigation and abandoning Cuban operations.</p>
+      </div>
+    </details>
+    <details>
+      <summary>What damages can a plaintiff recover?</summary>
+      <div class="show-more__body">
+        <p>The greater of the certified claim value (as determined by the Foreign Claims Settlement Commission) or the current fair market value of the property. The court may also award interest, reasonable attorney fees, and court costs. Treble damages are available in certain circumstances. For large commercial properties (hotels, sugar mills, oil refineries), claims can run into the hundreds of millions of dollars.</p>
+      </div>
+    </details>
+    <details>
+      <summary>Has any company paid a Helms-Burton judgment?</summary>
+      <div class="show-more__body">
+        <p>As of {{ current_year }}, no Title III case has resulted in a final, collected judgment. Several cases remain in active litigation (Carnival, Meli&aacute;, online booking platforms). Enforcement against foreign companies with no U.S. assets is challenging, though U.S.-listed companies (like Carnival, which is incorporated in Panama but trades on NYSE) have significant U.S. assets at risk. The litigation risk itself drives SEC disclosure requirements and affects investment decisions.</p>
+      </div>
+    </details>
+    <details>
+      <summary>How does Helms-Burton affect SEC filings?</summary>
+      <div class="show-more__body">
+        <p>U.S.-listed companies with Cuba exposure must disclose material litigation risks in their 10-K, 20-F, and 10-Q filings. Title III lawsuits, certified claims, and contingent liabilities from confiscated-property exposure all trigger disclosure requirements. Use our <a href="/tools/sec-edgar-cuba-impairment-search">SEC EDGAR Cuba search tool</a> to find these filings, or check any S&amp;P 500 company&rsquo;s Cuba exposure on our <a href="/tools/public-company-cuba-exposure-check">company exposure checker</a>.</p>
+      </div>
+    </details>
+  </section>
+
+  <div class="disclaimer">
+    <strong>Important:</strong> This explainer is an educational resource, not legal advice. The Helms-Burton Act, OFAC enforcement posture, and active litigation dockets change with administrations and court rulings. For investment, due-diligence, or litigation purposes, retain qualified U.S. counsel with Cuba sanctions experience.
+  </div>
+
+  {% from "_related_tools.html.j2" import related_tools_nav %}
+  {{ related_tools_nav(related_tools_ctx) }}
+
+  {% from "_cluster_nav.html.j2" import cluster_nav %}
+  {{ cluster_nav(cluster_ctx) }}
+
+</section>
+{% endblock %}

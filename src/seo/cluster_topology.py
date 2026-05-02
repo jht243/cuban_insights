@@ -631,6 +631,22 @@ _TOOL_META: dict[str, dict[str, str]] = {
         "name": "elTOQUE TRMI rate",
         "tagline": "Live CUP/USD/MLC informal exchange rate.",
     },
+    "/tools/cuba-travel-advisory": {
+        "name": "Cuba travel advisory",
+        "tagline": "State Dept Level 2 — what it means, risks cited, and safety tips.",
+    },
+    "/tools/what-is-ofac": {
+        "name": "What is OFAC?",
+        "tagline": "U.S. sanctions agency explained — SDN list, compliance, penalties.",
+    },
+    "/tools/cuba-embargo-explained": {
+        "name": "Cuba embargo explained",
+        "tagline": "History, laws, timeline, and current status of the U.S. trade embargo.",
+    },
+    "/tools/helms-burton-act-explained": {
+        "name": "Helms-Burton Act explained",
+        "tagline": "Title III lawsuits, confiscated property, and what it means for investors.",
+    },
     "/tools/cuba-trade-leads-for-us-companies": {
         "name": "Cuba trade leads",
         "tagline": "Find ITA-style leads and screen them before follow-up.",
@@ -750,6 +766,28 @@ _RELATED_TOOLS: dict[str, tuple[str, ...]] = {
         "/tools/cuba-investment-roi-calculator",
         "/tools/public-company-cuba-exposure-check",
         "/tools/sec-edgar-cuba-impairment-search",
+    ),
+
+    # Explainer pages — link to related compliance/investment tools.
+    "/tools/cuba-travel-advisory": (
+        "/tools/can-i-travel-to-cuba",
+        "/tools/havana-safety-by-neighborhood",
+        "/tools/cuba-visa-requirements",
+    ),
+    "/tools/what-is-ofac": (
+        "/tools/ofac-cuba-sanctions-checker",
+        "/tools/ofac-cuba-general-licenses",
+        "/tools/cuba-embargo-explained",
+    ),
+    "/tools/cuba-embargo-explained": (
+        "/tools/helms-burton-act-explained",
+        "/tools/what-is-ofac",
+        "/tools/can-i-travel-to-cuba",
+    ),
+    "/tools/helms-burton-act-explained": (
+        "/tools/cuba-embargo-explained",
+        "/tools/sec-edgar-cuba-impairment-search",
+        "/tools/public-company-cuba-exposure-check",
     ),
 
     # Export / ITA cluster — opportunity tools point at the process map

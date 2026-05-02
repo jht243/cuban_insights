@@ -18,11 +18,18 @@ Why this module exists:
 Editorial freshness — bump VERIFIED_AS_OF every time the registry is
 re-swept against live news so readers see a current "Verified" stamp
 on every profile.
+
+Auto-linker
+  • ``link_people_in_html(html)`` inserts first-mention ``/people/<slug>``
+    hyperlinks at render time so stored ``body_html`` is never mutated.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Sequence
+
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 
 # Bump this stamp every time the whole registry is re-verified against
@@ -190,7 +197,7 @@ def _add(p: Person) -> None:
 _add(Person(
     slug="miguel-diaz-canel",
     name="Miguel Díaz-Canel",
-    aliases=("Miguel Mario Díaz-Canel Bermúdez", "Diaz-Canel"),
+    aliases=("Miguel Mario Díaz-Canel Bermúdez", "Diaz-Canel", "Díaz-Canel", "Miguel Díaz-Canel Bermúdez"),
     role="President of Cuba and First Secretary of the Communist Party",
     spanish_title="Presidente de la República de Cuba; Primer Secretario del PCC",
     cohorts=("executive", "pcc"),
@@ -292,7 +299,7 @@ _add(Person(
 _add(Person(
     slug="manuel-marrero-cruz",
     name="Manuel Marrero Cruz",
-    aliases=("Manuel Marrero",),
+    aliases=("Manuel Marrero", "Marrero Cruz", "Marrero"),
     role="Prime Minister of Cuba",
     spanish_title="Primer Ministro de la República de Cuba",
     cohorts=("executive", "pcc"),
@@ -372,7 +379,7 @@ _add(Person(
 _add(Person(
     slug="bruno-rodriguez-parrilla",
     name="Bruno Rodríguez Parrilla",
-    aliases=("Bruno Rodriguez", "Bruno Rodríguez"),
+    aliases=("Bruno Rodriguez", "Bruno Rodríguez", "Rodríguez Parrilla"),
     role="Minister of Foreign Affairs of Cuba (MINREX)",
     spanish_title="Ministro de Relaciones Exteriores de Cuba",
     cohorts=("executive", "pcc"),
@@ -514,7 +521,7 @@ _add(Person(
 _add(Person(
     slug="esteban-lazo-hernandez",
     name="Esteban Lazo Hernández",
-    aliases=("Esteban Lazo",),
+    aliases=("Esteban Lazo", "Lazo Hernández", "Lazo Hernandez"),
     role="President of the National Assembly of People's Power",
     spanish_title="Presidente de la Asamblea Nacional del Poder Popular",
     cohorts=("pcc", "executive"),
@@ -591,7 +598,7 @@ _add(Person(
 _add(Person(
     slug="roberto-morales-ojeda",
     name="Roberto Morales Ojeda",
-    aliases=("Roberto Morales",),
+    aliases=("Roberto Morales", "Morales Ojeda"),
     role="Member of the PCC Politburo and Secretariat (cadres)",
     spanish_title="Miembro del Buró Político y Secretariado del PCC",
     cohorts=("pcc",),
@@ -655,7 +662,7 @@ _add(Person(
 _add(Person(
     slug="alvaro-lopez-miera",
     name="Álvaro López Miera",
-    aliases=("Alvaro Lopez Miera", "Álvaro López-Miera"),
+    aliases=("Alvaro Lopez Miera", "Álvaro López-Miera", "López Miera", "Lopez Miera", "Alvaro López Miera"),
     role="Minister of the Revolutionary Armed Forces (FAR)",
     spanish_title="Ministro de las Fuerzas Armadas Revolucionarias (FAR)",
     cohorts=("military", "pcc"),
@@ -1060,6 +1067,240 @@ _add(Person(
 ))
 
 
+# ── Additional figures (auto-linker coverage) ────────────────────────
+
+_add(Person(
+    slug="raul-castro",
+    name="Raúl Castro",
+    aliases=("Raul Castro", "Castro", "Castro Ruz", "Raúl Castro Ruz"),
+    role="Former First Secretary of the Communist Party of Cuba",
+    spanish_title="Primer Secretario del PCC (2011–2021); Presidente (2008–2018)",
+    cohorts=("pcc", "executive"),
+    one_liner=(
+        "Raúl Castro led Cuba as President (2008-2018) and PCC First "
+        "Secretary (2011-2021), succeeding his brother Fidel and "
+        "overseeing the Obama-era thaw and economic reforms."
+    ),
+    bio=(
+        "Raúl Modesto Castro Ruz served as President of Cuba from "
+        "2008 to 2018 and as First Secretary of the Communist Party "
+        "from 2011 to 2021. He succeeded his brother Fidel Castro "
+        "in both roles. Under his leadership Cuba opened diplomatic "
+        "relations with the United States (2014-2015), expanded "
+        "private-sector activity, and drafted the 2019 Constitution.",
+        "Although formally retired from all state and party offices, "
+        "Castro remains the single most powerful figure in Cuban "
+        "politics through informal influence over the FAR and PCC "
+        "old guard. He is sanctioned by the United States.",
+    ),
+    born="1931-06-03",
+    birthplace="Birán, Holguín, Cuba",
+    status="former",
+    affiliations=(
+        "Communist Party of Cuba (PCC) — former First Secretary",
+        "Revolutionary Armed Forces (FAR) — former Minister",
+    ),
+    sector_path="/sectors/governance",
+    sanctioned=True,
+    sanctioning_program="EO 13818 (Global Magnitsky)",
+    wikipedia_url="https://en.wikipedia.org/wiki/Ra%C3%BAl_Castro",
+    related=("miguel-diaz-canel", "fidel-castro"),
+))
+
+
+_add(Person(
+    slug="fidel-castro",
+    name="Fidel Castro",
+    aliases=("Fidel Castro Ruz", "Fidel"),
+    role="Former Prime Minister and President of Cuba (deceased)",
+    spanish_title="Primer Ministro (1959–1976); Presidente (1976–2008)",
+    cohorts=("pcc", "executive"),
+    status="former",
+    one_liner=(
+        "Fidel Castro led Cuba from the 1959 Revolution until 2008, "
+        "shaping the country's one-party socialist system, its "
+        "alliance with the Soviet Union, and its confrontation with "
+        "the United States."
+    ),
+    bio=(
+        "Fidel Alejandro Castro Ruz (1926-2016) led Cuba for nearly "
+        "five decades — as Prime Minister (1959-1976) and then as "
+        "President of the Council of State (1976-2008). He founded "
+        "the revolutionary movement that overthrew the Batista "
+        "dictatorship, aligned Cuba with the Soviet Union, survived "
+        "the Bay of Pigs invasion and the Cuban Missile Crisis, and "
+        "built the one-party socialist state that persists today.",
+        "Castro stepped down from formal power in 2006-2008 due to "
+        "ill health, handing the presidency and eventually the PCC "
+        "leadership to his brother Raúl. He died on 25 November 2016.",
+    ),
+    born="1926-08-13",
+    birthplace="Birán, Holguín, Cuba",
+    sector_path="/sectors/governance",
+    wikipedia_url="https://en.wikipedia.org/wiki/Fidel_Castro",
+    related=("raul-castro", "miguel-diaz-canel"),
+))
+
+
+_add(Person(
+    slug="alejandro-gil-fernandez",
+    name="Alejandro Gil Fernández",
+    aliases=("Alejandro Gil", "Gil Fernández"),
+    role="Former Minister of Economy and Planning",
+    spanish_title="Exministro de Economía y Planificación",
+    cohorts=("executive",),
+    status="former",
+    one_liner=(
+        "Alejandro Gil Fernández served as Cuba's Minister of "
+        "Economy and Planning and was removed from office amid "
+        "corruption allegations."
+    ),
+    bio=(
+        "Alejandro Gil Fernández served as Cuba's Minister of "
+        "Economy and Planning from 2018 until his removal in 2024. "
+        "He was the architect of the Tarea Ordenamiento monetary "
+        "reform and the peso devaluation. His dismissal was "
+        "accompanied by corruption allegations — a rare public "
+        "acknowledgment of senior-level graft by the Cuban "
+        "government.",
+    ),
+    sector_path="/sectors/governance",
+    related=("miguel-diaz-canel", "manuel-marrero-cruz"),
+))
+
+
+_add(Person(
+    slug="ricardo-cabrisas-ruiz",
+    name="Ricardo Cabrisas Ruiz",
+    aliases=("Cabrisas", "Ricardo Cabrisas"),
+    role="Deputy Prime Minister and Chief Debt Negotiator",
+    spanish_title="Viceprimer Ministro",
+    cohorts=("executive",),
+    one_liner=(
+        "Ricardo Cabrisas Ruiz is Cuba's chief external-debt "
+        "negotiator and a Deputy Prime Minister with a decades-long "
+        "portfolio over the island's foreign financial obligations."
+    ),
+    bio=(
+        "Ricardo Cabrisas Ruiz has served as Deputy Prime Minister "
+        "and as Cuba's lead negotiator on sovereign-debt "
+        "restructuring with the Paris Club and bilateral creditors. "
+        "He is one of the longest-serving economic officials in "
+        "the Cuban government.",
+    ),
+    sector_path="/sectors/governance",
+    related=("miguel-diaz-canel", "manuel-marrero-cruz"),
+))
+
+
+_add(Person(
+    slug="rogelio-polanco-fuentes",
+    name="Rogelio Polanco Fuentes",
+    aliases=("Polanco Fuentes", "Rogelio Polanco"),
+    role="Ideology Secretary, Communist Party of Cuba",
+    spanish_title="Jefe del Departamento Ideológico del PCC",
+    cohorts=("pcc",),
+    one_liner=(
+        "Rogelio Polanco Fuentes heads the ideology department of "
+        "the Cuban Communist Party, overseeing state media, "
+        "propaganda, and ideological training."
+    ),
+    bio=(
+        "Rogelio Polanco Fuentes is a member of the PCC Secretariat "
+        "responsible for the Party's ideology portfolio — state "
+        "media, propaganda, political education, and the ideological "
+        "formation of cadres. He is a former Cuban ambassador to "
+        "Venezuela.",
+    ),
+    sector_path="/sectors/governance",
+    related=("miguel-diaz-canel", "roberto-morales-ojeda"),
+))
+
+
+_add(Person(
+    slug="joaquin-alonso-vazquez",
+    name="Joaquín Alonso Vázquez",
+    aliases=("Joaquín Alonso", "Alonso Vázquez", "Joaquin Alonso"),
+    role="President, Banco Central de Cuba",
+    spanish_title="Presidente del Banco Central de Cuba",
+    cohorts=("executive",),
+    one_liner=(
+        "Joaquín Alonso Vázquez leads the Central Bank of Cuba, "
+        "the institution responsible for monetary policy, exchange "
+        "rates, and banking regulation on the island."
+    ),
+    bio=(
+        "Joaquín Alonso Vázquez serves as President of the Banco "
+        "Central de Cuba (BCC), the country's central bank and "
+        "monetary authority. He oversees monetary policy, foreign "
+        "exchange controls, and the banking system amid Cuba's "
+        "severe dual-currency and inflation crisis.",
+    ),
+    sector_path="/sectors/governance",
+    related=("miguel-diaz-canel", "alejandro-gil-fernandez"),
+))
+
+
+_add(Person(
+    slug="ana-teresa-igarza",
+    name="Ana Teresa Igarza",
+    aliases=("Igarza",),
+    role="Director General, Mariel Special Development Zone (ZEDM)",
+    spanish_title="Directora General de la Zona Especial de Desarrollo Mariel",
+    cohorts=("executive",),
+    one_liner=(
+        "Ana Teresa Igarza leads the Mariel Special Development "
+        "Zone (ZEDM), Cuba's flagship foreign-investment enclave "
+        "west of Havana."
+    ),
+    bio=(
+        "Ana Teresa Igarza has served as Director General of the "
+        "Zona Especial de Desarrollo Mariel (ZEDM) — Cuba's "
+        "flagship special economic zone. The ZEDM offers foreign "
+        "investors tax incentives, streamlined customs, and a "
+        "dedicated port and logistics corridor. Igarza is the "
+        "public face of Cuba's pitch to foreign capital.",
+    ),
+    sector_path="/sectors/mariel-zedm",
+    related=("miguel-diaz-canel", "manuel-marrero-cruz"),
+))
+
+
+_add(Person(
+    slug="luis-alberto-rodriguez-lopez-calleja",
+    name="Luis Alberto Rodríguez López-Calleja",
+    aliases=(
+        "López-Calleja",
+        "Lopez-Calleja",
+        "Rodríguez López-Calleja",
+        "Luis Alberto Rodríguez",
+    ),
+    role="Former Head of GAESA (deceased)",
+    spanish_title="Director del Grupo de Administración Empresarial S.A. (GAESA)",
+    cohorts=("military",),
+    status="former",
+    one_liner=(
+        "Luis Alberto Rodríguez López-Calleja ran GAESA, Cuba's "
+        "military-owned business conglomerate, until his death in "
+        "2022. He was Raúl Castro's son-in-law and one of the most "
+        "powerful economic figures in Cuba."
+    ),
+    bio=(
+        "Brigadier General Luis Alberto Rodríguez López-Calleja "
+        "headed GAESA (Grupo de Administración Empresarial S.A.), "
+        "the military-owned conglomerate that controls much of "
+        "Cuba's tourism, retail, real-estate, and financial "
+        "infrastructure. He was the son-in-law of Raúl Castro. "
+        "He died on 1 July 2022.",
+    ),
+    sector_path="/sectors/governance",
+    sanctioned=True,
+    sanctioning_program="EO 13818 (Global Magnitsky)",
+    wikipedia_url="https://en.wikipedia.org/wiki/Luis_Alberto_Rodr%C3%ADguez_L%C3%B3pez-Calleja",
+    related=("raul-castro", "alvaro-lopez-miera"),
+))
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Public helpers
 # ──────────────────────────────────────────────────────────────────────
@@ -1137,3 +1378,128 @@ STATUS_BADGES: dict[str, dict[str, str]] = {
 
 def status_badge(status: str) -> dict[str, str]:
     return STATUS_BADGES.get(status, STATUS_BADGES["current"])
+
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Auto-linker — render-time first-mention linking to /people/<slug>
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+_SKIP_ANCESTORS = frozenset(
+    {"a", "code", "pre", "h1", "h2", "h3", "h4", "h5", "h6", "script", "style", "title"}
+)
+
+_PatternEntry = tuple[re.Pattern[str], str]  # (compiled regex, slug)
+_compiled_patterns: list[_PatternEntry] | None = None
+
+
+def _build_patterns() -> list[_PatternEntry]:
+    """Build sorted (longest-label-first) regex patterns for all people."""
+    entries: list[tuple[str, str]] = []  # (label, slug)
+    for slug, person in PEOPLE.items():
+        entries.append((person.name, slug))
+        for alias in person.aliases:
+            entries.append((alias, slug))
+
+    entries.sort(key=lambda t: len(t[0]), reverse=True)
+
+    patterns: list[_PatternEntry] = []
+    for label, slug in entries:
+        pat = re.compile(
+            r"(?<!\w)" + re.escape(label) + r"(?!\w)",
+            re.UNICODE,
+        )
+        patterns.append((pat, slug))
+    return patterns
+
+
+def _get_patterns() -> list[_PatternEntry]:
+    global _compiled_patterns
+    if _compiled_patterns is None:
+        _compiled_patterns = _build_patterns()
+    return _compiled_patterns
+
+
+def _ancestor_in_skip_set(node: NavigableString) -> bool:
+    """Return True if any ancestor tag is in the skip set."""
+    parent = node.parent
+    while parent is not None:
+        if isinstance(parent, Tag) and parent.name in _SKIP_ANCESTORS:
+            return True
+        parent = parent.parent
+    return False
+
+
+def link_people_in_html(html: str) -> str:
+    """Insert first-mention ``/people/<slug>`` links into an HTML fragment.
+
+    Pure function — the input string is never mutated; a new string is
+    returned.  Calling this on already-linked HTML is a no-op (names
+    inside ``<a>`` tags are skipped).
+    """
+    if not html:
+        return html
+
+    patterns = _get_patterns()
+    if not patterns:
+        return html
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    text_nodes = [
+        node
+        for node in list(soup.descendants)
+        if isinstance(node, NavigableString)
+        and str(node).strip()
+    ]
+
+    linked_slugs: set[str] = set()
+
+    for node in text_nodes:
+        if _ancestor_in_skip_set(node):
+            continue
+
+        text = str(node)
+        matches: list[tuple[int, int, str, str]] = []  # (start, end, slug, matched_text)
+
+        for pat, slug in patterns:
+            if slug in linked_slugs:
+                continue
+            m = pat.search(text)
+            if m:
+                matches.append((m.start(), m.end(), slug, m.group()))
+
+        if not matches:
+            continue
+
+        matches.sort(key=lambda t: t[0])
+
+        filtered: list[tuple[int, int, str, str]] = []
+        for match in matches:
+            if filtered and match[0] < filtered[-1][1]:
+                continue
+            filtered.append(match)
+
+        fragments: list[NavigableString | Tag] = []
+        cursor = 0
+        for start, end, slug, matched in filtered:
+            if start > cursor:
+                fragments.append(NavigableString(text[cursor:start]))
+
+            link = soup.new_tag(
+                "a",
+                href=f"/people/{slug}",
+                target="_blank",
+                rel="noopener",
+            )
+            link.string = matched
+            fragments.append(link)
+            linked_slugs.add(slug)
+            cursor = end
+
+        if cursor < len(text):
+            fragments.append(NavigableString(text[cursor:]))
+
+        if fragments:
+            node.replace_with(*fragments)
+
+    return str(soup)

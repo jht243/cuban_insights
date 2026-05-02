@@ -1103,54 +1103,88 @@ def tool_havana_safety():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="havana-safety-by-neighborhood",
-            title="Havana Safety by Neighborhood — Investor & Traveler Guide",
+            title="Is Cuba Safe? Havana Safety Map by Neighborhood (2026)",
             description=(
-                "Havana neighborhood safety scores for foreign investors and "
-                "business travelers. 1–5 safety rating, business-use guidance, "
-                "and risks to avoid for Miramar, Vedado, La Habana Vieja, "
-                "Centro Habana, the Mariel ZEDM corridor, and other major "
-                "Havana districts."
+                "Is Cuba safe to visit? Neighborhood-by-neighborhood safety "
+                "scores for Havana — Miramar, Vedado, Habana Vieja, Centro "
+                "Habana, and more. U.S. State Dept rates Cuba Level 2. "
+                "Low violent crime but practical risks: blackouts, no ATMs "
+                "for U.S. cards, scams. Interactive map + safety tips."
             ),
             keywords=(
-                "Havana safety, safe neighborhoods Havana, Miramar Havana, "
-                "Vedado Havana, Habana Vieja safety, Havana business district, "
-                "where to stay in Havana, Mariel ZEDM"
+                "is cuba safe, is it safe to travel to cuba, havana safety, "
+                "is cuba safe for tourists, cuba safety 2026, safe "
+                "neighborhoods havana, is cuba dangerous, cuba crime rate, "
+                "havana safety map, where to stay in havana, cuba travel safety"
             ),
             faq=[
                 {
-                    "q": "What is the safest neighborhood in Havana for foreign business travelers?",
+                    "q": "Is Cuba safe to visit in 2026?",
                     "a": (
-                        "Miramar (Playa municipality) is the default district "
-                        "for foreign-investor meetings, joint-venture "
-                        "negotiations, embassies, and modern business-class "
-                        "hotels (Meliá Habana, Memories Miramar). Vedado is "
-                        "the secondary option, closer to ministries and "
-                        "cultural institutions."
+                        "Cuba is generally considered one of the safer "
+                        "Caribbean destinations for tourists. The U.S. State "
+                        "Department rates Cuba at Level 2 ('Exercise Increased "
+                        "Caution') — the same level as France, the UK, and "
+                        "Germany. Violent crime against tourists is rare. The "
+                        "main risks are petty crime (pickpocketing, "
+                        "distraction theft, short-change scams), infrastructure "
+                        "hazards (rolling blackouts called 'apagones,' "
+                        "crumbling buildings in Centro Habana), and the fact "
+                        "that U.S.-issued bank cards do not work anywhere on "
+                        "the island."
                     ),
                 },
                 {
-                    "q": "Is Havana dangerous for foreign visitors?",
+                    "q": "Is it safe to travel to Cuba as an American?",
                     "a": (
-                        "By Latin American capital standards, Havana has a "
-                        "relatively low violent-crime rate. The dominant risk "
-                        "for foreign visitors is petty crime "
-                        "(pickpocketing, distraction theft, short-change "
-                        "scams, jinetero / jinetera approaches in tourist "
-                        "zones), not violent street crime. Power outages "
-                        "(\"apagones\") and infrastructure decay are larger "
-                        "practical-safety concerns in many neighborhoods."
+                        "Yes — American tourists face the same low violent-"
+                        "crime environment as other nationalities. The "
+                        "additional considerations for Americans are legal, "
+                        "not physical: you must travel under one of OFAC's "
+                        "12 authorized categories, avoid CPAL-listed hotels, "
+                        "and your Visa/Mastercard/Amex will not work. Bring "
+                        "clean USD or EUR cash. The U.S. Embassy in Havana "
+                        "resumed limited services in 2023 but cannot provide "
+                        "full consular assistance in emergencies."
+                    ),
+                },
+                {
+                    "q": "What is the safest neighborhood in Havana?",
+                    "a": (
+                        "Miramar (Playa municipality) is the safest — it "
+                        "houses most embassies, international businesses, and "
+                        "modern hotels (Meliá Habana, Memories Miramar). "
+                        "Vedado is second, with a mix of hotels, restaurants, "
+                        "and ministries. La Habana Vieja (Old Havana) is safe "
+                        "during the day for tourists but requires more "
+                        "awareness at night. Centro Habana has the most "
+                        "reported petty crime and infrastructure decay."
+                    ),
+                },
+                {
+                    "q": "What are the biggest safety risks in Cuba for tourists?",
+                    "a": (
+                        "In order of likelihood: (1) Petty theft and scams "
+                        "(especially in Old Havana and around tourist "
+                        "attractions), (2) Power outages that kill AC, "
+                        "lighting, and water pumps for 4-8 hours/day outside "
+                        "Havana, (3) Road conditions — poorly lit, no "
+                        "guardrails, animals on highways, (4) Limited medical "
+                        "care — hospitals lack supplies despite good doctors; "
+                        "travel insurance with medical evacuation coverage is "
+                        "essential, (5) Arbitrary detention risk for "
+                        "journalists and activists (U.S. State Dept warning)."
                     ),
                 },
                 {
                     "q": "Is the airport road in Havana safe?",
                     "a": (
                         "The corridor between José Martí International "
-                        "Airport (HAV, in Boyeros municipality) and downtown "
-                        "Havana is functional and the airport itself is "
-                        "well-controlled. Pre-arrange a transfer through "
-                        "your hotel — the official taxi queue at Terminal 3 "
-                        "is reliable but the language barrier creates "
-                        "friction."
+                        "Airport (HAV, Boyeros) and downtown Havana is "
+                        "functional and well-policed. Pre-arrange a transfer "
+                        "through your casa particular or hotel — the official "
+                        "taxi queue at Terminal 3 is reliable. The drive takes "
+                        "20-40 minutes to Vedado/Miramar depending on traffic."
                     ),
                 },
             ],
@@ -1232,20 +1266,20 @@ def tool_cuba_visa_requirements():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-visa-requirements",
-            title="Cuba Visa & Tourist Card Requirements by Country — Free Tool",
+            title="Cuba Visa Requirements (2026): Tourist Card, Cost & How to Get One",
             description=(
-                "Free Cuba visa and Tourist Card (Tarjeta del Turista) requirements "
-                "checker. See whether your passport country needs a visa, the "
-                "Tourist Card vendor and price, the maximum stay, the live US "
-                "State Department travel-advisory level, and what US travelers "
-                "need to know about the OFAC 12 authorized-travel categories "
-                "before flying to Havana."
+                "Do you need a visa for Cuba? Complete guide to Cuba visa and "
+                "Tourist Card (Tarjeta del Turista) requirements by nationality. "
+                "Cost: $50-100 (U.S.) or €25-30 (others). Where to buy, "
+                "maximum stay, documents needed at Havana immigration, and "
+                "special rules for U.S. passport holders (OFAC categories). "
+                "Updated for 2026."
             ),
             keywords=(
-                "Cuba visa, Cuba Tourist Card, Tarjeta del Turista, do I need a "
-                "visa for Cuba, Cuba travel advisory, Havana entry requirements, "
-                "OFAC Cuba travel categories, D'Viajeros customs form, Cuban-law "
-                "travel insurance"
+                "cuba visa, cuba visa requirements, do i need a visa for cuba, "
+                "cuba tourist card, cuba entry requirements 2026, cuba visa cost, "
+                "cuba visa for us citizens, tarjeta del turista cuba, "
+                "cuba travel advisory, D'Viajeros cuba, cuba travel documents"
             ),
             faq=[
                 {
@@ -1496,24 +1530,21 @@ def tool_eltoque_trmi():
         finally:
             db.close()
 
-        # Prefer informal USD as the headline figure; the BCC tasaEspecial
-        # context is merged in by the template's secondary panel via the
-        # bcc_rates extra_metadata if present (rendered elsewhere).
         title_today = (
-            f"elTOQUE TRMI Today — {rate_usd:,.2f} CUP per US$1 (informal market)"
+            f"Cuban Peso to USD Exchange Rate Today: {rate_usd:,.0f} CUP = $1 (Real Rate)"
             if rate_usd else
-            "elTOQUE TRMI — Cuban Peso to USD Informal-Market Rate"
+            "Cuban Peso to USD Exchange Rate — CUP/USD Real Market Rate (elTOQUE TRMI)"
         )
         description_today = (
-            f"Today's elTOQUE TRMI informal-market rate is {rate_usd:,.2f} CUP "
-            f"per US$1, the de-facto reference Cubans use for cash, MLC "
-            f"top-ups, and remittances. Free CUP/USD/MLC/USDT converter and "
-            f"context on the BCC official rate, the MLC virtual currency, "
-            f"and why no US-issued cards are accepted."
+            f"Today's real Cuban peso exchange rate: {rate_usd:,.0f} CUP per "
+            f"US$1 (elTOQUE TRMI informal market). Google and banks show the "
+            f"official BCC rate of 24 CUP/$1 — but nobody uses it. Free "
+            f"CUP-to-USD converter, MLC rate, USDT rate, and explanation "
+            f"of Cuba's triple-currency system."
             if rate_usd else
-            "Live elTOQUE TRMI informal-market CUP / USD / MLC / USDT rate, "
-            "free converter, the BCC tasaEspecial official cross-rate, and "
-            "context on why no US-issued cards work in Cuba."
+            "Live Cuban peso to USD exchange rate (CUP/USD) from elTOQUE "
+            "TRMI — the real informal-market rate Cubans actually use. Free "
+            "converter, MLC rate, USDT rate, and Cuba currency explainer."
         )
 
         seo, jsonld = _tool_seo_jsonld(
@@ -1521,10 +1552,10 @@ def tool_eltoque_trmi():
             title=title_today,
             description=description_today,
             keywords=(
-                "elTOQUE TRMI, CUP USD rate, Cuban peso to dollar, tasa "
-                "informal Cuba, MLC rate, USDT Cuba, BCC tasa especial, "
-                "Cuban peso converter, Cuba exchange rate today, mercado "
-                "informal Cuba"
+                "cup to usd, cuban peso exchange rate, cuban peso to dollar, "
+                "cuba exchange rate, CUP USD rate today, elTOQUE TRMI, "
+                "cuban peso converter, MLC rate Cuba, tasa informal Cuba, "
+                "how much is a cuban peso worth, cuba currency"
             ),
             faq=[
                 {
@@ -2717,12 +2748,13 @@ def tool_cpal_hotel_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
-            title="Cuba Prohibited Accommodations List OFAC 2026 — Search CPAL Hotels",
+            title=f"Cuba Prohibited Accommodations List ({total_entries} Properties, 2026) — CPAL Checker",
             description=(
-                f"Search the Cuba Prohibited Accommodations List (CPAL / "
-                f"OFAC CACR §515.210) for any of the {total_entries} hotels, "
-                f"casas, resorts, and lodging properties U.S. travelers may "
-                f"not use in 2026. Includes indexable property pages."
+                f"Search the full Cuba Prohibited Accommodations List (CPAL) "
+                f"— all {total_entries} hotels, casas particulares, and "
+                f"resorts U.S. persons cannot stay at under OFAC CACR "
+                f"§515.210. Filter by province, neighborhood, or name. "
+                f"Updated daily from state.gov. Free compliance tool."
             ),
             keywords=(
                 "Cuba prohibited accommodations list, Cuba prohibited "
@@ -2999,13 +3031,13 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title="OFAC Cuba Restricted List 2026 — Search GAESA, Gaviota, CIMEX",
+            title=f"Cuba Restricted List Checker ({total_entries} Entities, 2026) — CRL Search",
             description=(
-                f"Search the OFAC Cuba Restricted List / State Department "
-                f"Cuba Restricted List (CRL) "
-                f"for GAESA, Gaviota, CIMEX, Habaguanex, FINCIMEX, hotels, "
-                f"marinas, ministries, and all {total_entries} entities "
-                f"restricted under CACR §515.209."
+                f"Search the Cuba Restricted List (CRL) — all "
+                f"{total_entries} Cuban entities U.S. persons cannot "
+                f"transact with under §515.209, including GAESA, Gaviota, "
+                f"CIMEX, Habaguanex, FINCIMEX, and MINFAR. Updated daily "
+                f"from state.gov. Not the same as the OFAC SDN — check both."
             ),
             keywords=(
                 "OFAC Cuba Restricted List, Cuba Restricted List checker, CRL Cuba lookup, GAESA "
@@ -3446,79 +3478,126 @@ def tool_can_i_travel_to_cuba():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="can-i-travel-to-cuba",
-            title="Can I Legally Travel to Cuba? — Free OFAC 12-Category Decision Tree",
+            title="Can Americans Travel to Cuba? (2026) — 12 Legal Ways + Requirements",
             description=(
-                "Free decision tree that walks U.S. travellers through the 12 "
-                "OFAC authorised travel categories (CACR §515.560-.578) and "
-                "tells you which general license your trip qualifies under, "
-                "what records you must keep, and which hotels and "
-                "counterparties you must avoid (CPAL, CRL, OFAC SDN). "
-                "Non-U.S. travellers get the Cuban-side entry requirements."
+                "Find out if you can legally travel to Cuba in 2026. Free "
+                "decision tool covering the 12 OFAC-authorized travel "
+                "categories, what records you must keep for 5 years, "
+                "which hotels are banned (CPAL), and Cuban-side entry "
+                "requirements (Tourist Card, insurance, D'Viajeros). "
+                "Works for U.S. and non-U.S. passport holders."
             ),
             keywords=(
-                "can I travel to Cuba, OFAC 12 travel categories, support "
-                "for the Cuban people §515.574, Cuba travel for US "
-                "citizens, CACR travel rules, Cuba people-to-people, "
-                "Cuba family visit OFAC, journalist visa Cuba, US Cuba "
-                "travel decision tree"
+                "can americans travel to cuba, can I travel to cuba, "
+                "can us citizens travel to cuba, cuba travel ban, "
+                "what are the 12 requirements to travel to cuba, "
+                "why cant americans go to cuba, OFAC 12 travel categories, "
+                "support for the Cuban people §515.574, CACR travel rules, "
+                "is it legal to travel to cuba, cuba travel requirements 2026"
             ),
             faq=[
                 {
-                    "q": "Can U.S. citizens travel to Cuba?",
+                    "q": "Can Americans travel to Cuba in 2026?",
                     "a": (
-                        "Yes — but only under one of OFAC's 12 authorised "
-                        "travel categories under CACR §515.560-.578. "
-                        "Tourism per se is NOT one of the categories. The "
-                        "most common category for individual travellers is "
-                        "§515.574 (support for the Cuban people), which "
-                        "requires a full-time schedule of activities that "
-                        "interact with Cubans (casas particulares, "
-                        "paladares, MIPYME businesses) and prohibits "
-                        "transactions with Cuba Restricted List entities."
+                        "Yes — U.S. citizens can legally travel to Cuba, "
+                        "but only under one of OFAC's 12 authorized travel "
+                        "categories defined in the Cuban Assets Control "
+                        "Regulations (CACR §515.560–.578). Pure tourism is "
+                        "NOT one of the categories. The most common "
+                        "category for individual travelers is §515.574 "
+                        "'Support for the Cuban People,' which requires a "
+                        "full-time schedule of activities supporting Cuban "
+                        "private-sector businesses (casas particulares, "
+                        "paladares, MIPYMES). You must avoid all properties "
+                        "on the Cuba Prohibited Accommodations List (CPAL) "
+                        "and entities on the Cuba Restricted List (CRL)."
                     ),
                 },
                 {
-                    "q": "What are the 12 OFAC categories of authorised travel to Cuba?",
+                    "q": "What are the 12 requirements to travel to Cuba?",
                     "a": (
-                        "(1) Family visits §515.563, (2) Official "
-                        "government / IGO business §515.562, "
-                        "(3) Journalism §515.561, (4) Professional "
-                        "research and meetings §515.564, (5) Educational "
-                        "/ people-to-people §515.565, (6) Religious "
-                        "§515.566, (7) Public performances and clinics "
-                        "§515.567, (8) Support for the Cuban people "
-                        "§515.574, (9) Humanitarian projects §515.575, "
-                        "(10) Private foundations / research institutes "
-                        "§515.576, (11) Authorised export support "
-                        "§515.572, and (12) Information / informational "
-                        "materials transactions §515.545."
+                        "The '12 requirements' refer to the 12 OFAC-"
+                        "authorized travel categories — you must qualify "
+                        "under at least one: (1) Family visits §515.561, "
+                        "(2) Official U.S. government business §515.562, "
+                        "(3) Journalistic activity §515.563, "
+                        "(4) Professional research §515.564, "
+                        "(5) Educational activities §515.565, "
+                        "(6) Religious activities §515.566, "
+                        "(7) Public performances §515.567, "
+                        "(8) Support for the Cuban people §515.574, "
+                        "(9) Humanitarian projects §515.575, "
+                        "(10) Private foundation activities §515.576, "
+                        "(11) Exportation transactions §515.533, and "
+                        "(12) Informational materials §515.545. "
+                        "Additionally, all travelers need a Cuban Tourist "
+                        "Card (~$50–100), travel-medical insurance valid in "
+                        "Cuba, and must complete the D'Viajeros online "
+                        "customs/health declaration within 72 hours of arrival."
                     ),
                 },
                 {
-                    "q": "Do non-U.S. citizens face any U.S. restrictions on Cuba travel?",
+                    "q": "Why can't Americans go to Cuba as tourists?",
+                    "a": (
+                        "The U.S. trade embargo on Cuba, codified in the "
+                        "Cuban Assets Control Regulations (31 CFR Part 515) "
+                        "since 1963, prohibits most financial transactions "
+                        "between U.S. persons and Cuba. Tourism per se is "
+                        "not one of the 12 authorized categories. However, "
+                        "the 'Support for the Cuban People' category "
+                        "(§515.574) allows individual travel with a "
+                        "full-time schedule of activities that directly "
+                        "engage with Cuba's private sector — staying at "
+                        "casas particulares, eating at paladares, and "
+                        "shopping at MIPYME businesses. This is the "
+                        "category most individual U.S. travelers use."
+                    ),
+                },
+                {
+                    "q": "Do non-U.S. citizens face restrictions on Cuba travel?",
                     "a": (
                         "Non-U.S. citizens who are not U.S. permanent "
-                        "residents and not physically located in the U.S. "
-                        "are NOT subject to the CACR. They may travel to "
-                        "Cuba freely as tourists. Only Cuban-side entry "
-                        "requirements apply — Tourist Card, Cuban-valid "
-                        "travel-medical insurance, and the D'Viajeros "
-                        "online customs / health declaration."
+                        "residents and not physically in the U.S. face NO "
+                        "U.S. legal restrictions on Cuba travel. They may "
+                        "visit Cuba freely as tourists. The only "
+                        "requirements are Cuban-side: a Tourist Card "
+                        "(Tarjeta del Turista, ~€25–30 from your airline "
+                        "or a Cuban consulate), travel-medical insurance "
+                        "valid in Cuba, and the D'Viajeros customs/health "
+                        "declaration filed within 72 hours of arrival."
                     ),
                 },
                 {
                     "q": "What records must I keep for a Cuba trip?",
                     "a": (
-                        "Under CACR §515.601, U.S. travellers must retain "
-                        "for 5 years all records establishing the OFAC "
-                        "general-license category claimed: full-time "
-                        "schedule of qualifying activities, hotel and "
-                        "transportation receipts, contact list of Cubans "
-                        "engaged with, any export documentation, and any "
-                        "sponsor letter for educational / religious / "
-                        "humanitarian travel. OFAC may audit at any time; "
-                        "inability to produce records can be treated as "
-                        "evidence of unauthorised travel."
+                        "Under CACR §515.601, U.S. travelers must retain "
+                        "records for 5 years proving which authorized "
+                        "category their trip fell under. Required documents "
+                        "include: your full-time schedule of qualifying "
+                        "activities, all hotel and transportation receipts, "
+                        "a list of Cubans you engaged with (names, "
+                        "businesses), export documentation if applicable, "
+                        "and any sponsor letter for educational/religious/"
+                        "humanitarian travel. OFAC can audit at any time — "
+                        "failure to produce records can be treated as "
+                        "evidence of unauthorized travel."
+                    ),
+                },
+                {
+                    "q": "Is it safe to travel to Cuba?",
+                    "a": (
+                        "Cuba is generally considered safe for tourists "
+                        "compared to other Caribbean and Latin American "
+                        "destinations, with low rates of violent crime "
+                        "against visitors. The U.S. State Department rates "
+                        "Cuba at Level 2 ('Exercise Increased Caution'), "
+                        "citing civil unrest risk and arbitrary detention. "
+                        "Practical concerns include: rolling blackouts "
+                        "(especially outside Havana), limited ATM/card "
+                        "infrastructure (U.S.-issued Visa/Mastercard do "
+                        "not work), cash-only economy for most transactions, "
+                        "and intermittent internet. Use our Havana Safety "
+                        "Map for neighborhood-level guidance."
                     ),
                 },
             ],
@@ -3565,16 +3644,14 @@ def tool_ofac_general_licenses():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="ofac-cuba-general-licenses",
-            title="OFAC Cuba General License Lookup (CACR §515) — Free Compliance Tool",
+            title="OFAC General License List for Cuba (2026) — All CACR §515 Licenses Explained",
             description=(
-                "Free searchable directory of the active OFAC general "
-                "licenses under the Cuban Assets Control Regulations (31 "
-                "CFR Part 515): authorized travel categories (§515.560–"
-                ".578), telecommunications (§515.542), agricultural and "
-                "medical exports (§515.533), remittances (§515.570), "
-                "support for the Cuban people (§515.574), private-sector "
-                "(MIPYMES) transactions, and more. Updated whenever OFAC "
-                "publishes new actions."
+                "Complete list of OFAC general licenses for Cuba under "
+                "the Cuban Assets Control Regulations (31 CFR Part 515). "
+                "Covers all 12 travel categories, telecom, remittances, "
+                "agricultural exports, and §515.574 Support for the Cuban "
+                "People. Searchable, filterable, with links to official "
+                "OFAC text. Free compliance tool."
             ),
             keywords=(
                 "OFAC general license Cuba, CACR §515.560, CACR §515.574 "
@@ -3656,6 +3733,417 @@ def tool_ofac_general_licenses():
         raise
     except Exception as exc:
         logger.exception("tool render failed: %s", exc)
+        abort(500)
+
+
+@app.route("/tools/cuba-travel-advisory")
+@app.route("/tools/cuba-travel-advisory/")
+def tool_cuba_travel_advisory():
+    """Cuba travel advisory explainer — State Dept levels, risks, and practical guidance."""
+    try:
+        from src.page_renderer import _env
+        from datetime import date as _date
+
+        seo, jsonld = _tool_seo_jsonld(
+            slug="cuba-travel-advisory",
+            title="Cuba Travel Advisory 2026: Level 2 — What It Means & Safety Tips",
+            description=(
+                "Current U.S. State Department travel advisory for Cuba: "
+                "Level 2 (Exercise Increased Caution). What risks are cited, "
+                "how Cuba compares to other Caribbean destinations, practical "
+                "safety tips, and additional OFAC rules for American travelers. "
+                "Updated for 2026."
+            ),
+            keywords=(
+                "cuba travel advisory, cuba travel advisory 2026, "
+                "is cuba safe to travel, cuba state department advisory, "
+                "cuba travel warning, cuba safety level, "
+                "is there a travel ban on cuba, cuba travel ban, "
+                "cuba travel restrictions, cuba travel ban 2026"
+            ),
+            faq=[
+                {
+                    "q": "What is the current travel advisory for Cuba?",
+                    "a": (
+                        "As of 2026, the U.S. State Department rates Cuba at "
+                        "Level 2: 'Exercise Increased Caution.' This is the "
+                        "second-lowest of four levels — the same as France, "
+                        "Germany, and Spain. Risks cited include civil unrest, "
+                        "crime, arbitrary enforcement of local laws, and "
+                        "limited U.S. Embassy services in Havana."
+                    ),
+                },
+                {
+                    "q": "Is there a travel ban on Cuba?",
+                    "a": (
+                        "There is no blanket travel ban to Cuba. U.S. citizens "
+                        "can legally travel under one of 12 OFAC-authorized "
+                        "categories. What's prohibited is tourism — spending "
+                        "money for pure leisure with no qualifying activity. "
+                        "The most-used category is §515.574 'Support for the "
+                        "Cuban People.' Non-U.S. citizens face no U.S. legal "
+                        "restrictions."
+                    ),
+                },
+                {
+                    "q": "Is Cuba safe to travel to right now?",
+                    "a": (
+                        "Yes, for most travelers. Cuba's Level 2 advisory is "
+                        "the same or lower than most Caribbean destinations "
+                        "(Jamaica is Level 3, Haiti is Level 4). Violent crime "
+                        "against tourists is rare. Main practical risks: petty "
+                        "theft, power outages, limited medical care, and "
+                        "U.S. bank cards not working."
+                    ),
+                },
+                {
+                    "q": "What happens if I travel to Cuba illegally as an American?",
+                    "a": (
+                        "OFAC can impose civil penalties up to ~$330,000 per "
+                        "violation or criminal penalties up to $1,000,000 and "
+                        "20 years imprisonment for willful violations. In "
+                        "practice, most first-time individual travelers "
+                        "receive warning letters. However, enforcement "
+                        "increases during policy-tightening periods."
+                    ),
+                },
+            ],
+        )
+
+        from src.seo.cluster_topology import build_cluster_ctx, build_related_tools_ctx
+        cluster_ctx = build_cluster_ctx("/tools/cuba-travel-advisory")
+        related_tools_ctx = build_related_tools_ctx("/tools/cuba-travel-advisory")
+
+        template = _env.get_template("tools/cuba_travel_advisory.html.j2")
+        html = template.render(
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+            related_tools_ctx=related_tools_ctx,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Cuba travel advisory render failed: %s", exc)
+        abort(500)
+
+
+@app.route("/tools/what-is-ofac")
+@app.route("/tools/what-is-ofac/")
+def tool_what_is_ofac():
+    """OFAC explainer — what the agency does, the SDN list, penalties, and Cuba context."""
+    try:
+        from src.page_renderer import _env
+        from datetime import date as _date
+
+        seo, jsonld = _tool_seo_jsonld(
+            slug="what-is-ofac",
+            title="What Is OFAC? U.S. Sanctions Agency Explained (2026 Guide)",
+            description=(
+                "OFAC (Office of Foreign Assets Control) is the U.S. Treasury "
+                "bureau that enforces economic sanctions. Learn what OFAC does, "
+                "how the SDN list works, what OFAC compliance means, penalties "
+                "for violations (up to $20M), and how OFAC applies to Cuba, "
+                "Iran, Russia, and 30+ sanctions programs."
+            ),
+            keywords=(
+                "ofac, what is ofac, ofac sanctions, ofac meaning, "
+                "ofac compliance, ofac sdn list, office of foreign assets "
+                "control, ofac penalties, ofac cuba, ofac search, "
+                "what does ofac stand for, is cuba sanctioned by ofac"
+            ),
+            faq=[
+                {
+                    "q": "What does OFAC stand for?",
+                    "a": (
+                        "OFAC stands for the Office of Foreign Assets Control, "
+                        "a bureau within the U.S. Department of the Treasury "
+                        "responsible for administering and enforcing U.S. "
+                        "economic and trade sanctions programs."
+                    ),
+                },
+                {
+                    "q": "What is OFAC compliance?",
+                    "a": (
+                        "OFAC compliance refers to the processes businesses use "
+                        "to avoid violating U.S. sanctions — screening "
+                        "customers against the SDN list, implementing written "
+                        "compliance programs, training employees, and reporting "
+                        "blocked transactions. All U.S. persons and businesses "
+                        "with international exposure must comply."
+                    ),
+                },
+                {
+                    "q": "Is Cuba sanctioned by OFAC?",
+                    "a": (
+                        "Yes. Cuba is under one of OFAC's most restrictive "
+                        "programs — a comprehensive embargo since 1962 enforced "
+                        "through the Cuban Assets Control Regulations (31 CFR "
+                        "Part 515). Nearly all transactions between U.S. "
+                        "persons and Cuba require authorization."
+                    ),
+                },
+                {
+                    "q": "What happens if you violate OFAC sanctions?",
+                    "a": (
+                        "Civil penalties up to ~$330,000 per violation (strict "
+                        "liability — no intent required); criminal penalties "
+                        "up to $20 million and 20 years imprisonment for "
+                        "willful violations. OFAC publishes enforcement actions "
+                        "and settlement agreements on treasury.gov."
+                    ),
+                },
+                {
+                    "q": "How do I check if someone is on the OFAC list?",
+                    "a": (
+                        "Use OFAC's official Sanctions List Search at "
+                        "sanctionssearch.ofac.treas.gov, or use our Cuba-"
+                        "specific SDN checker at cubaninsights.com which "
+                        "includes fuzzy matching. Commercial tools like Dow "
+                        "Jones, World-Check, and LexisNexis integrate "
+                        "international sanctions databases."
+                    ),
+                },
+            ],
+        )
+
+        from src.seo.cluster_topology import build_cluster_ctx, build_related_tools_ctx
+        cluster_ctx = build_cluster_ctx("/tools/what-is-ofac")
+        related_tools_ctx = build_related_tools_ctx("/tools/what-is-ofac")
+
+        template = _env.get_template("tools/what_is_ofac.html.j2")
+        html = template.render(
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+            related_tools_ctx=related_tools_ctx,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("OFAC explainer render failed: %s", exc)
+        abort(500)
+
+
+@app.route("/tools/cuba-embargo-explained")
+@app.route("/tools/cuba-embargo-explained/")
+def tool_cuba_embargo_explainer():
+    """Cuba Embargo explainer — history, laws, timeline, and current status."""
+    try:
+        from src.page_renderer import _env
+        from datetime import date as _date
+
+        seo, jsonld = _tool_seo_jsonld(
+            slug="cuba-embargo-explained",
+            title="Cuba Embargo Explained: History, Laws & Current Status (2026)",
+            description=(
+                "Complete guide to the U.S. embargo on Cuba — the longest "
+                "trade embargo in modern history (since 1962). Covers what's "
+                "prohibited, the 6 laws that enforce it (TWEA, CACR, "
+                "Torricelli, Helms-Burton, TSRA), timeline across 12 "
+                "presidents, economic impact, and current status. FAQ included."
+            ),
+            keywords=(
+                "cuba embargo, cuban embargo, us embargo on cuba, "
+                "cuba embargo explained, why is cuba embargoed, "
+                "cuba trade embargo, cuba sanctions history, "
+                "when did the cuba embargo start, is the cuba embargo "
+                "still in effect, why can't we trade with cuba"
+            ),
+            faq=[
+                {
+                    "q": "What is the Cuba embargo?",
+                    "a": (
+                        "The Cuba embargo is a comprehensive U.S. commercial, "
+                        "economic, and financial sanctions regime in continuous "
+                        "effect since 1962. It prohibits nearly all trade, "
+                        "investment, travel, and financial transactions between "
+                        "U.S. persons and Cuba. Enforced by OFAC through the "
+                        "Cuban Assets Control Regulations (31 CFR Part 515), it "
+                        "is the longest-running embargo in modern history."
+                    ),
+                },
+                {
+                    "q": "Why is there an embargo on Cuba?",
+                    "a": (
+                        "The embargo was imposed in 1960-1962 after Cuba "
+                        "nationalized U.S.-owned businesses without adequate "
+                        "compensation, aligned with the Soviet Union, and "
+                        "permitted Soviet nuclear missiles on its soil during "
+                        "the Cuban Missile Crisis. It was reinforced by the "
+                        "Helms-Burton Act in 1996 after Cuba shot down two "
+                        "civilian Brothers to the Rescue aircraft."
+                    ),
+                },
+                {
+                    "q": "Is the Cuba embargo still in effect?",
+                    "a": (
+                        "Yes. As of 2026, the core embargo remains fully in "
+                        "force. The Helms-Burton Act (1996) codified it into "
+                        "statute, so it cannot be lifted by executive order "
+                        "alone — it requires an act of Congress. Title III "
+                        "lawsuits have been active since 2019. Cuba remains "
+                        "on the State Sponsor of Terrorism list."
+                    ),
+                },
+                {
+                    "q": "Can a U.S. president lift the Cuba embargo?",
+                    "a": (
+                        "No — not unilaterally. The Helms-Burton Act (1996) "
+                        "codified the embargo into federal law. Lifting it "
+                        "requires Congress to certify that Cuba has held free "
+                        "elections, released political prisoners, legalized "
+                        "independent media, and made progress on property "
+                        "restitution. Presidents can tighten or loosen "
+                        "enforcement (as Obama and Trump demonstrated) but "
+                        "cannot eliminate the statutory prohibitions."
+                    ),
+                },
+                {
+                    "q": "How does the UN vote on the Cuba embargo?",
+                    "a": (
+                        "Every year since 1992, the UN General Assembly has "
+                        "voted overwhelmingly to condemn the embargo. The 2023 "
+                        "vote was 187-2 (only the U.S. and Israel against). "
+                        "The resolution is non-binding and has no effect on "
+                        "U.S. domestic law."
+                    ),
+                },
+            ],
+        )
+
+        from src.seo.cluster_topology import build_cluster_ctx, build_related_tools_ctx
+        cluster_ctx = build_cluster_ctx("/tools/cuba-embargo-explained")
+        related_tools_ctx = build_related_tools_ctx("/tools/cuba-embargo-explained")
+
+        template = _env.get_template("tools/cuba_embargo_explainer.html.j2")
+        html = template.render(
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+            related_tools_ctx=related_tools_ctx,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Cuba embargo explainer render failed: %s", exc)
+        abort(500)
+
+
+@app.route("/tools/helms-burton-act-explained")
+@app.route("/tools/helms-burton-act-explained/")
+def tool_helms_burton_explainer():
+    """Helms-Burton Act (LIBERTAD Act) explainer — Title III lawsuits,
+    confiscated-property claims, and what it means for investors."""
+    try:
+        from src.page_renderer import _env
+        from datetime import date as _date
+
+        seo, jsonld = _tool_seo_jsonld(
+            slug="helms-burton-act-explained",
+            title="Helms-Burton Act Explained (2026): Title III Lawsuits & Confiscated Property",
+            description=(
+                "What is the Helms-Burton Act? Complete guide to the Cuban "
+                "Liberty and Democratic Solidarity Act of 1996, Title III "
+                "trafficking lawsuits (Carnival, Meliá, Booking.com), "
+                "confiscated property claims, and what it means for "
+                "investors and S&P 500 companies with Cuba exposure."
+            ),
+            keywords=(
+                "helms burton act, helms burton, helms-burton title iii, "
+                "helms burton act explained, cuba confiscated property, "
+                "LIBERTAD act, cuban liberty and democratic solidarity act, "
+                "helms burton lawsuits, carnival cuba lawsuit, melia cuba "
+                "lawsuit, cuba property claims, trafficking confiscated property"
+            ),
+            faq=[
+                {
+                    "q": "What is the Helms-Burton Act?",
+                    "a": (
+                        "The Helms-Burton Act (formally the Cuban Liberty and "
+                        "Democratic Solidarity Act of 1996, 22 U.S.C. "
+                        "§§6021-6091) is a U.S. federal law that codifies the "
+                        "Cuba trade embargo into statute and creates a private "
+                        "right of action (Title III) allowing U.S. nationals to "
+                        "sue anyone who 'traffics' in property confiscated by "
+                        "the Cuban government after 1959. Title III was suspended "
+                        "for 22 years and activated for the first time on "
+                        "May 2, 2019."
+                    ),
+                },
+                {
+                    "q": "What does 'trafficking' mean under Helms-Burton Title III?",
+                    "a": (
+                        "'Trafficking' is broadly defined: knowingly and "
+                        "intentionally selling, transferring, managing, using, "
+                        "or otherwise acquiring or holding an interest in "
+                        "confiscated property. Operating a hotel on confiscated "
+                        "land, docking a cruise ship at a confiscated port, or "
+                        "mining nickel at a confiscated facility all qualify. "
+                        "The definition extends to foreign companies."
+                    ),
+                },
+                {
+                    "q": "Can European or Canadian companies be sued under Helms-Burton?",
+                    "a": (
+                        "Yes. Title III applies to any person or entity that "
+                        "traffics in confiscated property, regardless of "
+                        "nationality. Meliá Hotels (Spain), Sherritt "
+                        "International (Canada), and others have faced exposure. "
+                        "The EU passed a Blocking Statute (Regulation 2271/96) "
+                        "prohibiting EU companies from complying with "
+                        "Helms-Burton, creating a legal conflict."
+                    ),
+                },
+                {
+                    "q": "Has any company paid a Helms-Burton judgment?",
+                    "a": (
+                        "As of 2026, no Title III case has resulted in a final "
+                        "collected judgment. Several cases remain in active "
+                        "litigation — Carnival Corporation (Havana Docks), "
+                        "Meliá Hotels, and online booking platforms. The "
+                        "litigation risk itself drives SEC disclosure "
+                        "requirements and investment decisions for Cuba-exposed "
+                        "companies."
+                    ),
+                },
+                {
+                    "q": "How does Helms-Burton affect SEC filings?",
+                    "a": (
+                        "U.S.-listed companies with Cuba exposure must disclose "
+                        "material litigation risks from Title III in 10-K, 20-F, "
+                        "and 10-Q filings. Certified claims, contingent "
+                        "liabilities, and pending lawsuits all trigger disclosure "
+                        "obligations. Use our SEC EDGAR Cuba search tool to find "
+                        "these disclosures."
+                    ),
+                },
+            ],
+        )
+
+        from src.seo.cluster_topology import build_cluster_ctx, build_related_tools_ctx
+        cluster_ctx = build_cluster_ctx("/tools/helms-burton-act-explained")
+        related_tools_ctx = build_related_tools_ctx("/tools/helms-burton-act-explained")
+
+        template = _env.get_template("tools/helms_burton_explainer.html.j2")
+        html = template.render(
+            seo=seo,
+            jsonld=jsonld,
+            cluster_ctx=cluster_ctx,
+            related_tools_ctx=related_tools_ctx,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("Helms-Burton explainer render failed: %s", exc)
         abort(500)
 
 
@@ -3850,6 +4338,30 @@ def tools_index():
                 "name": "OFAC Cuba General License Lookup (CACR §515)",
                 "category": "Compliance",
                 "summary": "Searchable directory of the active OFAC general licenses under the Cuban Assets Control Regulations: the 12 authorized travel categories (§515.560–.578), telecom (§515.542), agricultural / medical exports under TSRA (§515.533), remittances (§515.570), and support for the Cuban people (§515.574).",
+            },
+            {
+                "url": "/tools/cuba-travel-advisory",
+                "name": "Cuba Travel Advisory (State Dept Level 2)",
+                "category": "Travel",
+                "summary": "Current U.S. State Department travel advisory for Cuba explained: what Level 2 means, specific risks cited, how Cuba compares to Jamaica/DR/Mexico, and additional OFAC rules for American travelers.",
+            },
+            {
+                "url": "/tools/what-is-ofac",
+                "name": "What Is OFAC? U.S. Sanctions Agency Explained",
+                "category": "Compliance",
+                "summary": "Complete guide to OFAC (Office of Foreign Assets Control) — what the agency does, the SDN list, 30+ sanctions programs, compliance requirements, penalties up to $20M, and how OFAC applies to Cuba.",
+            },
+            {
+                "url": "/tools/cuba-embargo-explained",
+                "name": "Cuba Embargo Explained (History, Laws & Status)",
+                "category": "Compliance",
+                "summary": "Complete guide to the U.S. trade embargo on Cuba — the longest-running embargo in modern history. Covers the 6 laws that enforce it, timeline across 12 presidents, what's prohibited, economic impact, and current status.",
+            },
+            {
+                "url": "/tools/helms-burton-act-explained",
+                "name": "Helms-Burton Act Explained (Title III Lawsuits)",
+                "category": "Compliance",
+                "summary": "Complete guide to the Helms-Burton Act (LIBERTAD Act 1996): Title III confiscated-property lawsuits, notable cases (Carnival, Meliá, Booking.com), timeline of suspensions and activation, and what it means for S&P 500 investors with Cuba exposure.",
             },
             {
                 "url": "/export-to-cuba",
@@ -4733,17 +5245,20 @@ def sanctions_tracker():
             base = _base_url()
             canonical = f"{base}/sanctions-tracker"
             seo = {
-                "title": f"Cuba Sanctions List 2026 — {stats['total']} OFAC SDN Entries (Live Tracker)",
+                "title": f"Cuba Sanctions List ({stats['total']} OFAC Entries, 2026) — Live SDN Tracker",
                 "description": (
-                    f"Live tracker of {stats['total']} US Treasury OFAC SDN "
-                    "designations under the CUBA program (Cuban Assets "
-                    "Control Regulations, 31 CFR Part 515). Search by name, "
-                    "vessel, aircraft, or program. Refreshed twice daily."
+                    f"Complete Cuba sanctions tracker: all {stats['total']} OFAC SDN "
+                    "designations under the CUBA program, searchable by name, "
+                    "vessel, aircraft, or type. Refreshed 2× daily from "
+                    "treasury.gov. Includes entities, individuals, vessels, "
+                    "and aircraft sanctioned under the Cuban Assets Control "
+                    "Regulations (31 CFR Part 515)."
                 ),
                 "keywords": (
-                    "OFAC Cuba sanctions, SDN list Cuba, CACR §515, GAESA "
-                    "sanctions, Cuba vessel sanctions, OFAC SDN search, "
-                    "Cuban Assets Control Regulations"
+                    "cuba sanctions, ofac cuba, cuba sanctions list, "
+                    "cuba ofac sanctions, OFAC SDN Cuba, us sanctions on cuba, "
+                    "cuba embargo sanctions, CACR §515, GAESA sanctions, "
+                    "cuba sanctions 2026, is cuba sanctioned"
                 ),
                 "canonical": canonical,
                 "site_name": _s.site_name,
@@ -7119,6 +7634,15 @@ def pillar_invest_in_cuba():
             )
             if not page:
                 abort(503, description="Pillar page not yet generated. Run `python scripts/generate_landing_pages.py --pillar`.")
+
+            page.title = "Invest in Cuba: Sanctions, Sectors, Risks & Opportunities (2026 Guide)"
+            page.summary = (
+                "Complete guide to investing in Cuba — navigate OFAC sanctions, "
+                "Helms-Burton Title III risks, sector opportunities (tourism, "
+                "agriculture, telecom, energy, MIPYMEs), the CUP/MLC/USD currency "
+                "stack, and due-diligence tools. Updated for 2026."
+            )
+
             recent = (
                 db.query(BlogPost)
                 .order_by(BlogPost.published_date.desc())
@@ -7387,7 +7911,7 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/tools/ofac-cuba-sanctions-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.7"},
         {"loc": f"{base}/tools/cuba-restricted-list-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/tools/cuba-prohibited-hotels-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
-        {"loc": f"{base}/tools/can-i-travel-to-cuba", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
+        {"loc": f"{base}/tools/can-i-travel-to-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
         {"loc": f"{base}/tools/public-company-cuba-exposure-check", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/tools/sec-edgar-cuba-impairment-search", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/companies", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
@@ -7405,9 +7929,13 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/tools/cuba-trade-events-matchmaking-calendar", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/tools/cuba-trade-barriers-tracker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
         {"loc": f"{base}/tools/cuba-export-compliance-checklist", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.85"},
-        {"loc": f"{base}/tools/havana-safety-by-neighborhood", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
+        {"loc": f"{base}/tools/havana-safety-by-neighborhood", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.7"},
         {"loc": f"{base}/tools/cuba-investment-roi-calculator", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
-        {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.6"},
+        {"loc": f"{base}/tools/cuba-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
+        {"loc": f"{base}/tools/helms-burton-act-explained", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-embargo-explained", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.8"},
+        {"loc": f"{base}/tools/cuba-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
+        {"loc": f"{base}/tools/what-is-ofac", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
         {"loc": f"{base}/venezuela/transport", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
         {"loc": f"{base}/venezuela/caracas-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
     ]
