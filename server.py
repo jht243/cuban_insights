@@ -2762,7 +2762,9 @@ def tool_cpal_hotel_checker():
                 "Department Cuba accommodations, §515.210 CACR, Hotel San "
                 "Alejandro sanctions, Hotel San Fernando sanctions, Hotel "
                 "Nacional CPAL, Iberostar Cuba banned, Meliá Cuba sanctions, "
-                "Habaguanex OFAC, Gaviota hotels US prohibition"
+                "Habaguanex OFAC, Gaviota hotels US prohibition, Lista de "
+                "Alojamientos Prohibidos de Cuba, hoteles prohibidos en Cuba, "
+                "alojamientos prohibidos Cuba"
             ),
             faq=[
                 {
@@ -3043,7 +3045,9 @@ def tool_crl_entity_checker():
                 "OFAC Cuba Restricted List, Cuba Restricted List checker, CRL Cuba lookup, GAESA "
                 "sanctions check, CIMEX OFAC, Gaviota CRL, Habaguanex "
                 "restricted, §515.209 CACR, State Department Cuba "
-                "entities, MINFAR sanctions, FINCIMEX prohibited"
+                "entities, MINFAR sanctions, FINCIMEX prohibited, Lista "
+                "Restringida de Cuba, lista de entidades restringidas de Cuba, "
+                "sanciones de Cuba"
             ),
             faq=[
                 {
@@ -3952,7 +3956,9 @@ def tool_cuba_embargo_explainer():
                 "cuba embargo explained, why is cuba embargoed, "
                 "cuba trade embargo, cuba sanctions history, "
                 "when did the cuba embargo start, is the cuba embargo "
-                "still in effect, why can't we trade with cuba"
+                "still in effect, why can't we trade with cuba, embargo de "
+                "Cuba, bloqueo a Cuba, bloqueo de Cuba, sanciones de Estados "
+                "Unidos contra Cuba"
             ),
             faq=[
                 {
