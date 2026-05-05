@@ -70,18 +70,36 @@ _BRIEFING_SEO_OVERRIDES = {
         ],
     },
     "us-cuba-diplomatic-talks-amid-rising-geopolitical-tensions": {
-        "title": "U.S.-Cuba Diplomatic Talks 2026: Recent Developments",
+        "title": "U.S.-Cuba Talks 2026: Sanctions, Investment & Policy Risk",
         "description": (
-            "Recent developments in U.S.-Cuba diplomatic talks in 2026, "
-            "including sanctions context, bilateral risk, and what investors "
-            "and policy watchers should monitor next."
+            "How the latest U.S.-Cuba diplomatic talks reshape sanctions "
+            "exposure, OFAC compliance risk, and foreign-investment outlook "
+            "— key takeaways for businesses, travelers, and policy watchers."
         ),
         "keywords": [
             "US Cuba diplomatic meeting 2026",
             "US Cuba diplomatic talks",
-            "US Cuba recent developments",
+            "US Cuba sanctions impact",
             "Cuba diplomacy 2026",
             "US Cuba relations",
+            "Cuba investment risk",
+            "OFAC Cuba compliance",
+        ],
+    },
+    "cuba-develops-technology-to-refine-its-own-crude-oil": {
+        "title": "Cuba Crude Oil Refining 2026: Investment & Sanctions Outlook",
+        "description": (
+            "Cuba is developing domestic crude-oil refining capacity — what "
+            "it means for energy investors, sanctions compliance, and foreign "
+            "companies eyeing Cuba's petroleum sector."
+        ),
+        "keywords": [
+            "Cuba crude oil refining",
+            "Cuba oil investment 2026",
+            "Cuba petroleum sanctions",
+            "Cuba energy sector",
+            "Cuba oil refining technology",
+            "Cuba foreign investment oil",
         ],
     },
 }
