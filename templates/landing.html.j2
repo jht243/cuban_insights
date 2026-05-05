@@ -51,7 +51,7 @@
   {% endif %}
 
   <div class="body">
-    {{ page.body_html | link_people | safe }}
+    {{ page.body_html | link_people | lazy_images | safe }}
   </div>
 
   {# Cross-cluster bridge: when a sector page maps cleanly to one or

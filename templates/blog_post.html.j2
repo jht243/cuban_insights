@@ -38,7 +38,7 @@
   {% endif %}
 
   <div class="body">
-    {{ post.body_html | link_people | safe }}
+    {{ post.body_html | link_people | lazy_images | safe }}
   </div>
 
   {% if post.canonical_source_url %}

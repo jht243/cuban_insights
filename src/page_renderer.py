@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Iterable
@@ -39,6 +40,17 @@ def _link_people_filter(html: str) -> str:
 
 
 _env.filters["link_people"] = _link_people_filter
+
+_BARE_IMG_RE = re.compile(r"<img(?![^>]*\bloading\s*=)", re.IGNORECASE)
+
+
+def _lazy_images_filter(html: str) -> str:
+    if not html:
+        return html
+    return _BARE_IMG_RE.sub('<img loading="lazy"', html)
+
+
+_env.filters["lazy_images"] = _lazy_images_filter
 
 
 def _base_url() -> str:
