@@ -217,6 +217,9 @@ def subscribe():
     if subscriber_ip and "," in subscriber_ip:
         subscriber_ip = subscriber_ip.split(",")[0].strip()
 
+    source = data.get("source", "").strip()
+    metadata = {"source": source} if source else {}
+
     try:
         resp = httpx.post(
             BUTTONDOWN_API_URL,
@@ -224,6 +227,7 @@ def subscribe():
                 "email_address": email,
                 "type": "regular",
                 "ip_address": subscriber_ip,
+                **({"metadata": metadata} if metadata else {}),
             },
             headers={
                 "Authorization": f"Token {api_key}",
