@@ -32,8 +32,9 @@ from src.distribution.runner import CHANNEL_INDEXNOW, _record  # noqa: E402
 from src.models import BlogPost, LandingPage, SessionLocal, init_db  # noqa: E402
 
 
-# Static, evergreen routes worth submitting — keep in sync with the
-# sitemap_xml() route in server.py.
+# Fallback static, evergreen routes. The primary path below reads the
+# live sitemap-core helper from server.py so IndexNow submissions do not
+# drift when new public routes are added.
 STATIC_PATHS: tuple[str, ...] = (
     "/",
     "/briefing",
@@ -76,8 +77,16 @@ def collect_urls() -> list[tuple[str, str, int | None]]:
     base = _site_base()
     out: list[tuple[str, str, int | None]] = []
 
-    for path in STATIC_PATHS:
-        out.append((f"{base}{path}", "static", None))
+    try:
+        from server import _core_static_urls, _people_sitemap_urls
+        for entry in _core_static_urls() + _people_sitemap_urls():
+            loc = (entry.get("loc") or "").strip()
+            if loc:
+                out.append((loc, "static", None))
+    except Exception as exc:
+        print(f"WARN: could not read sitemap-core URLs for IndexNow: {exc}")
+        for path in STATIC_PATHS:
+            out.append((f"{base}{path}", "static", None))
 
     init_db()
     db = SessionLocal()
@@ -105,6 +114,22 @@ def collect_urls() -> list[tuple[str, str, int | None]]:
             out.append((f"{base}{p.url_path}", "sdn_profile", p.db_id))
     except Exception as exc:
         print(f"WARN: could not enumerate SDN profiles for IndexNow: {exc}")
+
+    # Per-State Department CPAL and CRL pages. These live outside the
+    # database-backed LandingPage table, so enumerate the same helpers
+    # used by the submitted CPAL/CRL sitemaps.
+    try:
+        from server import list_cpal_profiles, list_crl_profiles
+        for row in list_cpal_profiles():
+            path = (row.get("url_path") or "").strip()
+            if path:
+                out.append((f"{base}{path}", "cpal_profile", None))
+        for row in list_crl_profiles():
+            path = (row.get("url_path") or "").strip()
+            if path:
+                out.append((f"{base}{path}", "crl_profile", None))
+    except Exception as exc:
+        print(f"WARN: could not enumerate CPAL/CRL profiles for IndexNow: {exc}")
 
     # Per-company Cuba-exposure pages — one per S&P 500 ticker.
     # Same rationale as SDN profiles: long-tail SEO bet that only pays

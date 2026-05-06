@@ -30,7 +30,9 @@ os.environ.setdefault("SITE_URL", "https://cubaninsights.com")
 
 from src.config import settings  # noqa: E402
 from src.data.curated_cuba_exposure import _CURATED  # noqa: E402
+from src.data.people import COHORT_ORDER, all_people, cohort_url  # noqa: E402
 from src.data.sp500_companies import list_sp500_companies  # noqa: E402
+from scripts.generate_landing_pages import EXPLAINERS  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "seo")
 SITEMAP_PATH = os.path.join(OUT_DIR, "curated-sitemap.xml")
@@ -54,8 +56,10 @@ STATIC_TOP_LEVEL: list[tuple[str, str, str]] = [
     ("/travel",                                        "weekly",  "0.85"),
     ("/export-to-cuba",                                "weekly",  "0.9"),
     ("/calendar",                                      "daily",   "0.75"),
+    ("/people",                                        "weekly",  "0.85"),
     ("/sources",                                       "weekly",  "0.65"),
     ("/travel/emergency-card",                         "monthly", "0.7"),
+    ("/travel/cuba-prohibited-accommodations-list",    "monthly", "0.75"),
     ("/tearsheet/latest.pdf",                          "daily",   "0.85"),
     ("/briefing/feed.xml",                             "daily",   "0.7"),
 ]
@@ -111,10 +115,30 @@ TOOLS: list[tuple[str, str, str]] = [
     ("/tools/havana-safety-by-neighborhood",           "weekly",  "0.7"),
     ("/tools/cuba-investment-roi-calculator",          "monthly", "0.7"),
     ("/tools/cuba-visa-requirements",                  "monthly", "0.75"),
+    ("/tools/cuba-travel-advisory",                    "monthly", "0.75"),
+    ("/tools/what-is-ofac",                            "monthly", "0.75"),
+    ("/tools/cuba-embargo-explained",                  "monthly", "0.8"),
+    ("/tools/helms-burton-act-explained",              "monthly", "0.8"),
 ]
 
 
-# ── Tier 4: thematic sector hubs (LandingPage page_type='sector') ───
+# ── Tier 4: recently-added people and explainer pages ────────────────
+def _people_urls() -> list[tuple[str, str, str]]:
+    out: list[tuple[str, str, str]] = []
+    for cohort in COHORT_ORDER:
+        out.append((cohort_url(cohort), "weekly", "0.75"))
+    for p in all_people():
+        out.append((p.url_path, "monthly", "0.75"))
+    return out
+
+
+EXPLAINER_PAGES: list[tuple[str, str, str]] = [
+    (f"/explainers/{e['slug']}", "monthly", "0.75")
+    for e in EXPLAINERS
+]
+
+
+# ── Tier 5: thematic sector hubs (LandingPage page_type='sector') ───
 # These may or may not exist as generated landing pages yet. They are
 # real routes (/sectors/<slug>) handled by the dynamic sector view.
 # Including them in the curated sitemap is a soft nudge for crawlers
@@ -209,6 +233,8 @@ def build_url_list(target: int = 100) -> list[tuple[str, str, str, str]]:
     bag += SANCTIONS_HUBS
     bag += HIGH_INTENT_SANCTIONS
     bag += TOOLS
+    bag += _people_urls()
+    bag += EXPLAINER_PAGES
     bag += [(f"/sectors/{s}", "weekly", "0.7") for s in SECTOR_HUBS]
     bag += _company_urls()
     bag += _sdn_urls()
