@@ -208,13 +208,17 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
                 "pages_crawled": seo_report.pages_crawled,
                 "errors": len(seo_report.errors),
                 "warnings": len(seo_report.warnings),
+                "warning_details": seo_report.warnings,
+                "error_details": seo_report.errors,
             }
             if seo_report.errors:
                 console.print(f"  [yellow]![/yellow] SEO audit: {seo_report.pages_crawled} pages, {len(seo_report.errors)} errors, {len(seo_report.warnings)} warnings")
-                for f in seo_report.errors[:5]:
-                    console.print(f"        {f}")
+                for f in seo_report.errors:
+                    console.print(f"        [red]error:[/red] {f}")
             else:
                 console.print(f"  [green]✓[/green] SEO audit: {seo_report.pages_crawled} pages, 0 errors, {len(seo_report.warnings)} warnings")
+            for w in seo_report.warnings:
+                console.print(f"        [dim]warn:[/dim] {w}")
 
             # Phase 6b: auto-fix clearly wrong SEO issues on LandingPage-
             # backed pages (missing H1, thin content < 200 words). Uses
@@ -243,6 +247,40 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
             logger.error("SEO audit failed: %s", e, exc_info=True)
             results["seo_audit"] = {"error": str(e)}
             console.print(f"  [yellow]![/yellow] SEO audit failed (non-fatal): {e}")
+
+    # Phase 7: Sitemap sync. Fetches live sitemaps, diffs against source
+    # routes, auto-patches missing static URLs, spot-checks for dead links,
+    # and pushes fixes. Always non-fatal.
+    if not report_only:
+        console.print("\n[bold cyan]Phase 7:[/bold cyan] Sitemap audit & sync...")
+        try:
+            from scripts.sync_sitemap import run_sync
+            sync_result = run_sync(dry_run=dry_run, spot_check_enabled=True)
+            results["sitemap_sync"] = sync_result
+            if sync_result.get("error"):
+                console.print(f"  [yellow]![/yellow] Sitemap sync error: {sync_result['error']}")
+            else:
+                missing = sync_result.get("missing", 0)
+                dead = sync_result.get("dead_links", 0)
+                pushed = sync_result.get("pushed")
+                parts = [f"{sync_result['live_urls']} live URLs"]
+                if missing:
+                    parts.append(f"{missing} missing route(s) patched")
+                if dead:
+                    parts.append(f"{dead} dead link(s)")
+                if pushed is not None:
+                    parts.append(f"push={'OK' if pushed else 'FAILED'}")
+                console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)}")
+                if dead:
+                    for path, code in sync_result.get("dead_link_details", []):
+                        code_str = "ERR" if code < 0 else str(code)
+                        console.print(f"        [yellow]dead:[/yellow] [{code_str}] {path}")
+        except Exception as e:
+            logger.error("Sitemap sync failed: %s", e, exc_info=True)
+            results["sitemap_sync"] = {"error": str(e)}
+            console.print(f"  [yellow]![/yellow] Sitemap sync failed (non-fatal): {e}")
+    else:
+        console.print("\n[dim]Phase 7: Sitemap sync — SKIPPED (report-only)[/dim]")
 
     _print_summary(results, start)
 

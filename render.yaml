@@ -101,6 +101,10 @@ services:
         value: Cuban Insights
       - key: LOG_LEVEL
         value: INFO
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        value: jonathanteplitsky/cuban-insights
 
 # Note: there is intentionally NO dedicated weekly climate cron here.
 # run_daily.py runs run_weekly_climate_refresh() automatically on Mondays
