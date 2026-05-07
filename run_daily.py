@@ -249,8 +249,9 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
             console.print(f"  [yellow]![/yellow] SEO audit failed (non-fatal): {e}")
 
     # Phase 7: Sitemap sync. Fetches live sitemaps, diffs against source
-    # routes, auto-patches missing static URLs, spot-checks for dead links,
-    # and pushes fixes. Always non-fatal.
+    # routes, auto-patches missing static URLs, verifies every hardcoded
+    # URL, removes dead/redirect entries, spot-checks dynamic URLs, and
+    # pushes all fixes. Always non-fatal.
     if not report_only:
         console.print("\n[bold cyan]Phase 7:[/bold cyan] Sitemap audit & sync...")
         try:
@@ -260,21 +261,26 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
             if sync_result.get("error"):
                 console.print(f"  [yellow]![/yellow] Sitemap sync error: {sync_result['error']}")
             else:
-                missing = sync_result.get("missing", 0)
-                dead = sync_result.get("dead_links", 0)
+                parts = [f"{sync_result['live_urls']} live URLs audited"]
+                added = sync_result.get("added", 0)
+                removed = sync_result.get("removed", 0)
+                if added:
+                    parts.append(f"{added} missing route(s) added")
+                if removed:
+                    parts.append(f"{removed} dead/redirect URL(s) removed")
                 pushed = sync_result.get("pushed")
-                parts = [f"{sync_result['live_urls']} live URLs"]
-                if missing:
-                    parts.append(f"{missing} missing route(s) patched")
-                if dead:
-                    parts.append(f"{dead} dead link(s)")
                 if pushed is not None:
                     parts.append(f"push={'OK' if pushed else 'FAILED'}")
-                console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)}")
-                if dead:
-                    for path, code in sync_result.get("dead_link_details", []):
-                        code_str = "ERR" if code < 0 else str(code)
-                        console.print(f"        [yellow]dead:[/yellow] [{code_str}] {path}")
+                fixes = sync_result.get("fixes", [])
+                if fixes:
+                    console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)}")
+                    for fix in fixes:
+                        console.print(f"        [green]fix:[/green] {fix}")
+                else:
+                    console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)} — all clean")
+                for path, code in sync_result.get("dynamic_issues", []):
+                    code_str = "ERR" if code < 0 else str(code)
+                    console.print(f"        [yellow]unfixable:[/yellow] [{code_str}] {path} (DB-sourced)")
         except Exception as e:
             logger.error("Sitemap sync failed: %s", e, exc_info=True)
             results["sitemap_sync"] = {"error": str(e)}
