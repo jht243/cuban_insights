@@ -55,6 +55,8 @@ TITLE_WARN_LEN = 60
 TITLE_MAX_LEN = 110
 DESC_MIN_LEN = 50
 DESC_MAX_LEN = 300
+SLUG_WARN_LEN = 60
+SLUG_MAX_LEN = 80
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -199,6 +201,11 @@ def _check_slug(report: AuditReport, etype: str, eid: int, slug: str) -> str | N
 
     if not SLUG_RE.match(slug):
         report.add(Issue("warning", etype, eid, slug, "slug", "Slug contains unexpected characters"))
+
+    if len(slug) > SLUG_MAX_LEN:
+        report.add(Issue("error", etype, eid, slug, "slug_length", f"Slug too long ({len(slug)} chars, max {SLUG_MAX_LEN}) — will look broken in SERPs"))
+    elif len(slug) > SLUG_WARN_LEN:
+        report.add(Issue("warning", etype, eid, slug, "slug_length", f"Slug may be truncated in SERPs ({len(slug)} chars, ideal <{SLUG_WARN_LEN})"))
 
     return None
 

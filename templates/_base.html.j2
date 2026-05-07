@@ -30,6 +30,8 @@
   <link rel="canonical" href="{{ _seo.canonical|default('') }}">
   <link rel="alternate" hreflang="en" href="{{ _seo.canonical|default('') }}">
   <link rel="alternate" hreflang="x-default" href="{{ _seo.canonical|default('') }}">
+  {% if _seo.locale_alternate %}<link rel="alternate" hreflang="es" href="{{ _seo.canonical|default('') }}">
+  <meta property="og:locale:alternate" content="{{ _seo.locale_alternate }}">{% endif %}
 
   <meta property="og:type" content="{{ _seo.og_type|default('article') }}">
   <meta property="og:site_name" content="{{ _seo.site_name|default('Cuban Insights') }}">

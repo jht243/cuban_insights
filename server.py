@@ -2383,13 +2383,13 @@ def cpal_profile_page(slug: str):
         today_iso = _date.today().isoformat()
         year = _date.today().year
 
-        title = f"{name} Sanctions — Cuba Prohibited Accommodations List ({year})"[:120]
+        title = f"{name} — Cuba Hotel Sanctions Status ({year})"[:60]
         loc_phrase = f" in {province}" if province else ""
         description = (
-            f"{name}{loc_phrase} is on the U.S. State Department Cuba "
-            f"Prohibited Accommodations List (CPAL, §515.210 CACR) as of "
-            f"{today_human}. U.S. persons are prohibited from lodging at "
-            f"this property regardless of booking channel."
+            f"{name}{loc_phrase} is on the U.S. Cuba Prohibited "
+            f"Accommodations List (CPAL) as of {today_human}. "
+            f"U.S. persons cannot stay at this property under "
+            f"§515.210 CACR regardless of booking channel."
         )[:300]
 
         seo = {
@@ -2398,12 +2398,15 @@ def cpal_profile_page(slug: str):
             "keywords": (
                 f"{name} sanctions, {name} CPAL, {name} Cuba prohibited, "
                 f"is {name} on the CPAL, US travelers {name}, "
-                f"§515.210 CACR, Cuba Prohibited Accommodations List"
+                f"{name} sanciones, {name} alojamiento prohibido Cuba, "
+                f"§515.210 CACR, Cuba Prohibited Accommodations List, "
+                f"hoteles prohibidos Cuba"
             ),
             "canonical": canonical,
             "site_name": _s.site_name,
             "site_url": base,
             "locale": _s.site_locale,
+            "locale_alternate": "es_CU",
             "og_image": f"{base}/static/og-image.png?v=3",
             "og_type": "article",
             "published_iso": _iso(_dt.utcnow()),
@@ -2542,13 +2545,13 @@ def crl_profile_page(slug: str):
         today_iso = _date.today().isoformat()
         year = _date.today().year
 
-        title = f"{name} Sanctions — Cuba Restricted List ({year})"[:120]
+        title = f"{name} — Cuba Sanctions Status ({year})"[:60]
         section_phrase = f" in {section}" if section else ""
         description = (
-            f"{name}{section_phrase} is on the U.S. State Department Cuba "
-            f"Restricted List (CRL, §515.209 CACR) as of {today_human}. "
-            "U.S. persons are generally prohibited from direct financial "
-            "transactions with CRL-listed Cuban entities."
+            f"{name}{section_phrase} is on the U.S. Cuba Restricted "
+            f"List (CRL) as of {today_human}. U.S. persons are "
+            f"prohibited from direct financial transactions with "
+            f"this entity under §515.209 CACR."
         )[:300]
 
         seo = {
@@ -2556,13 +2559,17 @@ def crl_profile_page(slug: str):
             "description": description,
             "keywords": (
                 f"{name} sanctions, {name} Cuba Restricted List, "
-                f"{name} CRL, is {name} sanctioned, OFAC Cuba Restricted List, "
-                "§515.209 CACR, State Department Cuba Restricted List"
+                f"{name} CRL, is {name} sanctioned, "
+                f"{name} sanciones, {name} lista restringida Cuba, "
+                f"OFAC Cuba Restricted List, §515.209 CACR, "
+                "State Department Cuba Restricted List, "
+                "entidades restringidas Cuba"
             ),
             "canonical": canonical,
             "site_name": _s.site_name,
             "site_url": base,
             "locale": _s.site_locale,
+            "locale_alternate": "es_CU",
             "og_image": f"{base}/static/og-image.png?v=3",
             "og_type": "article",
             "published_iso": _iso(_dt.utcnow()),
@@ -2748,13 +2755,13 @@ def tool_cpal_hotel_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-prohibited-hotels-checker",
-            title=f"Cuba Prohibited Accommodations List ({total_entries} Properties, 2026) — CPAL Checker",
+            title=f"Cuba Prohibited Hotels List ({total_entries} Properties, {_date.today().year}) — Sanctions Checker",
             description=(
-                f"Search the full Cuba Prohibited Accommodations List (CPAL) "
-                f"— all {total_entries} hotels, casas particulares, and "
-                f"resorts U.S. persons cannot stay at under OFAC CACR "
-                f"§515.210. Filter by province, neighborhood, or name. "
-                f"Updated daily from state.gov. Free compliance tool."
+                f"Check if your Cuba hotel is sanctioned. Search all "
+                f"{total_entries} properties on the U.S. State Department "
+                f"Prohibited Accommodations List (CPAL) — hotels, casas "
+                f"particulares, and resorts. Filter by name, province, or "
+                f"neighborhood. Updated daily."
             ),
             keywords=(
                 "Cuba prohibited accommodations list, Cuba prohibited "
