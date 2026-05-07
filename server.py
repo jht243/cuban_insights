@@ -7851,6 +7851,22 @@ def _sitemap_today_iso() -> str:
     return _datetime.utcnow().replace(tzinfo=_tz.utc).date().isoformat()
 
 
+def _sitemap_route_exists(path: str) -> bool:
+    """Return True if *path* matches a registered Flask route.
+
+    Used to guard DB-sourced sitemap entries (BlogPost, LandingPage,
+    sector slugs) against orphaned records whose URL pattern no longer
+    exists in the routing table.  Does NOT catch content-less wildcard
+    matches — those are caught by the nightly spot-check.
+    """
+    try:
+        adapter = app.url_map.bind("")
+        adapter.match(path)
+        return True
+    except Exception:
+        return False
+
+
 def _emit_urlset(urls: list[dict]) -> Response:
     from xml.sax.saxutils import escape as _xml_escape
     parts = ['<?xml version="1.0" encoding="UTF-8"?>']
@@ -7915,21 +7931,12 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/calendar", "lastmod": today_iso, "changefreq": "daily", "priority": "0.7"},
         {"loc": f"{base}/travel", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base}/travel/emergency-card", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
-        {"loc": f"{base}/travel/cuba-prohibited-accommodations-list", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
         {"loc": f"{base}/export-to-cuba", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.9"},
         {"loc": f"{base}/sources", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.6"},
         {"loc": f"{base}/briefing", "lastmod": today_iso, "changefreq": "daily", "priority": "0.9"},
         {"loc": f"{base}/us-cuba-diplomatic-meeting-recent-developments-2026", "lastmod": today_iso, "changefreq": "daily", "priority": "0.85"},
         {"loc": f"{base}/tools", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base}/explainers", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base}/explainers/what-are-ofac-sanctions-on-cuba", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
-        {"loc": f"{base}/explainers/helms-burton-title-iii", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
-        {"loc": f"{base}/explainers/cuba-restricted-list", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
-        {"loc": f"{base}/explainers/what-is-the-banco-central-de-cuba", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
-        {"loc": f"{base}/explainers/cuban-mlc-explained", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
-        {"loc": f"{base}/explainers/cup-cuc-tarea-ordenamiento", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
-        {"loc": f"{base}/explainers/empresa-mixta-foreign-investment-law", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
-        {"loc": f"{base}/explainers/doing-business-in-havana", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.7"},
         {"loc": f"{base}/tools/eltoque-trmi-rate", "lastmod": today_iso, "changefreq": "daily", "priority": "0.7"},
         {"loc": f"{base}/tools/ofac-cuba-sanctions-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.7"},
         {"loc": f"{base}/tools/cuba-restricted-list-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.75"},
@@ -7959,16 +7966,8 @@ def _core_static_urls() -> list[dict]:
         {"loc": f"{base}/tools/cuba-embargo-explained", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.8"},
         {"loc": f"{base}/tools/cuba-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
         {"loc": f"{base}/tools/what-is-ofac", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.75"},
-        {"loc": f"{base}/invest-in-venezuela", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.5"},
         {"loc": f"{base}/venezuela/transport", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
         {"loc": f"{base}/venezuela/caracas-travel-advisory", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
-        {"loc": f"{base}/tools/bolivar-usd-exchange-rate", "lastmod": today_iso, "changefreq": "daily", "priority": "0.5"},
-        {"loc": f"{base}/tools/venezuela-visa-requirements", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.5"},
-        {"loc": f"{base}/tools/venezuela-investment-roi-calculator", "lastmod": today_iso, "changefreq": "monthly", "priority": "0.45"},
-        {"loc": f"{base}/tools/ofac-venezuela-sanctions-checker", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.5"},
-        {"loc": f"{base}/tools/ofac-venezuela-general-licenses", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.45"},
-        {"loc": f"{base}/tools/sec-edgar-venezuela-impairment-search", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.45"},
-        {"loc": f"{base}/tools/public-company-venezuela-exposure-check", "lastmod": today_iso, "changefreq": "weekly", "priority": "0.45"},
     ]
 
 
@@ -8046,10 +8045,14 @@ def sitemap_briefings_recent_xml():
                 .all()
             )
             for p in posts:
+                _path = f"/briefing/{p.slug}"
+                if not _sitemap_route_exists(_path):
+                    logger.warning("sitemap: %s has no matching route, skipping", _path)
+                    continue
                 lastmod_dt = p.updated_at or p.created_at
                 lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else p.published_date.isoformat()
                 urls.append({
-                    "loc": f"{base}/briefing/{p.slug}",
+                    "loc": f"{base}{_path}",
                     "lastmod": lastmod,
                     "changefreq": "weekly",
                     "priority": "0.8",
@@ -8200,11 +8203,18 @@ def sitemap_archive_xml():
                 .all()
             )
             for p in older_posts:
+                _path = f"/briefing/{p.slug}"
+                if not _sitemap_route_exists(_path):
+                    logger.warning("sitemap: %s has no matching route, skipping", _path)
+                    continue
                 lastmod_dt = p.updated_at or p.created_at
                 lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else p.published_date.isoformat()
-                _add(f"{base}/briefing/{p.slug}", lastmod, "monthly", "0.4")
+                _add(f"{base}{_path}", lastmod, "monthly", "0.4")
 
             for lp in db.query(LandingPage).all():
+                if not _sitemap_route_exists(lp.canonical_path):
+                    logger.warning("sitemap: %s has no matching route, skipping", lp.canonical_path)
+                    continue
                 lastmod_dt = lp.last_generated_at or lp.updated_at or lp.created_at
                 lastmod = lastmod_dt.strftime("%Y-%m-%d") if lastmod_dt else today_iso
                 _add(f"{base}{lp.canonical_path}", lastmod, "monthly", "0.5")
@@ -8237,8 +8247,19 @@ def sitemap_archive_xml():
                     slug = _re.sub(r"[^a-z0-9]+", "-", str(sector).lower()).strip("-")
                     if slug:
                         sector_set.add(slug)
+            # Only include sectors that have a LandingPage record — the
+            # /sectors/<slug> route 404s without one.
+            existing_sector_keys = {
+                lp.page_key
+                for lp in db.query(LandingPage.page_key)
+                .filter(LandingPage.page_key.like("sector:%"))
+                .all()
+            }
             for slug in sorted(sector_set):
-                _add(f"{base}/sectors/{slug}", today_iso, "weekly", "0.5")
+                if f"sector:{slug}" not in existing_sector_keys:
+                    continue
+                _path = f"/sectors/{slug}"
+                _add(f"{base}{_path}", today_iso, "weekly", "0.5")
         finally:
             db.close()
     except Exception as exc:

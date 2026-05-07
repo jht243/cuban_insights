@@ -195,6 +195,99 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
         results["distribution"] = {"error": str(e)}
         console.print(f"  [yellow]![/yellow] Distribution failed (non-fatal): {e}")
 
+    # Phase 6: SEO audit. Runs last so distribution is never delayed.
+    # Crawls the local Flask app via test_client and checks meta tags,
+    # structured data, headings, cluster-nav coverage, internal linking,
+    # and sitemap alignment. Always non-fatal.
+    if not report_only:
+        console.print("\n[bold cyan]Phase 6:[/bold cyan] Running SEO audit...")
+        try:
+            from src.seo.audit import run_audit
+            seo_report = run_audit(max_pages=200)
+            results["seo_audit"] = {
+                "pages_crawled": seo_report.pages_crawled,
+                "errors": len(seo_report.errors),
+                "warnings": len(seo_report.warnings),
+                "warning_details": seo_report.warnings,
+                "error_details": seo_report.errors,
+            }
+            if seo_report.errors:
+                console.print(f"  [yellow]![/yellow] SEO audit: {seo_report.pages_crawled} pages, {len(seo_report.errors)} errors, {len(seo_report.warnings)} warnings")
+                for f in seo_report.errors:
+                    console.print(f"        [red]error:[/red] {f}")
+            else:
+                console.print(f"  [green]✓[/green] SEO audit: {seo_report.pages_crawled} pages, 0 errors, {len(seo_report.warnings)} warnings")
+            for w in seo_report.warnings:
+                console.print(f"        [dim]warn:[/dim] {w}")
+
+            # Phase 6b: auto-fix clearly wrong SEO issues on LandingPage-
+            # backed pages (missing H1, thin content < 200 words). Uses
+            # web search + premium LLM. Budget-capped at 5 fixes/run.
+            console.print("\n[bold cyan]Phase 6b:[/bold cyan] Auto-fixing SEO content issues...")
+            try:
+                from src.seo.content_fixer import fix_content_issues
+                fix_result = fix_content_issues(seo_report)
+                results["seo_autofix"] = fix_result
+                if fix_result.get("fixed", 0) > 0:
+                    console.print(
+                        f"  [green]✓[/green] SEO auto-fix: {fix_result['fixed']} pages fixed, "
+                        f"${fix_result.get('total_cost_usd', 0):.3f} LLM cost"
+                    )
+                    for d in fix_result.get("details", []):
+                        console.print(f"        {d['fix']}: {d['path']}")
+                else:
+                    reason = fix_result.get("reason", fix_result.get("status", ""))
+                    console.print(f"  [dim]·[/dim] SEO auto-fix: nothing to fix ({reason})")
+            except Exception as e:
+                logger.error("SEO auto-fix failed: %s", e, exc_info=True)
+                results["seo_autofix"] = {"error": str(e)}
+                console.print(f"  [yellow]![/yellow] SEO auto-fix failed (non-fatal): {e}")
+
+        except Exception as e:
+            logger.error("SEO audit failed: %s", e, exc_info=True)
+            results["seo_audit"] = {"error": str(e)}
+            console.print(f"  [yellow]![/yellow] SEO audit failed (non-fatal): {e}")
+
+    # Phase 7: Sitemap sync. Fetches live sitemaps, diffs against source
+    # routes, auto-patches missing static URLs, verifies every hardcoded
+    # URL, removes dead/redirect entries, spot-checks dynamic URLs, and
+    # pushes all fixes. Always non-fatal.
+    if not report_only:
+        console.print("\n[bold cyan]Phase 7:[/bold cyan] Sitemap audit & sync...")
+        try:
+            from scripts.sync_sitemap import run_sync
+            sync_result = run_sync(dry_run=dry_run, spot_check_enabled=True)
+            results["sitemap_sync"] = sync_result
+            if sync_result.get("error"):
+                console.print(f"  [yellow]![/yellow] Sitemap sync error: {sync_result['error']}")
+            else:
+                parts = [f"{sync_result['live_urls']} live URLs audited"]
+                added = sync_result.get("added", 0)
+                removed = sync_result.get("removed", 0)
+                if added:
+                    parts.append(f"{added} missing route(s) added")
+                if removed:
+                    parts.append(f"{removed} dead/redirect URL(s) removed")
+                pushed = sync_result.get("pushed")
+                if pushed is not None:
+                    parts.append(f"push={'OK' if pushed else 'FAILED'}")
+                fixes = sync_result.get("fixes", [])
+                if fixes:
+                    console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)}")
+                    for fix in fixes:
+                        console.print(f"        [green]fix:[/green] {fix}")
+                else:
+                    console.print(f"  [green]✓[/green] Sitemap sync: {', '.join(parts)} — all clean")
+                for path, code in sync_result.get("dynamic_issues", []):
+                    code_str = "ERR" if code < 0 else str(code)
+                    console.print(f"        [yellow]unfixable:[/yellow] [{code_str}] {path} (DB-sourced)")
+        except Exception as e:
+            logger.error("Sitemap sync failed: %s", e, exc_info=True)
+            results["sitemap_sync"] = {"error": str(e)}
+            console.print(f"  [yellow]![/yellow] Sitemap sync failed (non-fatal): {e}")
+    else:
+        console.print("\n[dim]Phase 7: Sitemap sync — SKIPPED (report-only)[/dim]")
+
     _print_summary(results, start)
 
 
