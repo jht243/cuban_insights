@@ -283,6 +283,8 @@ _TITLE_MIN = 20
 _TITLE_MAX = 70
 _DESC_MIN = 50
 _DESC_MAX = 160
+_SLUG_WARN = 60
+_SLUG_MAX = 80
 
 
 def _check_meta(page: PageAudit) -> list[Finding]:
@@ -310,6 +312,12 @@ def _check_meta(page: PageAudit) -> list[Finding]:
         findings.append(Finding(path, "warning", "meta", "Missing og:title"))
     if not page.og_image:
         findings.append(Finding(path, "warning", "meta", "Missing og:image"))
+
+    slug = path.rstrip("/").rsplit("/", 1)[-1] if "/" in path else path
+    if len(slug) > _SLUG_MAX:
+        findings.append(Finding(path, "error", "meta", f"URL slug too long ({len(slug)} chars, max {_SLUG_MAX}) — will look broken in SERPs"))
+    elif len(slug) > _SLUG_WARN:
+        findings.append(Finding(path, "warning", "meta", f"URL slug may be truncated in SERPs ({len(slug)} chars, ideal <{_SLUG_WARN})"))
 
     return findings
 
