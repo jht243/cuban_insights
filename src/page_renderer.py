@@ -41,6 +41,39 @@ def _link_people_filter(html: str) -> str:
 _env.filters["link_people"] = _link_people_filter
 
 
+def _seo_title_filter(s: str, max_len: int = 70) -> str:
+    """Truncate a title to the last word boundary within max_len."""
+    if not s or len(s) <= max_len:
+        return s
+    truncated = s[:max_len]
+    last_space = truncated.rfind(" ")
+    if last_space > max_len // 2:
+        return truncated[:last_space]
+    return truncated
+
+
+def _seo_desc_filter(s: str, max_len: int = 160) -> str:
+    """Truncate a description to the last sentence or word boundary
+    within max_len, appending an ellipsis if truncated."""
+    if not s or len(s) <= max_len:
+        return s
+    cut = max_len - 3  # room for "..."
+    # Try to break at a sentence boundary
+    for sep in (". ", "— ", "; ", ", "):
+        idx = s.rfind(sep, 0, cut)
+        if idx > cut // 2:
+            return s[: idx + len(sep)].rstrip() + "..."
+    # Fall back to word boundary
+    last_space = s.rfind(" ", 0, cut)
+    if last_space > cut // 2:
+        return s[:last_space] + "..."
+    return s[:cut] + "..."
+
+
+_env.filters["seo_title"] = _seo_title_filter
+_env.filters["seo_desc"] = _seo_desc_filter
+
+
 def _base_url() -> str:
     return settings.site_url.rstrip("/")
 
