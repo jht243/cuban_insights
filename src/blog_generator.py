@@ -113,13 +113,12 @@ _ALLOWED_TAGS_RE = re.compile(
 _ANY_TAG_RE = re.compile(r"<[^>]+>")
 
 
-def _slugify(text: str, *, max_len: int = 110) -> str:
+def _slugify(text: str, *, max_len: int = 60) -> str:
     """Build a clean, keyword-preserving URL slug.
 
-    Briefing slugs used to append date + source id to every post, which
-    prevented collisions but produced noisy URLs and sometimes cut the
-    final keyword mid-word. New posts should keep the readable headline
-    slug unless a collision actually exists.
+    Capped at 60 chars so the full slug is visible in Google SERPs
+    without truncation. Only if a collision exists do we append a
+    compact numeric suffix.
     """
     if not text:
         return "briefing"
@@ -330,7 +329,7 @@ def _post_url_slug(db, headline: str, source_table: str, source_id: int, publish
     if base not in existing:
         return base
 
-    max_len = 110
+    max_len = 60
     for n in range(2, 1000):
         suffix = f"-{n}"
         candidate_base = base[: max_len - len(suffix)].rstrip("-")
