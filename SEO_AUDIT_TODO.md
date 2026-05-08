@@ -22,16 +22,24 @@
 
 ### Daily pipeline integration (`run_daily.py`)
 - Phase 6: SEO audit runs on every daily cron invocation (after distribution)
-- Phase 6b: auto-fix engine runs immediately after audit, fixing clearly wrong issues
+- Phase 6b: auto-fix engine runs immediately after audit, fixing clearly wrong issues (title length, missing description, missing og:image, missing JSON-LD prerequisites, heading hierarchy, cluster nav advisory, low inbound links, missing H1, thin content)
 - Non-fatal — audit and fix failures never block content publication
 - Summary logged to pipeline results (pages crawled, error/warning counts, fixes applied)
 
 ### Auto-fix engine (`src/seo/content_fixer.py`)
 - **Title/description clamping** — Jinja filters (`seo_title`, `seo_desc`) in `_base.html.j2` clamp titles to 70 chars and descriptions to 160 chars at render time (word-boundary aware, ellipsis appended)
+- **Title too long/short** — for LandingPage-backed pages, rewrites titles via premium LLM to fit 30-60 char sweet spot
+- **Missing meta description** — generates a compelling 120-155 char summary via LLM + web search context, stored in `LandingPage.summary`
 - **Missing canonical fallback** — `_base.html.j2` falls back to `request.url` when canonical is empty
+- **Missing og:title** — fixed implicitly when title is fixed (og:title derives from page title in `_base.html.j2`)
+- **Missing og:image** — triggers `src/og_image.py` to generate a 1200×630 PNG for the page
+- **Missing JSON-LD** — ensures page has title + summary (prerequisites for the renderer's JSON-LD graph generation); logs advisory when template is missing the `jsonld` block
 - **Missing H1 fix** — for LandingPage-backed pages, web-searches the topic for current data, generates an H1 + opening paragraph via premium LLM, prepends to body_html
+- **Heading hierarchy skips** — inserts bridging heading tags (e.g. empty `<h2>` between H1 and H3) to satisfy crawlers without altering visible content
+- **Cluster nav missing** — detects pages belonging to a cluster that aren't rendering nav; logs advisory that a template `{% include '_cluster_nav.html.j2' %}` is needed
+- **Low inbound links** — for under-linked hub/landing pages, appends "See also" cross-links from related pages in the same page_type or cluster
 - **Thin content fix** — for LandingPage-backed pages under 200 words, web-searches for current information, expands body to 400-600 words via premium LLM
-- Budget-capped at 5 fixes per run (~$0.20-0.40/day max)
+- Budget-capped at 8 fixes per run (~$0.30-0.60/day max)
 - Only operates on LandingPage rows (sectors, explainers, pillar pages) — tool/hub pages excluded
 
 ### Pre-existing SEO infrastructure
