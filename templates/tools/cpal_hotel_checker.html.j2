@@ -290,12 +290,16 @@
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     inflight = ctrl;
     results.setAttribute('aria-busy', 'true');
+    var params = {};
+    try { var u = new URL(url, location.origin); params.query = u.searchParams.get('q') || ''; params.filters = u.searchParams.get('province') || u.searchParams.get('neighborhood') || ''; } catch(_){}
     fetch(url, { credentials: 'same-origin', signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.text(); })
       .then(function (html) {
         var doc = new DOMParser().parseFromString(html, 'text/html');
         var fresh = doc.getElementById('cpal-results');
         if (fresh) results.innerHTML = fresh.innerHTML;
+        var matchCount = results.querySelectorAll('.match-card').length;
+        gtag('event', 'tool_used', { tool_name: 'cpal_hotel_checker', query: (params.query || '').substring(0, 100), filters: params.filters || '', results_count: String(matchCount) });
         if (history && history.replaceState) {
           history.replaceState({ cpal: true }, '', url);
         }
@@ -308,6 +312,12 @@
         refreshClear();
       });
   }
+
+  results.addEventListener('click', function(e) {
+    var link = e.target.closest('.match-card a');
+    if (!link) return;
+    gtag('event', 'tool_result_click', { tool_name: 'cpal_hotel_checker', result_slug: link.getAttribute('href') || '' });
+  });
 
   // Pickers: change handler swaps results in-place, no scroll, no nav.
   // Reset the other two pickers so a single filter is active at a time

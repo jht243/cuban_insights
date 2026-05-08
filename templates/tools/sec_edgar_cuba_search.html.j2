@@ -211,6 +211,7 @@
         });
       }
 
+      var _edgarTrackTimer = null;
       function apply() {
         var qs = (q.value || '').toLowerCase().trim();
         var lv = lvl.value;
@@ -228,6 +229,12 @@
         empty.hidden = visible !== 0;
         clearBtn.disabled = !active();
         syncChips();
+        if (active()) {
+          clearTimeout(_edgarTrackTimer);
+          _edgarTrackTimer = setTimeout(function() {
+            gtag('event', 'tool_used', { tool_name: 'sec_edgar_search', query: qs, filters: lv, results_count: String(visible) });
+          }, 800);
+        }
       }
 
       function clearAll() {

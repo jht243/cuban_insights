@@ -196,14 +196,24 @@
       var rows = Array.prototype.slice.call(table.querySelectorAll('tbody tr[data-name]'));
       var search = document.getElementById('sdn-search');
       var typeFilter = document.getElementById('sdn-type-filter');
+      var _sdnTrackTimer = null;
       function apply() {
         var q = (search.value || '').toLowerCase().trim();
         var t = typeFilter.value;
+        var visible = 0;
         rows.forEach(function(r) {
           var matchT = !t || r.dataset.type === t;
           var matchQ = !q || r.dataset.name.indexOf(q) !== -1 || r.dataset.program.indexOf(q) !== -1 || r.dataset.remarks.indexOf(q) !== -1;
-          r.style.display = (matchT && matchQ) ? '' : 'none';
+          var show = matchT && matchQ;
+          r.style.display = show ? '' : 'none';
+          if (show) visible++;
         });
+        if (q || t) {
+          clearTimeout(_sdnTrackTimer);
+          _sdnTrackTimer = setTimeout(function() {
+            gtag('event', 'sanctions_search', { query: q, type_filter: t, results_count: String(visible) });
+          }, 800);
+        }
       }
       search.addEventListener('input', apply);
       typeFilter.addEventListener('change', apply);

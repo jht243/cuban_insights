@@ -407,6 +407,13 @@
     btn.addEventListener('click', function() {
       var url = btn.getAttribute('data-share-url') || window.location.href;
       var title = btn.getAttribute('data-share-title') || document.title;
+      var pathParts = window.location.pathname.split('/').filter(Boolean);
+      var ctype = pathParts[0] === 'briefing' ? 'briefing' : (pathParts[0] === 'tools' ? 'tool' : 'page');
+      gtag('event', 'share_click', {
+        content_type: ctype,
+        slug: window.location.pathname,
+        method: navigator.share ? 'web_share_api' : 'clipboard'
+      });
       if (navigator.share) {
         navigator.share({ title: title, url: url }).catch(function() {
           copyToClipboard(url).then(function() {

@@ -621,10 +621,13 @@ document.querySelectorAll('.full-analysis-link a').forEach(function(a) {
       var url = btn.getAttribute('data-share-url');
       var title = btn.getAttribute('data-share-title') || 'Cuban Insights';
       if (!url) return;
-      // Prefer the native share sheet on mobile / supported browsers.
+      gtag('event', 'share_click', {
+        content_type: 'report',
+        slug: url,
+        method: navigator.share ? 'web_share_api' : 'clipboard'
+      });
       if (navigator.share) {
         navigator.share({ title: title, url: url }).catch(function() {
-          // User cancelled or share failed — silently fall back to copy.
           copyToClipboard(url).then(function() {
             flashCopied(btn);
             showToast('Link copied');
@@ -705,14 +708,17 @@ function handleSignup(e) {
   .then(r => r.json())
   .then(data => {
     if (data.ok) {
+      gtag('event', 'newsletter_subscribe', { method: 'homepage', success: 'true' });
       form.innerHTML = '<div style="color: white; font-size: 1.1rem; padding: 14px 0;">\u2713 You\'re in. Watch your inbox.</div>';
     } else {
+      gtag('event', 'newsletter_subscribe', { method: 'homepage', success: 'false' });
       btn.disabled = false;
       btn.textContent = 'Subscribe';
       alert(data.error || 'Something went wrong. Please try again.');
     }
   })
   .catch(() => {
+    gtag('event', 'newsletter_subscribe', { method: 'homepage', success: 'false' });
     btn.disabled = false;
     btn.textContent = 'Subscribe';
     alert('Network error. Please try again.');

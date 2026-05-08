@@ -151,6 +151,7 @@
         });
       }
 
+      var _glTrackTimer = null;
       function apply() {
         var qs = (q.value || '').toLowerCase().trim();
         var sc = scope.value;
@@ -167,6 +168,12 @@
         empty.classList.toggle('show', visible === 0);
         clearBtn.disabled = !active();
         syncChips();
+        if (active()) {
+          clearTimeout(_glTrackTimer);
+          _glTrackTimer = setTimeout(function() {
+            gtag('event', 'tool_used', { tool_name: 'ofac_general_licenses', query: qs, filters: sc, results_count: String(visible) });
+          }, 800);
+        }
       }
 
       function clearAll() {

@@ -65,6 +65,7 @@
 
   {# ─────────── STEP 1: passport country ─────────── #}
   {% if step == 'passport' or not step %}
+  <script>gtag('event', 'tool_used', { tool_name: 'travel_wizard', query: 'step_passport' });</script>
   <div class="wizard">
     <h2>Step 1 &mdash; What passport are you travelling on?</h2>
     <p>Pick the option that best describes your status. Pure non-U.S. travellers face no U.S. legal restrictions; everyone else needs an authorised category.</p>
@@ -100,6 +101,13 @@
 
   {# ─────────── STEP 3: verdict ─────────── #}
   {% if step == 'verdict' and verdict %}
+  <script>
+    gtag('event', 'travel_wizard_completed', {
+      passport_type: '{{ passport|default("")|e }}',
+      travel_purpose: '{{ purpose|default("")|e }}',
+      final_step: 'verdict'
+    });
+  </script>
 
   <div class="verdict {{ verdict.tone }}">
     <h2>{{ verdict.headline }}</h2>

@@ -102,6 +102,7 @@
         var amt = document.getElementById('amt');
         var dir = document.getElementById('dir');
         var out = document.getElementById('conv-result');
+        var _trmiTracked = false;
         function fmt(n, prefix, suffix) {
           if (!isFinite(n)) return '—';
           return prefix + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) + suffix;
@@ -114,8 +115,12 @@
           else if (d === 'eur_to_cup') out.textContent = rates.eur ? fmt(v * rates.eur, '', ' CUP') : 'EUR rate unavailable';
           else if (d === 'cup_to_eur') out.textContent = rates.eur ? fmt(v / rates.eur, '€', '') : 'EUR rate unavailable';
         }
-        amt.addEventListener('input', render);
-        dir.addEventListener('change', render);
+        function renderAndTrack() {
+          render();
+          if (!_trmiTracked) { _trmiTracked = true; gtag('event', 'tool_used', { tool_name: 'eltoque_trmi', query: dir.value }); }
+        }
+        amt.addEventListener('input', renderAndTrack);
+        dir.addEventListener('change', renderAndTrack);
         render();
       })();
     </script>

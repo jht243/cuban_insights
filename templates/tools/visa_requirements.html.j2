@@ -118,6 +118,7 @@
           var t = document.getElementById('r-' + code);
           if (t) {
             t.classList.add('active');
+            gtag('event', 'tool_used', { tool_name: 'visa_requirements', query: code });
             if (opts && opts.scroll) {
               t.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }

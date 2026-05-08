@@ -366,9 +366,16 @@
       }
 
       var nbhLayerRef = null;
+      var _mapTrackTimer = null;
       function apply() {
         var qv = (q.value || '').toLowerCase().trim();
         var minScore = parseInt(min.value || '0', 10);
+        if (qv || minScore > 0) {
+          clearTimeout(_mapTrackTimer);
+          _mapTrackTimer = setTimeout(function() {
+            gtag('event', 'tool_used', { tool_name: 'safety_map', query: qv, filters: 'min_score:' + minScore });
+          }, 800);
+        }
         cards.forEach(function(c) {
           var matchQ = !qv || c.dataset.text.indexOf(qv) !== -1;
           var matchS = parseInt(c.dataset.score, 10) >= minScore;

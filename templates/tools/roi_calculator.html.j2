@@ -295,9 +295,31 @@
 
         document.querySelector('#cf-table tbody').innerHTML = rows.join('');
       }
+      var _roiTracked = false;
+      var _roiCompleteTracked = false;
+      function computeAndTrack() {
+        compute();
+        if (!_roiTracked) {
+          _roiTracked = true;
+          gtag('event', 'tool_used', { tool_name: 'roi_calculator' });
+        }
+        var capexVal = parseFloat(document.getElementById('capex').value);
+        var rev0Val = parseFloat(document.getElementById('rev0').value);
+        var yearsVal = parseInt(document.getElementById('years').value, 10);
+        if (!_roiCompleteTracked && capexVal > 0 && rev0Val > 0 && yearsVal > 0) {
+          _roiCompleteTracked = true;
+          var sectorEl = document.getElementById('sector');
+          var bucket = capexVal < 100000 ? 'under_100k' : capexVal < 500000 ? '100k-500k' : capexVal < 2000000 ? '500k-2m' : 'over_2m';
+          gtag('event', 'roi_calculator_completed', {
+            sector: sectorEl.value,
+            capex_bucket: bucket,
+            years: String(yearsVal)
+          });
+        }
+      }
       ['sector','capex','rev0','years','growth','margin','tax','maintcapex','discount','exit'].forEach(function(id) {
-        document.getElementById(id).addEventListener('input', compute);
-        document.getElementById(id).addEventListener('change', compute);
+        document.getElementById(id).addEventListener('input', computeAndTrack);
+        document.getElementById(id).addEventListener('change', computeAndTrack);
       });
       compute();
 
@@ -311,9 +333,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: em, source: 'roi-calculator' })
         }).then(function(r) { return r.json(); }).then(function(j) {
-          if (j.ok) msg.textContent = "You're in. Check your inbox shortly for the model — and the next briefing.";
-          else msg.textContent = j.error || 'Something went wrong.';
-        }).catch(function() { msg.textContent = 'Network error — try again.'; });
+          if (j.ok) {
+            gtag('event', 'newsletter_subscribe', { method: 'roi_calculator', success: 'true' });
+            msg.textContent = "You're in. Check your inbox shortly for the model — and the next briefing.";
+          } else {
+            gtag('event', 'newsletter_subscribe', { method: 'roi_calculator', success: 'false' });
+            msg.textContent = j.error || 'Something went wrong.';
+          }
+        }).catch(function() {
+          gtag('event', 'newsletter_subscribe', { method: 'roi_calculator', success: 'false' });
+          msg.textContent = 'Network error — try again.';
+        });
       });
     })();
   </script>
