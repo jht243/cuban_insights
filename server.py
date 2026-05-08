@@ -5313,21 +5313,37 @@ def sanctions_tracker():
                 ],
             }, ensure_ascii=False)
 
-            from src.seo.cluster_topology import build_cluster_ctx, companion_links as _companion_links
+            from src.seo.cluster_topology import build_cluster_ctx, ClusterLink
             cluster_ctx = build_cluster_ctx("/sanctions-tracker")
             companion_ctx = {
-                "eyebrow": "Tools that use this data",
-                "title": "Cross-check SDN results: name search, CRL, CPAL lodging list, and tickers",
-                "links": _companion_links([
-                    "/tools/ofac-cuba-sanctions-checker",
-                    "/tools/cuba-restricted-list-checker",
-                    "/tools/cuba-prohibited-hotels-checker",
-                    "/tools/public-company-cuba-exposure-check",
-                    "/tools/sec-edgar-cuba-impairment-search",
-                    "/tools/ofac-cuba-general-licenses",
-                    "/companies",
-                    "/explainers/helms-burton-title-iii",
-                ]),
+                "eyebrow": "Related tools",
+                "title": "Cross-check any name against Cuba sanctions lists",
+                "links": [
+                    ClusterLink("/tools/ofac-cuba-sanctions-checker",
+                                "OFAC sanctions checker",
+                                "Search any person or entity against the live SDN list"),
+                    ClusterLink("/tools/cuba-restricted-list-checker",
+                                "Cuba Restricted List checker",
+                                "Screen names against the State Department CRL"),
+                    ClusterLink("/tools/cuba-prohibited-hotels-checker",
+                                "Prohibited hotels checker",
+                                "Check if a Cuban hotel is on the CPAL list"),
+                    ClusterLink("/tools/public-company-cuba-exposure-check",
+                                "Public company exposure check",
+                                "Look up Cuba exposure for any S&P 500 company"),
+                    ClusterLink("/tools/sec-edgar-cuba-impairment-search",
+                                "SEC EDGAR search",
+                                "Find Cuba-related disclosures in SEC filings"),
+                    ClusterLink("/tools/ofac-cuba-general-licenses",
+                                "General licenses",
+                                "Browse all active OFAC general licenses for Cuba"),
+                    ClusterLink("/companies",
+                                "S&P 500 Cuba exposure register",
+                                "A-Z directory of companies with Cuba-linked activity"),
+                    ClusterLink("/explainers/helms-burton-title-iii",
+                                "Helms-Burton Title III",
+                                "Confiscated-property lawsuits against US-listed companies"),
+                ],
             }
 
             try:

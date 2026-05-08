@@ -1,21 +1,12 @@
 {#
-  Companion-links callout — a small, prominent block surfaced on hub
-  pages (/tools, /sanctions-tracker, /companies) to push crawl equity
-  and human attention to the deep tool / sister-hub pages those hubs
-  should be cross-linking to.
-
-  Differs from `_cluster_nav.html.j2` in two ways:
-    1. Curated per-call list of target paths (not topology-derived) —
-       lets each hub surface a different set of next-step destinations.
-    2. Rendered ABOVE the fold near the page header, not at the page
-       bottom. Hub pages are crawl-equity distributors; we don't want
-       Googlebot or readers to have to scroll past a 500-row table
-       before finding the next-click links.
+  Companion-links callout — a curated block surfaced on hub pages
+  (/tools, /sanctions-tracker, /companies) to push crawl equity
+  and human attention to related tool / sister-hub pages.
 
   Inputs (passed as a dict via `companion_ctx`):
-      companion_ctx.eyebrow = short uppercase label (e.g. "Tools that use this data")
-      companion_ctx.title   = optional H3 heading (omit for compact mode)
-      companion_ctx.links   = list[ClusterLink] from companion_links()
+      companion_ctx.eyebrow = short uppercase label
+      companion_ctx.title   = optional heading (omit for compact mode)
+      companion_ctx.links   = list[ClusterLink] with path, anchor, description
 #}
 {% macro companion_links(ctx) -%}
 {% if ctx and ctx.links %}
@@ -28,13 +19,16 @@
     <h2 id="companion-links-title" class="companion-links__title">{{ ctx.title }}</h2>
     {% endif %}
   </header>
-  <ul class="companion-links__list">
+  <div class="companion-links__grid">
     {% for link in ctx.links %}
-    <li>
-      <a href="{{ link.path }}">{{ link.anchor }}</a>
-    </li>
+    <a class="companion-links__card" href="{{ link.path }}">
+      <span class="companion-links__card-name">{{ link.anchor }}</span>
+      {% if link.description %}
+      <span class="companion-links__card-desc">{{ link.description }}</span>
+      {% endif %}
+    </a>
     {% endfor %}
-  </ul>
+  </div>
 </aside>
 {% endif %}
 {%- endmacro %}
@@ -43,53 +37,61 @@
 <style>
   .companion-links {
     margin: 24px 0 28px;
-    padding: 16px 18px;
+    padding: 18px 20px;
     background: #f7f9fb;
     border: 1px solid #e6ebf2;
-    border-left: 3px solid #002b5e;
-    border-radius: 4px;
+    border-radius: 6px;
   }
-  .companion-links__head { margin: 0 0 10px; }
+  .companion-links__head { margin: 0 0 14px; }
   .companion-links__eyebrow {
     font-family: 'Open Sans', sans-serif;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1.4px;
-    color: #cc0000;
+    color: var(--sr-gray-text, #6b7280);
     font-weight: 700;
     margin: 0 0 4px;
   }
   .companion-links__title {
     font-family: 'Libre Baskerville', serif;
-    font-size: 18px;
+    font-size: 17px;
     color: #001f44;
     margin: 0;
     line-height: 1.3;
   }
-  .companion-links__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .companion-links__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 6px 18px;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
   }
-  .companion-links__list li {
-    margin: 0;
-    padding: 4px 0;
-    line-height: 1.45;
-    font-size: 14px;
-  }
-  .companion-links__list a {
-    color: #002b5e;
+  .companion-links__card {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #e6ebf2;
+    border-radius: 5px;
     text-decoration: none;
-    font-weight: 600;
-    border-bottom: 1px solid transparent;
-    transition: color 0.15s, border-color 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .companion-links__list a:hover {
+  .companion-links__card:hover {
+    border-color: #002b5e;
+    box-shadow: 0 2px 8px rgba(0, 43, 94, 0.08);
+  }
+  .companion-links__card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #002b5e;
+    line-height: 1.35;
+  }
+  .companion-links__card:hover .companion-links__card-name {
     color: #cc0000;
-    border-bottom-color: #cc0000;
+  }
+  .companion-links__card-desc {
+    font-size: 12.5px;
+    color: #6b7280;
+    line-height: 1.4;
+    margin-top: 4px;
   }
 </style>
 {%- endmacro %}
