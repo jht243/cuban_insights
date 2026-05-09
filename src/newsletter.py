@@ -4,6 +4,7 @@ Newsletter distribution module.
 Provider-agnostic email sender. Supports:
   - console: prints to stdout (development)
   - sendgrid: sends via SendGrid API (production)
+  - resend: sends via Resend API (production)
 
 Add new providers by subclassing EmailProvider and registering in PROVIDERS.
 """
@@ -24,14 +25,15 @@ logger = logging.getLogger(__name__)
 
 class EmailProvider(ABC):
     @abstractmethod
-    def send(self, to: str, subject: str, html_body: str) -> bool:
+    def send(self, to: str, subject: str, html_body: str, *, from_email: str | None = None) -> bool:
         ...
 
 
 class ConsoleProvider(EmailProvider):
-    def send(self, to: str, subject: str, html_body: str) -> bool:
+    def send(self, to: str, subject: str, html_body: str, *, from_email: str | None = None) -> bool:
         logger.info("=== EMAIL PREVIEW ===")
         logger.info("To: %s", to)
+        logger.info("From: %s", from_email or settings.newsletter_from_email)
         logger.info("Subject: %s", subject)
         logger.info("Body length: %d chars", len(html_body))
         logger.info("First 200 chars: %s", html_body[:200])
@@ -46,10 +48,10 @@ class SendGridProvider(EmailProvider):
         self.api_key = api_key
         self.from_email = from_email
 
-    def send(self, to: str, subject: str, html_body: str) -> bool:
+    def send(self, to: str, subject: str, html_body: str, *, from_email: str | None = None) -> bool:
         payload = {
             "personalizations": [{"to": [{"email": to}]}],
-            "from": {"email": self.from_email, "name": "Cuban Insights"},
+            "from": {"email": from_email or self.from_email, "name": "Cuban Insights"},
             "subject": subject,
             "content": [{"type": "text/html", "value": html_body}],
         }
@@ -72,9 +74,43 @@ class SendGridProvider(EmailProvider):
             return False
 
 
+class ResendProvider(EmailProvider):
+    API_URL = "https://api.resend.com/emails"
+
+    def __init__(self, api_key: str, from_email: str):
+        self.api_key = api_key
+        self.from_email = from_email
+
+    def send(self, to: str, subject: str, html_body: str, *, from_email: str | None = None) -> bool:
+        payload = {
+            "from": from_email or self.from_email,
+            "to": [to],
+            "subject": subject,
+            "html": html_body,
+        }
+
+        resp = httpx.post(
+            self.API_URL,
+            json=payload,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            timeout=30,
+        )
+
+        if resp.status_code in (200, 201):
+            logger.info("Email sent to %s via Resend", to)
+            return True
+        else:
+            logger.error("Resend error %d: %s", resp.status_code, resp.text)
+            return False
+
+
 PROVIDERS = {
     "console": lambda: ConsoleProvider(),
     "sendgrid": lambda: SendGridProvider(settings.newsletter_api_key, settings.newsletter_from_email),
+    "resend": lambda: ResendProvider(settings.resend_api_key, settings.newsletter_from_email),
 }
 
 

@@ -98,6 +98,10 @@ class Settings(BaseSettings):
     newsletter_provider: str = "console"
     newsletter_from_email: str = "briefing@cubaninsights.com"
     newsletter_api_key: str = ""
+    resend_api_key: str = ""
+    # From address used specifically for feedback notification emails.
+    # Must be a domain verified on your Resend account.
+    feedback_from_email: str = "jonathan@intake.layer3labs.io"
     subscriber_list_path: str = "subscribers.json"
     feedback_notification_email: str = "jonathan@pipelinemarketing.io"
 

@@ -329,6 +329,7 @@ def _send_feedback_notification(submission) -> tuple[bool, str | None]:
             to=settings.feedback_notification_email,
             subject=subject,
             html_body=body,
+            from_email=settings.feedback_from_email or None,
         )
         if ok:
             return True, None
