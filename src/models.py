@@ -394,6 +394,28 @@ class ScrapeLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class FeedbackSubmission(Base):
+    """User-submitted product feedback and tool ideas."""
+
+    __tablename__ = "feedback_submissions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    message = Column(Text, nullable=False)
+    email = Column(String(320), nullable=True)
+    page_url = Column(String(1000), nullable=True)
+    page_path = Column(String(500), nullable=True, index=True)
+    referrer = Column(String(1000), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    site_name = Column(String(120), nullable=False, default="Cuban Insights")
+
+    status = Column(String(40), nullable=False, default="new", index=True)
+    email_sent = Column(Boolean, nullable=False, default=False)
+    email_error = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
 engine = create_engine(settings.database_url, echo=False)
 SessionLocal = sessionmaker(bind=engine)
 _init_lock = Lock()

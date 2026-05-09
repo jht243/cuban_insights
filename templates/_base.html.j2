@@ -194,6 +194,30 @@
     /* Toast — bottom-center floating pill, ~1.6s. */
     .share-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--sr-blue-dark); color: var(--white); padding: 10px 20px; border-radius: 999px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 9999; }
     .share-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .feedback-widget { position: fixed; left: 20px; bottom: 20px; z-index: 9998; font-family: var(--font-sans); }
+    .feedback-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(0,43,94,0.16); background: var(--sr-blue); color: var(--white); border-radius: 999px; padding: 10px 15px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 22px rgba(15,23,42,0.18); transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
+    .feedback-pill:hover { background: var(--sr-blue-dark); box-shadow: 0 10px 26px rgba(15,23,42,0.24); }
+    .feedback-pill:active { transform: scale(0.97); }
+    .feedback-panel { position: fixed; left: 20px; bottom: 72px; width: min(380px, calc(100vw - 40px)); background: var(--white); border: 1px solid var(--sr-gray-light); border-top: 4px solid var(--sr-red); box-shadow: 0 18px 50px rgba(15,23,42,0.22); padding: 22px; display: none; }
+    .feedback-panel.is-open { display: block; }
+    .feedback-panel h2 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 20px; line-height: 1.25; margin: 0 28px 8px 0; }
+    .feedback-panel p { color: var(--sr-gray-text); font-size: 13px; line-height: 1.55; margin: 0 0 14px; }
+    .feedback-close { position: absolute; top: 12px; right: 12px; border: 0; background: transparent; color: var(--sr-gray-text); font-size: 22px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+    .feedback-close:hover { color: var(--sr-blue-dark); }
+    .feedback-form { display: grid; gap: 10px; }
+    .feedback-form label { display: grid; gap: 5px; font-size: 12px; font-weight: 700; color: var(--sr-blue-dark); }
+    .feedback-form textarea, .feedback-form input { width: 100%; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 10px 11px; font: 14px/1.45 var(--font-sans); color: var(--sr-dark-text); }
+    .feedback-form textarea { min-height: 112px; resize: vertical; }
+    .feedback-form textarea:focus, .feedback-form input:focus { outline: 2px solid rgba(0,43,94,0.18); border-color: var(--sr-blue); }
+    .feedback-submit { border: 0; border-radius: 3px; background: var(--sr-red); color: var(--white); padding: 11px 16px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; cursor: pointer; }
+    .feedback-submit:hover { background: #a30000; }
+    .feedback-submit:disabled { opacity: 0.7; cursor: default; }
+    .feedback-status { min-height: 18px; font-size: 12px; color: var(--sr-gray-text); }
+    .feedback-status.is-error { color: var(--sr-red); }
+    .feedback-status.is-success { color: #166534; font-weight: 700; }
+    @media (max-width: 768px) {
+      .feedback-widget { display: none !important; }
+    }
   </style>
 
   {# Topic-cluster nav styles — loaded on every page that extends
@@ -307,6 +331,29 @@
 {%- endmacro %}
 
 {% block content %}{% endblock %}
+
+<div class="feedback-widget" data-feedback-widget>
+  <button type="button" class="feedback-pill" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-panel">
+    Share Your Ideas
+  </button>
+  <section class="feedback-panel" id="feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="feedback-title">
+    <button type="button" class="feedback-close" data-feedback-close aria-label="Close feedback form">&times;</button>
+    <h2 id="feedback-title">Help us build what you need.</h2>
+    <p>Tell us what tools, data, checklists, or workflow would make your experience better.</p>
+    <form class="feedback-form" data-feedback-form>
+      <label>
+        Your idea
+        <textarea name="message" maxlength="2000" required placeholder="What would make your work easier?"></textarea>
+      </label>
+      <label>
+        (Optional) Email, if you want us to follow up.
+        <input type="email" name="email" autocomplete="email" placeholder="you@example.com">
+      </label>
+      <button type="submit" class="feedback-submit">Send feedback</button>
+      <div class="feedback-status" data-feedback-status aria-live="polite"></div>
+    </form>
+  </section>
+</div>
 
 <div class="footer-cta">
   <h3>Get the daily briefing in your inbox</h3>
@@ -440,6 +487,94 @@
       }).catch(function() {
         showToast('Could not copy link');
       });
+    });
+  });
+})();
+
+(function initFeedbackWidget() {
+  if (!window.matchMedia || !window.matchMedia('(min-width: 769px)').matches) return;
+  var widget = document.querySelector('[data-feedback-widget]');
+  if (!widget) return;
+  var openBtn = widget.querySelector('[data-feedback-open]');
+  var panel = widget.querySelector('[data-feedback-panel]');
+  var closeBtn = widget.querySelector('[data-feedback-close]');
+  var form = widget.querySelector('[data-feedback-form]');
+  var status = widget.querySelector('[data-feedback-status]');
+  var submit = form ? form.querySelector('.feedback-submit') : null;
+  var textarea = form ? form.querySelector('textarea[name="message"]') : null;
+  if (!openBtn || !panel || !form || !status || !submit || !textarea) return;
+
+  function track(name, params) {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+  }
+  function setOpen(open) {
+    panel.classList.toggle('is-open', open);
+    openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      status.textContent = '';
+      status.className = 'feedback-status';
+      setTimeout(function() { textarea.focus(); }, 30);
+      track('feedback_open', { page_path: window.location.pathname });
+    }
+  }
+  openBtn.addEventListener('click', function() {
+    setOpen(!panel.classList.contains('is-open'));
+  });
+  if (closeBtn) closeBtn.addEventListener('click', function() { setOpen(false); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') setOpen(false);
+  });
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (window.location.protocol === 'file:') {
+      status.textContent = 'Open this page through the local server to submit feedback.';
+      status.className = 'feedback-status is-error';
+      return;
+    }
+    var message = textarea.value.trim();
+    var emailInput = form.querySelector('input[name="email"]');
+    var email = emailInput ? emailInput.value.trim() : '';
+    if (!message) {
+      status.textContent = 'Please share a tool idea or workflow we can help with.';
+      status.className = 'feedback-status is-error';
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = 'Sending...';
+    status.textContent = '';
+    status.className = 'feedback-status';
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: message,
+        email: email,
+        page_url: window.location.href
+      })
+    })
+    .then(function(r) {
+      return r.json().then(function(data) { return { ok: r.ok, data: data }; });
+    })
+    .then(function(result) {
+      if (!result.ok || !result.data.ok) {
+        throw new Error(result.data.error || 'Feedback failed, please try again.');
+      }
+      track('feedback_submit', { page_path: window.location.pathname, success: 'true' });
+      form.reset();
+      status.textContent = 'Thank you. We will review this within 48 hours.';
+      status.className = 'feedback-status is-success';
+      submit.textContent = 'Sent';
+      setTimeout(function() {
+        submit.disabled = false;
+        submit.textContent = 'Send feedback';
+      }, 1600);
+    })
+    .catch(function(err) {
+      track('feedback_error', { page_path: window.location.pathname });
+      status.textContent = err.message || 'Feedback failed, please try again.';
+      status.className = 'feedback-status is-error';
+      submit.disabled = false;
+      submit.textContent = 'Send feedback';
     });
   });
 })();

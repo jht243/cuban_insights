@@ -99,6 +99,7 @@ class Settings(BaseSettings):
     newsletter_from_email: str = "briefing@cubaninsights.com"
     newsletter_api_key: str = ""
     subscriber_list_path: str = "subscribers.json"
+    feedback_notification_email: str = "jonathan@pipelinemarketing.io"
 
     # Buttondown (subscriber signup)
     buttondown_api_key: str = ""

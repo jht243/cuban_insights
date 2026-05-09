@@ -241,6 +241,27 @@
     /* Floating "Link copied" toast — appears bottom-center for ~1.6s. */
     .share-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--sr-blue-dark); color: var(--white); padding: 10px 20px; border-radius: 999px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 9999; }
     .share-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .feedback-widget { position: fixed; right: 20px; bottom: 20px; z-index: 9998; font-family: var(--font-sans); }
+    .feedback-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(0,43,94,0.16); background: var(--sr-blue); color: var(--white); border-radius: 999px; padding: 10px 15px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 22px rgba(15,23,42,0.18); transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
+    .feedback-pill:hover { background: var(--sr-blue-dark); box-shadow: 0 10px 26px rgba(15,23,42,0.24); }
+    .feedback-pill:active { transform: scale(0.97); }
+    .feedback-panel { position: fixed; right: 20px; bottom: 72px; width: min(380px, calc(100vw - 40px)); background: var(--white); border: 1px solid var(--sr-gray-light); border-top: 4px solid var(--sr-red); box-shadow: 0 18px 50px rgba(15,23,42,0.22); padding: 22px; display: none; }
+    .feedback-panel.is-open { display: block; }
+    .feedback-panel h2 { font-family: var(--font-serif); color: var(--sr-blue-dark); font-size: 20px; line-height: 1.25; margin: 0 28px 8px 0; }
+    .feedback-panel p { color: var(--sr-gray-text); font-size: 13px; line-height: 1.55; margin: 0 0 14px; }
+    .feedback-close { position: absolute; top: 12px; right: 12px; border: 0; background: transparent; color: var(--sr-gray-text); font-size: 22px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+    .feedback-close:hover { color: var(--sr-blue-dark); }
+    .feedback-form { display: grid; gap: 10px; }
+    .feedback-form label { display: grid; gap: 5px; font-size: 12px; font-weight: 700; color: var(--sr-blue-dark); }
+    .feedback-form textarea, .feedback-form input { width: 100%; border: 1px solid var(--sr-gray-light); border-radius: 4px; padding: 10px 11px; font: 14px/1.45 var(--font-sans); color: var(--sr-dark-text); }
+    .feedback-form textarea { min-height: 112px; resize: vertical; }
+    .feedback-form textarea:focus, .feedback-form input:focus { outline: 2px solid rgba(0,43,94,0.18); border-color: var(--sr-blue); }
+    .feedback-submit { border: 0; border-radius: 3px; background: var(--sr-red); color: var(--white); padding: 11px 16px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; cursor: pointer; }
+    .feedback-submit:hover { background: #a30000; }
+    .feedback-submit:disabled { opacity: 0.7; cursor: default; }
+    .feedback-status { min-height: 18px; font-size: 12px; color: var(--sr-gray-text); }
+    .feedback-status.is-error { color: var(--sr-red); }
+    .feedback-status.is-success { color: #166534; font-weight: 700; }
     .detail-content { display: none; margin-top: 20px; padding: 24px; background: var(--sr-gray-bg); border-left: 3px solid var(--sr-gray-light); font-family: var(--font-sans); font-size: 0.9rem; color: var(--sr-gray-text); line-height: 1.8; white-space: pre-wrap; }
     .detail-content.open { display: block; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -271,6 +292,7 @@
       .signup-form { flex-direction: column; }
       .signup-form input { border-radius: 3px; }
       .signup-form button { border-radius: 3px; }
+      .feedback-widget { display: none !important; }
     }
   </style>
 
@@ -323,42 +345,6 @@
   <div class="subtitle">The definitive guide to investing into Cuba — navigating the US embargo (CACR), Helms-Burton, the Cuba Restricted List, the Mariel ZED, and the emerging MIPYME private sector across tourism, biotech, agriculture, and remittances.</div>
 </div>
 
-
-<a href="/tearsheet/latest.pdf" class="tearsheet-fab" rel="nofollow" download aria-label="Download Investor Tearsheet ({{ tearsheet_date_label }})">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-  <span>Download Investor Tearsheet ({{ tearsheet_date_label }})</span>
-</a>
-<style>
-  .tearsheet-fab {
-    position: fixed;
-    right: 20px;
-    bottom: 20px;
-    z-index: 9999;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    background: var(--sr-blue, #1e3a8a);
-    color: #fff;
-    border-radius: 999px;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-    box-shadow: 0 4px 12px rgba(15, 23, 42, .18);
-    transition: background .15s, transform .1s, box-shadow .15s;
-  }
-  .tearsheet-fab:hover { background: #16307a; box-shadow: 0 6px 16px rgba(15, 23, 42, .24); }
-  .tearsheet-fab:active { transform: scale(.97); }
-  .tearsheet-fab svg { flex: 0 0 auto; }
-  @media (max-width: 480px) {
-    .tearsheet-fab { right: 12px; bottom: 12px; padding: 9px 12px; font-size: 11px; }
-    .tearsheet-fab svg { width: 12px; height: 12px; }
-  }
-  @media print {
-    .tearsheet-fab { display: none !important; }
-  }
-</style>
 
 <!-- INVESTMENT CLIMATE TRACKER -->
 <div class="climate-panel">
@@ -547,6 +533,29 @@
 <div class="footer">
   <p>&copy; {{ current_year }} Cuban Insights. All rights reserved.</p>
   <p style="margin-top: 10px; font-size: 0.75rem;">This publication is for informational purposes only and does not constitute investment advice. Data sourced from the Banco Central de Cuba, El Toque (informal CUP/MLC/USD rate), the OFAC Federal Register API, the OFAC SDN List, GDELT global news monitor, US State Department travel advisories, ONEI macro statistics, and primary Cuban government gazettes. Always consult qualified legal and financial advisors before making investment decisions in sanctioned jurisdictions, including those subject to the US embargo (CACR) and Helms-Burton.</p>
+</div>
+
+<div class="feedback-widget" data-feedback-widget>
+  <button type="button" class="feedback-pill" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-panel">
+    Share Your Ideas
+  </button>
+  <section class="feedback-panel" id="feedback-panel" data-feedback-panel role="dialog" aria-modal="false" aria-labelledby="feedback-title">
+    <button type="button" class="feedback-close" data-feedback-close aria-label="Close feedback form">&times;</button>
+    <h2 id="feedback-title">Help us build what you need.</h2>
+    <p>Tell us what tools, data, checklists, or workflow would make your experience better.</p>
+    <form class="feedback-form" data-feedback-form>
+      <label>
+        Your idea
+        <textarea name="message" maxlength="2000" required placeholder="What would make your work easier?"></textarea>
+      </label>
+      <label>
+        (Optional) Email, if you want us to follow up.
+        <input type="email" name="email" autocomplete="email" placeholder="you@example.com">
+      </label>
+      <button type="submit" class="feedback-submit">Send feedback</button>
+      <div class="feedback-status" data-feedback-status aria-live="polite"></div>
+    </form>
+  </section>
 </div>
 
 <script>
@@ -749,6 +758,94 @@ const climateObserver = new IntersectionObserver((entries) => {
 
 const climateBox = document.getElementById('climateBox');
 if (climateBox) climateObserver.observe(climateBox);
+
+(function initFeedbackWidget() {
+  if (!window.matchMedia || !window.matchMedia('(min-width: 769px)').matches) return;
+  var widget = document.querySelector('[data-feedback-widget]');
+  if (!widget) return;
+  var openBtn = widget.querySelector('[data-feedback-open]');
+  var panel = widget.querySelector('[data-feedback-panel]');
+  var closeBtn = widget.querySelector('[data-feedback-close]');
+  var form = widget.querySelector('[data-feedback-form]');
+  var status = widget.querySelector('[data-feedback-status]');
+  var submit = form ? form.querySelector('.feedback-submit') : null;
+  var textarea = form ? form.querySelector('textarea[name="message"]') : null;
+  if (!openBtn || !panel || !form || !status || !submit || !textarea) return;
+
+  function track(name, params) {
+    if (typeof gtag === 'function') gtag('event', name, params || {});
+  }
+  function setOpen(open) {
+    panel.classList.toggle('is-open', open);
+    openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      status.textContent = '';
+      status.className = 'feedback-status';
+      setTimeout(function() { textarea.focus(); }, 30);
+      track('feedback_open', { page_path: window.location.pathname });
+    }
+  }
+  openBtn.addEventListener('click', function() {
+    setOpen(!panel.classList.contains('is-open'));
+  });
+  if (closeBtn) closeBtn.addEventListener('click', function() { setOpen(false); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') setOpen(false);
+  });
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (window.location.protocol === 'file:') {
+      status.textContent = 'Open this page through the local server to submit feedback.';
+      status.className = 'feedback-status is-error';
+      return;
+    }
+    var message = textarea.value.trim();
+    var emailInput = form.querySelector('input[name="email"]');
+    var email = emailInput ? emailInput.value.trim() : '';
+    if (!message) {
+      status.textContent = 'Please share a tool idea or workflow we can help with.';
+      status.className = 'feedback-status is-error';
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = 'Sending...';
+    status.textContent = '';
+    status.className = 'feedback-status';
+    fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: message,
+        email: email,
+        page_url: window.location.href
+      })
+    })
+    .then(function(r) {
+      return r.json().then(function(data) { return { ok: r.ok, data: data }; });
+    })
+    .then(function(result) {
+      if (!result.ok || !result.data.ok) {
+        throw new Error(result.data.error || 'Feedback failed, please try again.');
+      }
+      track('feedback_submit', { page_path: window.location.pathname, success: 'true' });
+      form.reset();
+      status.textContent = 'Thank you. We will review this within 48 hours.';
+      status.className = 'feedback-status is-success';
+      submit.textContent = 'Sent';
+      setTimeout(function() {
+        submit.disabled = false;
+        submit.textContent = 'Send feedback';
+      }, 1600);
+    })
+    .catch(function(err) {
+      track('feedback_error', { page_path: window.location.pathname });
+      status.textContent = err.message || 'Feedback failed, please try again.';
+      status.className = 'feedback-status is-error';
+      submit.disabled = false;
+      submit.textContent = 'Send feedback';
+    });
+  });
+})();
 </script>
 
 </body>

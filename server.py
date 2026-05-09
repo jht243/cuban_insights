@@ -7,10 +7,13 @@ Serves the generated report.html on Render (or locally).
 from __future__ import annotations
 
 import gzip
+import html
 import io
 import logging
 import time
 from pathlib import Path
+from datetime import datetime
+from urllib.parse import urlparse
 
 import httpx
 from flask import Flask, send_from_directory, abort, request, jsonify, Response, redirect
@@ -90,6 +93,7 @@ logger = logging.getLogger(__name__)
 OUTPUT_DIR = settings.output_dir
 
 BUTTONDOWN_API_URL = "https://api.buttondown.com/v1/subscribers"
+FEEDBACK_MAX_MESSAGE_CHARS = 2000
 
 _REPORT_CACHE: dict = {"html": None, "fetched_at": 0.0}
 _REPORT_CACHE_TTL_SECONDS = 60
@@ -270,6 +274,121 @@ def subscribe():
     except Exception as e:
         logger.error("Buttondown request failed: %s", e)
         return jsonify({"ok": False, "error": "Service unavailable"}), 503
+
+
+def _valid_optional_email(email: str) -> bool:
+    if not email:
+        return True
+    if len(email) > 320:
+        return False
+    if "@" not in email or email.startswith("@") or email.endswith("@"):
+        return False
+    local, domain = email.rsplit("@", 1)
+    return bool(local.strip() and "." in domain and " " not in email)
+
+
+def _feedback_page_path(page_url: str) -> str:
+    if not page_url:
+        return request.path or "/"
+    parsed = urlparse(page_url)
+    return parsed.path or "/"
+
+
+def _send_feedback_notification(submission) -> tuple[bool, str | None]:
+    from src.newsletter import PROVIDERS
+
+    provider_name = settings.newsletter_provider
+    if provider_name not in PROVIDERS:
+        return False, f"Unknown email provider: {provider_name}"
+
+    created = submission.created_at or datetime.utcnow()
+    date_label = created.strftime("%Y-%m-%d %H:%M UTC")
+    subject = f"Cuban Insights feedback - {created.strftime('%Y-%m-%d')}"
+    visitor_email = submission.email or "Not provided"
+    page_url = submission.page_url or "Not provided"
+    referrer = submission.referrer or "Not provided"
+    user_agent = submission.user_agent or "Not provided"
+
+    body = f"""
+    <div style="font-family: Arial, sans-serif; color: #212529; line-height: 1.55;">
+      <h2 style="color: #002b5e; margin: 0 0 12px;">New Cuban Insights feedback</h2>
+      <p><strong>Date:</strong> {html.escape(date_label)}</p>
+      <p><strong>Site:</strong> {html.escape(submission.site_name or settings.site_name)}</p>
+      <p><strong>Visitor email:</strong> {html.escape(visitor_email)}</p>
+      <p><strong>Page:</strong> {html.escape(page_url)}</p>
+      <p><strong>Referrer:</strong> {html.escape(referrer)}</p>
+      <p><strong>User agent:</strong> {html.escape(user_agent)}</p>
+      <hr style="border: 0; border-top: 1px solid #e9ecef; margin: 18px 0;">
+      <p style="font-size: 15px; white-space: pre-wrap;">{html.escape(submission.message)}</p>
+    </div>
+    """
+
+    try:
+        provider = PROVIDERS[provider_name]()
+        ok = provider.send(
+            to=settings.feedback_notification_email,
+            subject=subject,
+            html_body=body,
+        )
+        if ok:
+            return True, None
+        return False, f"Provider {provider_name} did not accept the feedback email"
+    except Exception as exc:
+        logger.error("Feedback notification failed: %s", exc)
+        return False, str(exc)
+
+
+@app.route("/api/feedback", methods=["POST"])
+def feedback():
+    data = request.get_json(silent=True) or {}
+    message = (data.get("message") or "").strip()
+    email = (data.get("email") or "").strip()
+    page_url = (data.get("page_url") or "").strip()
+
+    if not message:
+        return jsonify({"ok": False, "error": "Feedback is required"}), 400
+    if len(message) > FEEDBACK_MAX_MESSAGE_CHARS:
+        return jsonify({"ok": False, "error": "Feedback is too long"}), 400
+    if not _valid_optional_email(email):
+        return jsonify({"ok": False, "error": "Please enter a valid email address"}), 400
+
+    from src.models import FeedbackSubmission, SessionLocal, init_db
+
+    init_db()
+    db = SessionLocal()
+    try:
+        submission = FeedbackSubmission(
+            message=message,
+            email=email or None,
+            page_url=page_url or None,
+            page_path=_feedback_page_path(page_url),
+            referrer=(request.headers.get("Referer") or "")[:1000] or None,
+            user_agent=(request.headers.get("User-Agent") or "")[:500] or None,
+            site_name=settings.site_name or "Cuban Insights",
+        )
+        db.add(submission)
+        db.commit()
+        db.refresh(submission)
+
+        email_sent, email_error = _send_feedback_notification(submission)
+        submission.email_sent = email_sent
+        submission.email_error = email_error
+        db.commit()
+
+        if not email_sent:
+            logger.error("Feedback saved but email failed: %s", email_error)
+            return jsonify({
+                "ok": False,
+                "error": "Feedback was saved, but the notification email failed. Please try again.",
+            }), 502
+
+        return jsonify({"ok": True})
+    except Exception as exc:
+        db.rollback()
+        logger.error("Feedback submission failed: %s", exc)
+        return jsonify({"ok": False, "error": "Feedback failed, please try again"}), 503
+    finally:
+        db.close()
 
 
 def _tool_seo_jsonld(*, slug: str, title: str, description: str, keywords: str, faq: list[dict] | None = None, dataset: dict | None = None):
