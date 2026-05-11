@@ -94,6 +94,12 @@ class Settings(BaseSettings):
     llm_premium_input_price_per_mtok: float = 5.00
     llm_premium_output_price_per_mtok: float = 15.00
 
+    # Press-release detection (Phase 2d).
+    # Minimum combined press-release score (1-10) to fire an alert email.
+    # Default 7 = "strong, credible, differentiated, timely". Raise to 8
+    # to reduce noise; lower to 6 to widen the net to borderline items.
+    press_release_min_score: int = 7
+
     # Newsletter
     newsletter_provider: str = "console"
     newsletter_from_email: str = "briefing@cubaninsights.com"

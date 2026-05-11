@@ -96,6 +96,36 @@ def main(skip_scrape: bool, skip_email: bool, dry_run: bool, report_only: bool):
     else:
         console.print("\n[dim]Phase 2b: Blog generation — SKIPPED (report-only)[/dim]")
 
+    # Phase 2d: Press-release opportunity detection. Scans primary-source
+    # articles that cleared the investor-analysis relevance bar and evaluates
+    # each one for differentiated, reporter-worthy findings. Fires an alert
+    # email only when a qualifying item is found. Always non-fatal.
+    if not report_only:
+        console.print("\n[bold cyan]Phase 2d:[/bold cyan] Scanning for press-release opportunities...")
+        try:
+            from src.press_release_detector import run_press_release_detection
+            pr_result = run_press_release_detection(dry_run=dry_run)
+            results["press_release"] = pr_result
+            if pr_result.get("skipped"):
+                console.print("  [dim]·[/dim] Press-release scan skipped (no OPENAI_API_KEY)")
+            elif pr_result["alerts_sent"] > 0:
+                console.print(
+                    f"  [green]✓[/green] Press-release scan: "
+                    f"{pr_result['candidates_evaluated']} evaluated, "
+                    f"[bold]{pr_result['alerts_sent']} alert(s) sent[/bold]"
+                )
+            else:
+                console.print(
+                    f"  [dim]·[/dim] Press-release scan: "
+                    f"{pr_result['candidates_evaluated']} evaluated, no qualifying items"
+                )
+        except Exception as e:
+            logger.error("Press-release detection failed: %s", e, exc_info=True)
+            results["press_release"] = {"error": str(e)}
+            console.print(f"  [yellow]![/yellow] Press-release detection failed (non-fatal): {e}")
+    else:
+        console.print("\n[dim]Phase 2d: Press-release scan — SKIPPED (report-only)[/dim]")
+
     # Phase 2c: Weekly climate refresh (Mondays only). The daily cron is
     # the primary (and only) trigger — there is no dedicated weekly cron
     # service for Cuban Insights. This is cheap and idempotent — if it
