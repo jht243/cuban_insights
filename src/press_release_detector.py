@@ -49,7 +49,7 @@ PRIMARY_SOURCES = frozenset({
     SourceType.ITA_TRADE,
     SourceType.GACETA_OFICIAL_CU,
     SourceType.ASAMBLEA_NACIONAL_CU,
-    SourceType.BCC_RATES,
+    # BCC_RATES excluded — daily exchange-rate ticks are never press-release material.
     SourceType.ONEI,
     SourceType.MINREX,
 })
@@ -65,46 +65,77 @@ compliance professional who has NOT yet seen this finding through mainstream cha
 
 You are NOT writing a news summary. You are rendering a single editorial verdict.
 
-Your standards:
-1. Reject anything already widely published by Reuters, AP, Bloomberg, major newspapers, or
-   general news aggregators. The item must be differentiated.
-2. The underlying source must be primary or near-primary:
-   government websites, official gazettes, ministries, central banks, customs/import-export
-   agencies, sanctions regulators (OFAC, BIS, FinCEN, EU, UK OFSI), national statistical
-   offices, court filings, company filings, official sector regulators (port, shipping, energy,
-   mining, telecom, banking), serious trade publications, or multilateral institutions
-   (IDB, World Bank, IMF, CAF, ECLAC, OAS).
-3. The item must meet at least THREE of these 8 criteria:
-   [1] Contains a new number, data point, policy change, license, approval, sanction,
-       enforcement action, or regulatory shift
-   [2] Affects investors, companies, banks, exporters, insurers, compliance teams, or policymakers
-   [3] Has a clear "why now" reason
-   [4] Reveals a trend not yet widely covered
-   [5] Connects Cuba or Venezuela to broader Latin America, U.S. policy, sanctions, energy,
-       migration, trade, or capital flows
-   [6] Can support a clear standalone headline
-   [7] Can be verified with the provided source URL
-   [8] Creates a reason for journalists to contact us for explanation, quote, or follow-up data
+══════════════════════════════════════════════
+AUTOMATIC REJECTION — check these FIRST
+══════════════════════════════════════════════
 
-Reject if:
-- Generic political commentary
-- Opinion without new facts
-- Already viral news
-- Unsupported social media claims
-- Routine government statements with no market relevance
-- Broad macro commentary without a concrete, dateable change
-- Content that cannot be verified from the source URL
+Reject immediately (score ≤ 3, recommendation = "Reject") if ANY of the following are true:
+
+FRESHNESS — The content must describe a development that occurred within the last 30 days.
+  • If the body text contains an "As of [date]", "effective [date]", "last updated [date]",
+    or "published [date]" that is more than 30 days before today's scrape date, REJECT.
+  • If the body text describes a list, database, or registry whose most recent update
+    or revision date is older than 30 days, REJECT. Do not recommend re-announcing a
+    document that has been publicly available for months.
+  • Example of REJECT: "Cuba Restricted List — As of July 14, 2025" scraped in May 2026.
+  • Example of REJECT: "Cuba Prohibited Accommodations List — last revised April 2025."
+
+ROUTINE DATA FEEDS — These are never press-release material:
+  • Exchange rates, FX ticks, daily/weekly currency data (CUP, MLC, USD informal rate,
+    BCC official rate, El Toque rate, TRMI). Reject any article whose primary content
+    is a rate update, daily FX table, or currency tracker.
+  • Routine macroeconomic indicator releases with no new policy signal (e.g. monthly
+    inflation figure that is in line with expectations and carries no market-moving context).
+  • Recurring government notices with no substantive change from the prior edition.
+
+ALREADY COMMODITIZED:
+  • Anything already covered by Reuters, AP, Bloomberg, major newspapers, or general
+    news aggregators. The item must be differentiated original intelligence.
+
+OTHER:
+  • Generic political commentary or ideology without new policy facts.
+  • Opinion pieces without verifiable new data.
+  • Social media claims without primary-source corroboration.
+  • Broad macro commentary without a concrete, dateable policy change.
+
+══════════════════════════════════════════════
+QUALIFYING CRITERIA — must pass to recommend
+══════════════════════════════════════════════
+
+The underlying source must be primary or near-primary:
+  government websites, official gazettes, ministries, central banks (policy actions only,
+  not rate ticks), customs/import-export agencies, sanctions regulators (OFAC, BIS, FinCEN,
+  EU, UK OFSI), national statistical offices (substantive new releases only), court filings,
+  company filings, official sector regulators (port, shipping, energy, mining, telecom,
+  banking), serious trade publications, or multilateral institutions (IDB, World Bank,
+  IMF, CAF, ECLAC, OAS).
+
+The item must meet at least THREE of these 8 criteria:
+  [1] Contains a NEW number, data point, policy change, license, approval, sanction,
+      enforcement action, or regulatory shift — dated within the last 30 days
+  [2] Affects investors, companies, banks, exporters, insurers, compliance teams,
+      or policymakers in a concrete, actionable way
+  [3] Has a clear "why now" reason tied to a recent triggering event
+  [4] Reveals a trend or development not yet widely covered
+  [5] Connects Cuba or Venezuela to broader Latin America, U.S. policy, sanctions,
+      energy, migration, trade, or capital flows
+  [6] Can support a clear standalone headline that a wire editor would publish
+  [7] Can be independently verified with the provided source URL
+  [8] Creates a reason for journalists to contact us for explanation, quote, or data
 
 Scoring guidance:
-  1-4: Reject — not differentiated, not verifiable, or already commoditized
-  5-6: Borderline — marginal, use as research alert only if source is authoritative
-  7-8: Strong — credible, differentiated, timely; recommend press release or research alert
+  1-3:  Automatic reject (see rules above)
+  4-5:  Borderline — marginal, research alert only if source is authoritative and fresh
+  6:    Moderate — some value but not press-release strength
+  7-8:  Strong — credible, differentiated, fresh, timely
   9-10: Exceptional — would be picked up by specialist financial or policy press immediately
 
 Return ONLY a JSON object with these exact keys (no markdown fences, no commentary):
 {
   "press_release_score": <int 1-10>,
   "criteria_met_count": <int 0-8, how many of the 8 criteria above this item satisfies>,
+  "content_date": "<the actual date the content was created/updated per the source document, e.g. '2026-05-11' or 'July 14, 2025' — NOT the scrape date. Write 'unknown' if not determinable.>",
+  "freshness_ok": <true if content_date is within 30 days of today, false otherwise>,
   "source_type": "<brief label, e.g. 'OFAC SDN List', 'U.S. Federal Register', 'Cuban Official Gazette (Gaceta Oficial)'>",
   "finding": "<one sentence stating the precise finding>",
   "not_commoditized": "<one sentence: why this is NOT already widely published>",
@@ -114,7 +145,7 @@ Return ONLY a JSON object with these exact keys (no markdown fences, no commenta
   "executive_quote_angle": "<one-sentence quote angle, written in first person for an analyst or executive>",
   "fact_check_risks": "<fact-check risks, legal flags, or compliance caveats; or 'None identified'>",
   "recommendation": "<exactly one of: 'Use as press release' | 'Use as research alert' | 'Reject'>",
-  "reject_reason": "<if Reject, brief reason; otherwise null>"
+  "reject_reason": "<if Reject, the specific reason from the auto-reject list or qualifying criteria; otherwise null>"
 }"""
 
 _USER_TEMPLATE = """\
@@ -256,16 +287,17 @@ def _build_card(index: int, item: dict, ev: dict) -> str:
         row("A. Press Score", f"<strong>{score}/10</strong>"),
         row("B. Source URL", f'<a href="{source_url}">{source_url}</a>'),
         row("C. Source Type", source_type),
-        row("D. Finding", ev.get("finding", "")),
-        row("E. Not Commoditized Because", ev.get("not_commoditized", "")),
-        row("F. Reporter Interest", ev.get("reporter_interest", "")),
-        row("G. Business Relevance", ev.get("business_relevance", "")),
-        row("H. Suggested Headline", ev.get("suggested_headline", ""), "col-value hl-green"),
-        row("I. Executive Quote Angle",
+        row("D. Content Date", ev.get("content_date", "unknown")),
+        row("E. Finding", ev.get("finding", "")),
+        row("F. Not Commoditized Because", ev.get("not_commoditized", "")),
+        row("G. Reporter Interest", ev.get("reporter_interest", "")),
+        row("H. Business Relevance", ev.get("business_relevance", "")),
+        row("I. Suggested Headline", ev.get("suggested_headline", ""), "col-value hl-green"),
+        row("J. Executive Quote Angle",
             f"\u201c{ev.get('executive_quote_angle', '')}\u201d", "col-value hl-yellow"),
-        row("J. Fact-Check / Compliance Flags",
+        row("K. Fact-Check / Compliance Flags",
             ev.get("fact_check_risks", "None identified"), "col-value hl-red"),
-        row("K. Recommendation", f"<strong>{rec}</strong>"),
+        row("L. Recommendation", f"<strong>{rec}</strong>"),
     ])
 
     return f"""
@@ -422,14 +454,25 @@ def run_press_release_detection(dry_run: bool = False) -> dict:
                 evaluation = _evaluate(client, item)
                 score = evaluation.get("press_release_score", 0)
                 rec = evaluation.get("recommendation", "Reject")
+                freshness_ok = evaluation.get("freshness_ok", True)
 
                 logger.info(
-                    "PR-eval score=%d criteria=%s rec='%s' — %s",
+                    "PR-eval score=%d criteria=%s fresh=%s rec='%s' — %s",
                     score,
                     evaluation.get("criteria_met_count", "?"),
+                    freshness_ok,
                     rec,
                     item["headline"][:70],
                 )
+
+                # Hard gate: stale content can never qualify regardless of score.
+                if not freshness_ok:
+                    logger.info(
+                        "PR-eval REJECTED (stale content_date=%s): %s",
+                        evaluation.get("content_date", "unknown"),
+                        item["headline"][:70],
+                    )
+                    continue
 
                 if score >= threshold and rec != "Reject":
                     qualifying.append((item, evaluation))
