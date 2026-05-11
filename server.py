@@ -6660,14 +6660,13 @@ def companies_index_page():
 
 @app.route("/companies/<slug>")
 @app.route("/companies/<slug>/")
-def companies_slug_redirect(slug: str):
-    """Send /companies/<slug> → /companies/<slug>/cuba-exposure.
+def companies_slug_page(slug: str):
+    """Serve the company profile directly (canonical is /companies/<slug>/cuba-exposure).
 
-    The "cuba-exposure" suffix is the SEO-bearing keyword in the
-    URL, so we want the canonical page to live at the longer path.
-    Bare /companies/<slug> exists only to catch backlinks people might
-    paste without the suffix."""
-    return redirect(f"/companies/{slug}/cuba-exposure", code=301)
+    Previously redirected 301 → /companies/<slug>/cuba-exposure, but that caused
+    hundreds of "Page with redirect" warnings in Google Search Console.
+    Now serves the same content with a canonical tag so Google consolidates signals."""
+    return companies_profile_page(slug)
 
 
 @app.route("/companies/<slug>/cuba-exposure")
@@ -6878,8 +6877,9 @@ def companies_profile_page(slug: str):
 
 @app.route("/companies/<slug>/venezuela-exposure")
 @app.route("/companies/<slug>/venezuela-exposure/")
-def _legacy_company_venezuela_exposure_redirect(slug: str):
-    return _legacy_redirect_to(f"/companies/{slug}/cuba-exposure")
+def _company_venezuela_exposure_page(slug: str):
+    """Serve the company profile directly (canonical is /companies/<slug>/cuba-exposure)."""
+    return companies_profile_page(slug)
 
 
 @app.route("/tools/public-company-cuba-exposure-check")

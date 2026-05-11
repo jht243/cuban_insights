@@ -76,6 +76,8 @@ EXCLUDE_EXACT = frozenset({
     "/tools/venezuela-investment-roi-calculator",
     "/tools/venezuela-visa-requirements",
     "/travel/cuba-prohibited-accommodations-list",
+    "/venezuela",
+    "/tools/caracas-safety-by-neighborhood",
 })
 EXCLUDE_CONTAINS = ("noindex", "debug", "test")
 
