@@ -3028,6 +3028,14 @@ def tool_cpal_hotel_checker():
         cluster_ctx = build_cluster_ctx("/tools/cuba-prohibited-hotels-checker")
         related_tools_ctx = build_related_tools_ctx("/tools/cuba-prohibited-hotels-checker")
 
+        all_profiles = list_cpal_profiles()
+        profiles_by_prov: list[tuple[str, list[dict]]] = []
+        prov_bucket: dict[str, list[dict]] = {}
+        for p in all_profiles:
+            prov_bucket.setdefault(p["province"], []).append(p)
+        for prov in sorted(prov_bucket):
+            profiles_by_prov.append((prov, sorted(prov_bucket[prov], key=lambda x: x["name"])))
+
         template = _env.get_template("tools/cpal_hotel_checker.html.j2")
         html = template.render(
             query=query,
@@ -3044,6 +3052,7 @@ def tool_cpal_hotel_checker():
             jsonld=jsonld,
             cluster_ctx=cluster_ctx,
             related_tools_ctx=related_tools_ctx,
+            profiles_by_province=profiles_by_prov,
             current_year=_date.today().year,
         )
         return Response(html, mimetype="text/html")

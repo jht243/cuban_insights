@@ -23,6 +23,16 @@
   .checker-form .btn-clear:hover { background: #f7f9fc; color: var(--sr-blue-dark); border-color: var(--sr-blue); }
   .checker-form .btn-clear:disabled { opacity: 0.45; cursor: default; }
   .checker-form .btn-clear:disabled:hover { background: var(--white); color: var(--sr-gray-text); border-color: var(--sr-gray-light); }
+  .browse-directory { margin: 32px 0 24px; }
+  .browse-directory h2 { font-family: var(--font-serif); font-size: 22px; color: var(--sr-blue-dark); margin: 0 0 16px; }
+  .browse-province { margin-bottom: 18px; }
+  .browse-province summary { font-weight: 600; font-size: 15px; color: var(--sr-blue-dark); cursor: pointer; padding: 8px 0; }
+  .browse-province summary:hover { color: var(--sr-blue); }
+  .browse-province .browse-list { column-count: 2; column-gap: 24px; padding: 8px 0 4px 8px; margin: 0; list-style: none; }
+  .browse-province .browse-list li { break-inside: avoid; margin-bottom: 4px; }
+  .browse-province .browse-list a { color: var(--sr-blue-dark); text-decoration: none; font-size: 14px; border-bottom: 1px solid transparent; }
+  .browse-province .browse-list a:hover { color: var(--sr-blue); border-bottom-color: var(--sr-blue); }
+  @media (max-width: 540px) { .browse-province .browse-list { column-count: 1; } }
   @media (max-width: 540px) {
     .picker-block .picker-row { grid-template-columns: 1fr; gap: 4px; }
     .picker-block label { font-size: 12px; }
@@ -237,6 +247,22 @@
       </div>
     </details>
   </section>
+
+  {% if profiles_by_province %}
+  <div class="browse-directory">
+    <h2>Browse All {{ total_entries }} CPAL Properties by Province</h2>
+    {% for province, profiles in profiles_by_province %}
+    <details class="browse-province">
+      <summary>{{ province }} ({{ profiles|length }})</summary>
+      <ul class="browse-list">
+        {% for p in profiles %}
+        <li><a href="{{ p.url_path }}">{{ p.name }}</a></li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <div class="disclaimer">
     <strong>Important:</strong> Cached snapshot of <a href="https://www.state.gov/cuba-sanctions/cuba-prohibited-accommodations-list/" rel="noopener" target="_blank">state.gov &mdash; CPAL</a> (last refreshed {{ refreshed_on }}). The State Department updates the list between our refreshes &mdash; verify with the official source for high-stakes bookings. Not legal advice.
