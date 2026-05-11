@@ -90,6 +90,56 @@ def _gzip_response(response: Response) -> Response:
 
 logger = logging.getLogger(__name__)
 
+
+@app.errorhandler(404)
+def _handle_404(exc):
+    return Response(
+        '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>Page Not Found — Cuban Insights</title>'
+        '<style>'
+        'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;'
+        'background:#f8f9fa;color:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh}'
+        '.box{text-align:center;max-width:480px;padding:2rem}'
+        'h1{font-size:1.5rem;margin-bottom:.5rem}'
+        'p{color:#555;line-height:1.6}'
+        'a{color:#2563eb;text-decoration:none}'
+        'a:hover{text-decoration:underline}'
+        '</style></head><body><div class="box">'
+        '<h1>Page not found</h1>'
+        "<p>The page you're looking for doesn't exist or has moved.</p>"
+        '<p><a href="/">Return to Cuban Insights</a></p>'
+        '</div></body></html>',
+        404,
+        {"Content-Type": "text/html; charset=utf-8"},
+    )
+
+
+@app.errorhandler(500)
+def _handle_500(exc):
+    logger.exception("500 Internal Server Error: %s", exc)
+    return Response(
+        '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>Server Error — Cuban Insights</title>'
+        '<style>'
+        'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;'
+        'background:#f8f9fa;color:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh}'
+        '.box{text-align:center;max-width:480px;padding:2rem}'
+        'h1{font-size:1.5rem;margin-bottom:.5rem}'
+        'p{color:#555;line-height:1.6}'
+        'a{color:#2563eb;text-decoration:none}'
+        'a:hover{text-decoration:underline}'
+        '</style></head><body><div class="box">'
+        '<h1>Something went wrong</h1>'
+        "<p>We hit an unexpected error. The issue has been logged and we're looking into it.</p>"
+        '<p><a href="/">Return to Cuban Insights</a></p>'
+        '</div></body></html>',
+        500,
+        {"Content-Type": "text/html; charset=utf-8"},
+    )
+
+
 OUTPUT_DIR = settings.output_dir
 
 BUTTONDOWN_API_URL = "https://api.buttondown.com/v1/subscribers"
@@ -7317,59 +7367,65 @@ def venezuela_topic_page(slug: str):
     if not topic:
         abort(404)
 
-    base = _base_url()
-    canonical = f"{base}/venezuela/{slug}"
-    seo = {
-        "title": topic["title"],
-        "description": topic["description"],
-        "keywords": topic["keywords"],
-        "canonical": canonical,
-        "site_name": _s.site_name,
-        "site_url": base,
-        "locale": _s.site_locale,
-        "og_image": f"{base}/static/og-image.png?v=3",
-        "og_type": "article",
-        "published_iso": _iso(_dt.utcnow()),
-        "modified_iso": _iso(_dt.utcnow()),
-    }
-    jsonld = _json.dumps({
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "BreadcrumbList",
-                "itemListElement": [
-                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
-                    {"@type": "ListItem", "position": 2, "name": "Venezuela", "item": f"{base}/venezuela/{slug}"},
-                    {"@type": "ListItem", "position": 3, "name": topic["short_title"], "item": canonical},
-                ],
-            },
-            {
-                "@type": "Article",
-                "@id": f"{canonical}#article",
-                "url": canonical,
-                "headline": topic["h1"],
-                "description": topic["description"],
-                "datePublished": _iso(_dt.utcnow()),
-                "dateModified": _iso(_dt.utcnow()),
-                "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
-                "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
-            },
-        ],
-    }, ensure_ascii=False)
+    try:
+        base = _base_url()
+        canonical = f"{base}/venezuela/{slug}"
+        seo = {
+            "title": topic["title"],
+            "description": topic["description"],
+            "keywords": topic["keywords"],
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "article",
+            "published_iso": _iso(_dt.utcnow()),
+            "modified_iso": _iso(_dt.utcnow()),
+        }
+        jsonld = _json.dumps({
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                        {"@type": "ListItem", "position": 2, "name": "Venezuela", "item": f"{base}/venezuela/{slug}"},
+                        {"@type": "ListItem", "position": 3, "name": topic["short_title"], "item": canonical},
+                    ],
+                },
+                {
+                    "@type": "Article",
+                    "@id": f"{canonical}#article",
+                    "url": canonical,
+                    "headline": topic["h1"],
+                    "description": topic["description"],
+                    "datePublished": _iso(_dt.utcnow()),
+                    "dateModified": _iso(_dt.utcnow()),
+                    "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                    "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                },
+            ],
+        }, ensure_ascii=False)
 
-    template = _env.get_template("venezuela/topic.html.j2")
-    html = template.render(
-        h1=topic["h1"],
-        short_title=topic["short_title"],
-        eyebrow=topic["eyebrow"],
-        lede=topic["lede"],
-        sections=topic["sections"],
-        cta_url=topic["cta_url"],
-        cta_label=topic["cta_label"],
-        seo=seo,
-        jsonld=jsonld,
-    )
-    return Response(html, mimetype="text/html")
+        template = _env.get_template("venezuela/topic.html.j2")
+        html = template.render(
+            h1=topic["h1"],
+            short_title=topic["short_title"],
+            eyebrow=topic["eyebrow"],
+            lede=topic["lede"],
+            sections=topic["sections"],
+            cta_url=topic["cta_url"],
+            cta_label=topic["cta_label"],
+            seo=seo,
+            jsonld=jsonld,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("venezuela topic page render failed for slug=%s: %s", slug, exc)
+        abort(500)
 
 
 @app.route("/travel")
@@ -8139,30 +8195,34 @@ _PRIORITY_SDN_LIMIT = 100
 @app.route("/sitemap.xml")
 def sitemap_xml():
     """Sitemap index — points Google at the child sitemaps."""
-    from xml.sax.saxutils import escape as _xml_escape
+    try:
+        from xml.sax.saxutils import escape as _xml_escape
 
-    base = settings.site_url.rstrip("/")
-    today_iso = _sitemap_today_iso()
-    children = [
-        f"{base}/sitemap-core.xml",
-        f"{base}/sitemap-briefings-recent.xml",
-        f"{base}/sitemap-companies-priority.xml",
-        f"{base}/sitemap-sdn-priority.xml",
-        f"{base}/sitemap-cpal.xml",
-        f"{base}/sitemap-crl.xml",
-        f"{base}/sitemap-archive.xml",
-    ]
-    parts = ['<?xml version="1.0" encoding="UTF-8"?>']
-    parts.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for url in children:
-        parts.append("<sitemap>")
-        parts.append(f"<loc>{_xml_escape(url)}</loc>")
-        parts.append(f"<lastmod>{today_iso}</lastmod>")
-        parts.append("</sitemap>")
-    parts.append("</sitemapindex>")
-    resp = Response("".join(parts), mimetype="application/xml")
-    resp.headers["Cache-Control"] = "public, max-age=1800"
-    return resp
+        base = settings.site_url.rstrip("/")
+        today_iso = _sitemap_today_iso()
+        children = [
+            f"{base}/sitemap-core.xml",
+            f"{base}/sitemap-briefings-recent.xml",
+            f"{base}/sitemap-companies-priority.xml",
+            f"{base}/sitemap-sdn-priority.xml",
+            f"{base}/sitemap-cpal.xml",
+            f"{base}/sitemap-crl.xml",
+            f"{base}/sitemap-archive.xml",
+        ]
+        parts = ['<?xml version="1.0" encoding="UTF-8"?>']
+        parts.append('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+        for url in children:
+            parts.append("<sitemap>")
+            parts.append(f"<loc>{_xml_escape(url)}</loc>")
+            parts.append(f"<lastmod>{today_iso}</lastmod>")
+            parts.append("</sitemap>")
+        parts.append("</sitemapindex>")
+        resp = Response("".join(parts), mimetype="application/xml")
+        resp.headers["Cache-Control"] = "public, max-age=1800"
+        return resp
+    except Exception as exc:
+        logger.exception("sitemap.xml generation failed: %s", exc)
+        abort(500)
 
 
 @app.route("/sitemap-core.xml")
@@ -8170,7 +8230,11 @@ def sitemap_core_xml():
     """Hand-curated home, hubs, tools, sector roots. Highest priority.
     Also walks the /people registry so every per-figure profile is in
     the submitted sitemap from the moment it ships."""
-    return _emit_urlset(_core_static_urls() + _people_sitemap_urls())
+    try:
+        return _emit_urlset(_core_static_urls() + _people_sitemap_urls())
+    except Exception as exc:
+        logger.exception("sitemap-core.xml generation failed: %s", exc)
+        abort(500)
 
 
 @app.route("/sitemap-briefings-recent.xml")
