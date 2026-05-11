@@ -7,19 +7,18 @@
 
   <nav class="breadcrumbs" aria-label="Breadcrumb">
     <a href="/">Home</a><span>/</span>
+    {% if page.page_type == 'sector' %}
+    <a href="/invest-in-cuba">Invest in Cuba</a><span>/</span>
+    {% elif page.page_type == 'explainer' %}
+    <a href="/explainers">Explainers</a><span>/</span>
+    {% endif %}
     <span>{{ page.title }}</span>
   </nav>
 
   <header>
-    {% if page.page_type == 'sector' %}
     <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
-      Sector landing page
+      {% if page.page_type == 'sector' %}Sector briefing{% elif page.page_type == 'explainer' %}Explainer{% else %}Investor guide{% endif %}
     </div>
-    {% else %}
-    <div style="font-size:12px; text-transform:uppercase; letter-spacing:1.4px; color:#cc0000; font-weight:700;">
-      Investor guide
-    </div>
-    {% endif %}
     <h1>{{ page.title }}</h1>
     {% if page.subtitle %}<p class="subtitle">{{ page.subtitle }}</p>{% endif %}
     <div class="meta">

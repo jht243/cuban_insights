@@ -393,6 +393,13 @@ def render_landing_page(page, *, recent_briefings: list | None = None) -> str:
         breadcrumbs_items.append(
             {"@type": "ListItem", "position": 3, "name": page.title, "item": canonical}
         )
+    elif page.page_type == "explainer":
+        breadcrumbs_items.append(
+            {"@type": "ListItem", "position": 2, "name": "Explainers", "item": f"{base}/explainers"}
+        )
+        breadcrumbs_items.append(
+            {"@type": "ListItem", "position": 3, "name": page.title, "item": canonical}
+        )
     else:
         breadcrumbs_items.append(
             {"@type": "ListItem", "position": 2, "name": page.title, "item": canonical}
