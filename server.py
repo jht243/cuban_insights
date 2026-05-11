@@ -7293,6 +7293,18 @@ _VENEZUELA_TOPICS: dict[str, dict] = {
 }
 
 
+@app.route("/venezuela")
+@app.route("/venezuela/")
+def _venezuela_index_redirect():
+    return _legacy_redirect_to("/venezuela/transport")
+
+
+@app.route("/tools/caracas-safety-by-neighborhood")
+@app.route("/tools/caracas-safety-by-neighborhood/")
+def _caracas_safety_redirect():
+    return _legacy_redirect_to("/tools/havana-safety-by-neighborhood")
+
+
 @app.route("/venezuela/<slug>")
 @app.route("/venezuela/<slug>/")
 def venezuela_topic_page(slug: str):

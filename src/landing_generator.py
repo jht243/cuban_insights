@@ -378,8 +378,20 @@ def generate_pillar_page(
         db.close()
 
 
-def generate_sector_page(sector_slug: str, *, sector_label: str | None = None, force: bool = False) -> LandingPage:
-    """Generate (or regenerate) a /sectors/{slug} landing page."""
+def generate_sector_page(
+    sector_slug: str,
+    *,
+    sector_label: str | None = None,
+    force: bool = False,
+    external_context: list[dict] | None = None,
+) -> LandingPage:
+    """Generate (or regenerate) a /sectors/{slug} landing page.
+
+    If *external_context* is provided (list of dicts with keys like
+    ``headline``, ``takeaway``, ``date``, ``source``), it is merged with
+    any DB signal to give the LLM richer grounding — useful for new
+    sectors that don't yet have analysed articles in the database.
+    """
     if not settings.openai_api_key:
         raise RuntimeError("OPENAI_API_KEY not set; cannot generate sector page")
 
@@ -399,10 +411,14 @@ def generate_sector_page(sector_slug: str, *, sector_label: str | None = None, f
         sector_filters = [sector_slug.replace("-", " "), sector_slug.replace("-", "_"), sector_slug]
         signal = _gather_recent_signal(db, sectors_filter=sector_filters, limit=20)
 
+        context_items = signal["recent_items"]
+        if external_context:
+            context_items = context_items + external_context
+
         user = SECTOR_USER_PROMPT_TEMPLATE.format(
             sector_label=label,
-            n_items=len(signal["recent_items"]),
-            context_json=json.dumps(signal["recent_items"], ensure_ascii=False, indent=2),
+            n_items=len(context_items),
+            context_json=json.dumps(context_items, ensure_ascii=False, indent=2),
         )
         system = SECTOR_SYSTEM_PROMPT.replace("{sector_label}", label)
 

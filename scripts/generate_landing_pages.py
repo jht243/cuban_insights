@@ -85,6 +85,14 @@ DEFAULT_SECTORS = [
     "governance",
     "economic",
     "diplomatic",
+    "shipping",
+    "healthcare",
+    "construction",
+    "transportation",
+    "security",
+    "fiscal",
+    "media",
+    "rum-and-tobacco",
 ]
 
 
