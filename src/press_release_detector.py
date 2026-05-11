@@ -29,6 +29,7 @@ from openai import OpenAI
 from src.config import settings
 from src.models import (
     AssemblyNewsEntry,
+    DistributionLog,
     ExternalArticleEntry,
     GazetteStatus,
     SessionLocal,
@@ -373,7 +374,7 @@ def run_press_release_detection(dry_run: bool = False) -> dict:
             .all()
         )
 
-        candidates = [
+        raw_candidates = [
             _wrap_ext(a) for a in ext_rows
             if isinstance(a.analysis_json, dict)
             and a.analysis_json.get("relevance_score", 0) >= _MIN_INVESTOR_SCORE
@@ -383,9 +384,33 @@ def run_press_release_detection(dry_run: bool = False) -> dict:
             and n.analysis_json.get("relevance_score", 0) >= _MIN_INVESTOR_SCORE
         ]
 
+        # Deduplicate by source_url — the same URL can appear in both the ext
+        # and assembly query paths if rows exist in both tables.
+        seen_urls: set[str] = set()
+        deduped: list[dict] = []
+        for c in raw_candidates:
+            url = c["source_url"]
+            if url and url not in seen_urls:
+                seen_urls.add(url)
+                deduped.append(c)
+
+        # Filter out URLs already sent in a previous run so the twice-daily cron
+        # never re-emails the same finding. DistributionLog channel="press_release"
+        # is written after every successful digest send (see _send_digest).
+        already_sent: set[str] = {
+            row[0]
+            for row in db.query(DistributionLog.url)
+            .filter(DistributionLog.channel == "press_release")
+            .filter(DistributionLog.success.is_(True))
+            .all()
+        }
+
+        candidates = [c for c in deduped if c["source_url"] not in already_sent]
+
         logger.info(
-            "Press-release screen: %d ext + %d assembly rows → %d high-relevance candidates",
-            len(ext_rows), len(assembly_rows), len(candidates),
+            "Press-release screen: %d ext + %d assembly → %d deduped → %d new (skipping %d already sent)",
+            len(ext_rows), len(assembly_rows), len(deduped),
+            len(candidates), len(deduped) - len(candidates),
         )
 
         threshold = settings.press_release_min_score
@@ -424,6 +449,16 @@ def run_press_release_detection(dry_run: bool = False) -> dict:
                 sent = _send_digest(qualifying)
                 if sent:
                     summary["alerts_sent"] = len(qualifying)
+                    # Record every notified URL so subsequent cron runs skip them.
+                    for item, ev in qualifying:
+                        db.add(DistributionLog(
+                            channel="press_release",
+                            url=item["source_url"],
+                            entity_type="press_release_alert",
+                            success=True,
+                            response_snippet=ev.get("suggested_headline", "")[:200],
+                        ))
+                    db.commit()
                 else:
                     summary["errors"] += 1
 
