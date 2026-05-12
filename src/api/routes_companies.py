@@ -12,9 +12,9 @@ from src.api.serializers import CompanyExposure, CompanySummary
 @api_v1.route("/companies")
 @require_api_key
 def companies_list():
-    from src.data.sp500_companies import load_companies
+    from src.data.sp500_companies import list_sp500_companies
 
-    companies = load_companies()
+    companies = list_sp500_companies()
     from src.data.curated_cuba_exposure import all_curated_tickers
     curated_tickers = all_curated_tickers()
 
@@ -36,10 +36,10 @@ def companies_list():
 @require_api_key
 def companies_exposure(ticker: str):
     from src.data.company_exposure import build_exposure_report, find_company_by_slug
-    from src.data.sp500_companies import load_companies
+    from src.data.sp500_companies import list_sp500_companies
 
     ticker_upper = ticker.upper()
-    companies = load_companies()
+    companies = list_sp500_companies()
     company = None
     for c in companies:
         if c.ticker == ticker_upper:
