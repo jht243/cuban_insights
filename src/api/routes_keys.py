@@ -124,9 +124,6 @@ def keys_checkout():
     email = (body.get("email") or "").strip().lower()
     tier = (body.get("tier") or "").strip().lower()
 
-    if not email or not EMAIL_RE.match(email):
-        return jsonify({"error": "Valid email address required"}), 400
-
     price_map = {
         "pro": settings.stripe_price_pro,
         "enterprise": settings.stripe_price_enterprise,
@@ -135,16 +132,20 @@ def keys_checkout():
     if not price_id:
         return jsonify({"error": "tier must be 'pro' or 'enterprise'"}), 400
 
+    session_kwargs = {
+        "mode": "subscription",
+        "payment_method_types": ["card"],
+        "line_items": [{"price": price_id, "quantity": 1}],
+        "metadata": {"tier": tier},
+        "success_url": f"{settings.site_url}/developers?checkout=success",
+        "cancel_url": f"{settings.site_url}/developers?checkout=cancel",
+    }
+    if email and EMAIL_RE.match(email):
+        session_kwargs["customer_email"] = email
+        session_kwargs["metadata"]["email"] = email
+
     try:
-        session = stripe.checkout.Session.create(
-            mode="subscription",
-            payment_method_types=["card"],
-            customer_email=email,
-            line_items=[{"price": price_id, "quantity": 1}],
-            metadata={"tier": tier, "email": email},
-            success_url=f"{settings.site_url}/developers?checkout=success",
-            cancel_url=f"{settings.site_url}/developers?checkout=cancel",
-        )
+        session = stripe.checkout.Session.create(**session_kwargs)
         return jsonify({"checkout_url": session.url})
     except Exception as exc:
         logger.exception("Stripe Checkout creation failed")

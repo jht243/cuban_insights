@@ -387,8 +387,16 @@ async function signupFree() {
 }
 
 async function checkout(tier) {
-  const email = prompt('Enter your email address for checkout:');
-  if (!email || !email.includes('@')) return;
+  const emailInput = document.getElementById('signup-email');
+  let email = emailInput ? emailInput.value.trim() : '';
+  if (!email || !email.includes('@')) {
+    emailInput.focus();
+    emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const status = document.getElementById('signup-status');
+    status.textContent = 'Enter your email above first, then click Subscribe.';
+    status.className = 'signup-status is-err';
+    return;
+  }
   try {
     const res = await fetch('/api/v1/keys/checkout', {
       method: 'POST',
