@@ -57,15 +57,16 @@ def stripe_webhook():
 
 def _handle_checkout_completed(session) -> None:
     metadata = session.get("metadata", {}) if isinstance(session, dict) else (session.metadata or {})
-    email = metadata.get("email", "")
     tier_str = metadata.get("tier", "pro")
     customer_id = session.get("customer", "") if isinstance(session, dict) else (session.customer or "")
     subscription_id = session.get("subscription", "") if isinstance(session, dict) else (session.subscription or "")
 
+    email = session.get("customer_email", "") if isinstance(session, dict) else (session.customer_email or "")
     if not email:
-        email = session.get("customer_email", "") if isinstance(session, dict) else (session.customer_email or "")
+        cd = session.get("customer_details", {}) if isinstance(session, dict) else (session.customer_details or {})
+        email = cd.get("email", "") if isinstance(cd, dict) else (getattr(cd, "email", "") or "")
     if not email:
-        logger.error("Stripe checkout completed but no email found in metadata or session")
+        logger.error("Stripe checkout completed but no email found on session")
         return
 
     tier = ApiTier.PRO if tier_str == "pro" else ApiTier.ENTERPRISE

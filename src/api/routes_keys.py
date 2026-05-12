@@ -121,7 +121,6 @@ def keys_checkout():
     stripe.api_key = settings.stripe_secret_key
 
     body = request.get_json(silent=True) or {}
-    email = (body.get("email") or "").strip().lower()
     tier = (body.get("tier") or "").strip().lower()
 
     price_map = {
@@ -132,20 +131,15 @@ def keys_checkout():
     if not price_id:
         return jsonify({"error": "tier must be 'pro' or 'enterprise'"}), 400
 
-    session_kwargs = {
-        "mode": "subscription",
-        "payment_method_types": ["card"],
-        "line_items": [{"price": price_id, "quantity": 1}],
-        "metadata": {"tier": tier},
-        "success_url": f"{settings.site_url}/developers?checkout=success",
-        "cancel_url": f"{settings.site_url}/developers?checkout=cancel",
-    }
-    if email and EMAIL_RE.match(email):
-        session_kwargs["customer_email"] = email
-        session_kwargs["metadata"]["email"] = email
-
     try:
-        session = stripe.checkout.Session.create(**session_kwargs)
+        session = stripe.checkout.Session.create(
+            mode="subscription",
+            payment_method_types=["card"],
+            line_items=[{"price": price_id, "quantity": 1}],
+            metadata={"tier": tier},
+            success_url=f"{settings.site_url}/developers?checkout=success",
+            cancel_url=f"{settings.site_url}/developers?checkout=cancel",
+        )
         return jsonify({"checkout_url": session.url})
     except Exception as exc:
         logger.exception("Stripe Checkout creation failed")
