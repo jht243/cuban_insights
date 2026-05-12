@@ -299,6 +299,11 @@ def index():
     html = _get_report_html()
     if not html:
         abort(503, description="Report not yet generated. Run the daily pipeline first.")
+    if '/developers' not in html:
+        html = html.replace(
+            'All rights reserved.</p>',
+            'All rights reserved. · <a href="/developers" style="color:rgba(255,255,255,0.85);text-decoration:none;">API</a></p>',
+        )
     return Response(html, mimetype="text/html")
 
 
