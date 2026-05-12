@@ -19,6 +19,8 @@ import httpx
 from flask import Flask, send_from_directory, abort, request, jsonify, Response, redirect
 from werkzeug.exceptions import HTTPException
 
+from flask_cors import CORS
+
 from src.config import settings
 from src.storage_remote import (
     fetch_report_html,
@@ -34,6 +36,13 @@ app = Flask(
     static_folder=str(_STATIC_DIR),
     static_url_path="/static",
 )
+
+# CORS for the public API — allow any origin on /api/v1/* endpoints.
+CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+
+# Register the public API v1 blueprint.
+from src.api import api_v1  # noqa: E402
+app.register_blueprint(api_v1)
 
 
 GZIP_MIME_PREFIXES = (
@@ -86,6 +95,45 @@ def _gzip_response(response: Response) -> Response:
         logger.warning("gzip middleware skipped due to error: %s", exc)
     return response
 
+
+
+@app.after_request
+def _api_discovery_header(response: Response) -> Response:
+    """Advertise API availability on HTML responses, so automated
+    consumers can discover the structured data endpoint."""
+    if (response.mimetype or "").startswith("text/html") and response.status_code == 200:
+        response.headers["X-API-Available"] = f"{settings.site_url}/api/v1"
+        response.headers["Link"] = (
+            f'<{settings.site_url}/developers>; rel="service-doc"; '
+            f'title="Cuban Insights API"'
+        )
+    return response
+
+
+@app.errorhandler(429)
+def _rate_limited(e):
+    """Custom 429 page for scrapers — directs them to the paid API."""
+    accept = request.headers.get("Accept", "")
+    if "json" in accept:
+        return jsonify({
+            "error": "Too many requests",
+            "message": "Get structured data via our API instead of scraping.",
+            "docs": f"{settings.site_url}/developers",
+        }), 429
+    return Response(
+        f"""<!DOCTYPE html>
+<html><head><title>Rate Limited — Cuban Insights</title></head>
+<body style="font-family:sans-serif;max-width:600px;margin:80px auto;padding:0 20px;text-align:center;">
+<h1>Too Many Requests</h1>
+<p>You're making too many requests to this page.</p>
+<p><strong>Need this data programmatically?</strong></p>
+<p><a href="{settings.site_url}/developers" style="color:#002b5e;font-weight:bold;">
+Use the Cuban Insights API &rarr;</a></p>
+<p style="color:#888;font-size:14px;">Structured JSON. 100 free requests/day. No scraping needed.</p>
+</body></html>""",
+        429,
+        {"Content-Type": "text/html; charset=utf-8"},
+    )
 
 
 logger = logging.getLogger(__name__)
@@ -4867,6 +4915,30 @@ def explainer_page(slug: str):
         abort(500)
 
 
+@app.route("/developers")
+@app.route("/developers/")
+def developers_page():
+    """API developer portal — pricing, docs, signup."""
+    try:
+        from src.page_renderer import _env, _base_url, settings as _s
+
+        tpl = _env().get_template("developers.html.j2")
+        html = tpl.render(
+            site_url=_s.site_url,
+            seo={
+                "title": "API for Developers — Cuban Insights",
+                "description": "Structured Cuba sanctions, investment, and FX data via a clean JSON API. Free tier available.",
+                "canonical": f"{_base_url()}/developers",
+                "og_type": "website",
+                "site_name": _s.site_name,
+            },
+        )
+        return Response(html, content_type="text/html; charset=utf-8")
+    except Exception as exc:
+        logger.exception("developers page render failed: %s", exc)
+        abort(500)
+
+
 @app.route("/sources")
 @app.route("/sources/")
 def sources_page():
@@ -8046,6 +8118,7 @@ def robots_txt():
         "Allow: /\n"
         "Disallow: /api/\n"
         "Disallow: /health\n"
+        "Crawl-delay: 10\n"
         f"Sitemap: {base}/sitemap.xml\n"
         f"Sitemap: {base}/sitemap-core.xml\n"
         f"Sitemap: {base}/sitemap-briefings-recent.xml\n"

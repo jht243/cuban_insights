@@ -1,0 +1,419 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .dev-hero {
+    background: linear-gradient(135deg, var(--sr-blue-dark) 0%, var(--sr-blue) 100%);
+    color: #fff;
+    padding: 56px 24px 48px;
+    text-align: center;
+  }
+  .dev-hero h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 12px;
+    font-weight: 700;
+  }
+  .dev-hero p {
+    font-size: 17px;
+    opacity: 0.88;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+  .dev-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .dev-wrap h2 {
+    font-family: var(--font-serif);
+    color: var(--sr-blue-dark);
+    font-size: 24px;
+    margin: 48px 0 16px;
+    padding-top: 16px;
+    border-top: 2px solid var(--sr-gray-light);
+  }
+  .dev-wrap h2:first-child { border-top: none; margin-top: 0; }
+
+  /* Pricing cards */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin: 24px 0 40px;
+  }
+  .tier-card {
+    border: 1px solid var(--sr-gray-light);
+    border-radius: 8px;
+    padding: 28px 24px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .tier-card.featured {
+    border-color: var(--sr-red);
+    box-shadow: 0 0 0 1px var(--sr-red);
+  }
+  .tier-badge {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sr-red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 12px;
+  }
+  .tier-card h3 {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    color: var(--sr-blue-dark);
+    margin: 0 0 4px;
+  }
+  .tier-price {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--sr-blue-dark);
+    margin: 8px 0 4px;
+  }
+  .tier-price span { font-size: 15px; font-weight: 400; color: var(--sr-gray-text); }
+  .tier-features { list-style: none; padding: 0; margin: 16px 0 20px; flex: 1; }
+  .tier-features li {
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 4px 0 4px 22px;
+    position: relative;
+    color: var(--sr-dark-text);
+  }
+  .tier-features li::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: #16a34a;
+    font-weight: 700;
+  }
+  .tier-btn {
+    display: block;
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+  }
+  .tier-btn-primary { background: var(--sr-red); color: #fff; }
+  .tier-btn-primary:hover { background: #a30000; }
+  .tier-btn-secondary { background: var(--sr-blue); color: #fff; }
+  .tier-btn-secondary:hover { background: var(--sr-blue-dark); }
+
+  /* Signup form */
+  .signup-box {
+    background: #f8f9fa;
+    border: 1px solid var(--sr-gray-light);
+    border-radius: 8px;
+    padding: 28px;
+    margin: 24px 0 40px;
+  }
+  .signup-box h3 {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    margin: 0 0 12px;
+    color: var(--sr-blue-dark);
+  }
+  .signup-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .signup-row input[type="email"] {
+    flex: 1;
+    min-width: 220px;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 1px solid var(--sr-gray-light);
+    border-radius: 4px;
+  }
+  .signup-row input[type="email"]:focus { outline: 2px solid rgba(0,43,94,0.18); border-color: var(--sr-blue); }
+  .signup-row button {
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--sr-red);
+    color: #fff;
+  }
+  .signup-row button:hover { background: #a30000; }
+  .signup-status { margin-top: 10px; font-size: 13px; min-height: 20px; }
+  .signup-status.is-ok { color: #166534; font-weight: 700; }
+  .signup-status.is-err { color: var(--sr-red); }
+
+  /* Code blocks */
+  .dev-code {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  .dev-code .hl-key { color: #89b4fa; }
+  .dev-code .hl-str { color: #a6e3a1; }
+  .dev-code .hl-comment { color: #6c7086; font-style: italic; }
+
+  /* Endpoint table */
+  .ep-table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 14px; }
+  .ep-table th { text-align: left; font-weight: 700; color: var(--sr-blue-dark); padding: 10px 12px; border-bottom: 2px solid var(--sr-blue); }
+  .ep-table td { padding: 10px 12px; border-bottom: 1px solid var(--sr-gray-light); vertical-align: top; }
+  .ep-table code { font-size: 13px; background: #f1f3f5; padding: 2px 6px; border-radius: 3px; }
+  .ep-table .tier-badge-sm {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: #e9ecef;
+    color: #495057;
+  }
+  .ep-table .tier-badge-sm.pro { background: #dbeafe; color: #1e40af; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dev-hero">
+  <h1>Cuban Insights API</h1>
+  <p>Structured Cuba sanctions, investment, and FX data delivered via a clean JSON API. Built for compliance platforms, fintech, and research.</p>
+</div>
+
+<div class="dev-wrap">
+
+  <h2 id="get-started">Get Your API Key</h2>
+
+  <div class="signup-box">
+    <h3>Free Tier &mdash; No Credit Card Required</h3>
+    <p style="font-size:14px; color:var(--sr-gray-text); margin:0 0 14px;">100 requests/day. Briefing summaries, FX rates, company list, and climate data.</p>
+    <div class="signup-row">
+      <input type="email" id="signup-email" placeholder="you@company.com" autocomplete="email">
+      <button id="signup-btn" onclick="signupFree()">Get Free API Key</button>
+    </div>
+    <div class="signup-status" id="signup-status"></div>
+  </div>
+
+  <h2 id="pricing">Pricing</h2>
+
+  <div class="tier-grid">
+    <div class="tier-card">
+      <h3>Free</h3>
+      <div class="tier-price">$0<span>/mo</span></div>
+      <ul class="tier-features">
+        <li>100 requests/day</li>
+        <li>Latest briefing summary</li>
+        <li>Live FX rates</li>
+        <li>Company list</li>
+        <li>Climate scorecard</li>
+      </ul>
+      <a href="#get-started" class="tier-btn tier-btn-secondary">Sign Up Free</a>
+    </div>
+
+    <div class="tier-card featured">
+      <span class="tier-badge">Most Popular</span>
+      <h3>Pro</h3>
+      <div class="tier-price">$49<span>/mo</span></div>
+      <ul class="tier-features">
+        <li>5,000 requests/day</li>
+        <li>All endpoints</li>
+        <li>Full briefing bodies (HTML)</li>
+        <li>FX rate history</li>
+        <li>Company exposure profiles</li>
+        <li>Sanctions feed</li>
+      </ul>
+      <button class="tier-btn tier-btn-primary" onclick="checkout('pro')">Subscribe &mdash; $49/mo</button>
+    </div>
+
+    <div class="tier-card">
+      <h3>Enterprise</h3>
+      <div class="tier-price">$199<span>/mo</span></div>
+      <ul class="tier-features">
+        <li>Unlimited requests</li>
+        <li>All Pro features</li>
+        <li>Priority support</li>
+        <li>Bulk CSV export</li>
+        <li>Custom integrations</li>
+      </ul>
+      <button class="tier-btn tier-btn-secondary" onclick="checkout('enterprise')">Subscribe &mdash; $199/mo</button>
+    </div>
+  </div>
+
+  <h2 id="endpoints">Endpoints</h2>
+
+  <table class="ep-table">
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>GET /api/v1/briefings/latest</code></td>
+        <td>Latest daily Cuba briefing</td>
+        <td><span class="tier-badge-sm">Free</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/briefings</code></td>
+        <td>Paginated briefing list (title, date, sector)</td>
+        <td><span class="tier-badge-sm">Free</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/briefings/{slug}</code></td>
+        <td>Full briefing by slug (HTML body)</td>
+        <td><span class="tier-badge-sm pro">Pro</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/fx/rates</code></td>
+        <td>Latest elTOQUE informal CUP rates (USD, MLC, USDT)</td>
+        <td><span class="tier-badge-sm">Free</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/fx/rates/history</code></td>
+        <td>Historical FX rate series</td>
+        <td><span class="tier-badge-sm pro">Pro</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/companies</code></td>
+        <td>S&amp;P 500 companies tracked</td>
+        <td><span class="tier-badge-sm">Free</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/companies/{ticker}/exposure</code></td>
+        <td>Cuba sanctions exposure profile</td>
+        <td><span class="tier-badge-sm pro">Pro</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/sanctions/feed</code></td>
+        <td>OFAC SDN + Federal Register sanctions feed</td>
+        <td><span class="tier-badge-sm pro">Pro</span></td>
+      </tr>
+      <tr>
+        <td><code>GET /api/v1/climate</code></td>
+        <td>Investment climate scorecard</td>
+        <td><span class="tier-badge-sm">Free</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="authentication">Authentication</h2>
+
+  <p>Pass your key in the <code>X-API-Key</code> header on every request:</p>
+
+  <pre class="dev-code"><span class="hl-comment"># Example: fetch the latest briefing</span>
+curl -H <span class="hl-str">"X-API-Key: ci_live_YOUR_KEY_HERE"</span> \
+  {{ site_url }}/api/v1/briefings/latest</pre>
+
+  <p>Rate limit headers are included on every response:</p>
+  <pre class="dev-code"><span class="hl-key">X-RateLimit-Limit</span>: 100
+<span class="hl-key">X-RateLimit-Remaining</span>: 87</pre>
+
+  <h2 id="example">Example Response</h2>
+
+  <pre class="dev-code">{
+  <span class="hl-key">"slug"</span>: <span class="hl-str">"biden-administration-expands-cuba-travel-licenses"</span>,
+  <span class="hl-key">"title"</span>: <span class="hl-str">"Biden Administration Expands Cuba Travel Licenses"</span>,
+  <span class="hl-key">"summary"</span>: <span class="hl-str">"OFAC issued new general licenses broadening..."</span>,
+  <span class="hl-key">"primary_sector"</span>: <span class="hl-str">"travel"</span>,
+  <span class="hl-key">"published_date"</span>: <span class="hl-str">"2026-05-10"</span>,
+  <span class="hl-key">"word_count"</span>: 847,
+  <span class="hl-key">"reading_minutes"</span>: 4,
+  <span class="hl-key">"url"</span>: <span class="hl-str">"{{ site_url }}/briefing/biden-administration-expands-cuba-travel-licenses"</span>
+}</pre>
+
+  <h2 id="key-rotation">Key Rotation</h2>
+
+  <p>If your key is compromised, request a rotation. The new key will be emailed to your registered address and the old key will be deactivated immediately.</p>
+
+  <pre class="dev-code">curl -X POST {{ site_url }}/api/v1/keys/rotate \
+  -H <span class="hl-str">"Content-Type: application/json"</span> \
+  -d <span class="hl-str">'{"email": "you@company.com"}'</span></pre>
+
+</div>
+
+<script>
+async function signupFree() {
+  const email = document.getElementById('signup-email').value.trim();
+  const status = document.getElementById('signup-status');
+  const btn = document.getElementById('signup-btn');
+  if (!email || !email.includes('@')) {
+    status.textContent = 'Please enter a valid email.';
+    status.className = 'signup-status is-err';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+  status.textContent = '';
+  try {
+    const res = await fetch('/api/v1/keys/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      status.textContent = 'API key sent to ' + email + '. Check your inbox!';
+      status.className = 'signup-status is-ok';
+    } else {
+      status.textContent = data.error || 'Something went wrong.';
+      status.className = 'signup-status is-err';
+    }
+  } catch (e) {
+    status.textContent = 'Network error. Please try again.';
+    status.className = 'signup-status is-err';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Get Free API Key';
+}
+
+async function checkout(tier) {
+  const email = prompt('Enter your email address for checkout:');
+  if (!email || !email.includes('@')) return;
+  try {
+    const res = await fetch('/api/v1/keys/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, tier }),
+    });
+    const data = await res.json();
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      alert(data.error || 'Could not create checkout session.');
+    }
+  } catch (e) {
+    alert('Network error. Please try again.');
+  }
+}
+
+// Handle checkout return
+const params = new URLSearchParams(window.location.search);
+if (params.get('checkout') === 'success') {
+  const status = document.getElementById('signup-status');
+  if (status) {
+    status.textContent = 'Payment successful! Your API key will arrive by email shortly.';
+    status.className = 'signup-status is-ok';
+  }
+}
+</script>
+{% endblock %}

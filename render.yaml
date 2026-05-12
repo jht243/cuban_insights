@@ -48,6 +48,16 @@ services:
         value: Cuban Insights
       - key: LOG_LEVEL
         value: INFO
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: STRIPE_PRICE_ENTERPRISE
+        sync: false
+      - key: API_RESEND_FROM_EMAIL
+        value: jonathan@intake.layer3labs.io
     healthCheckPath: /health
 
   - type: cron

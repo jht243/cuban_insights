@@ -239,6 +239,13 @@ class Settings(BaseSettings):
     # Hard cap per cron run.
     osf_max_per_run: int = 3
 
+    # ── Public API (monetisation) ──────────────────────────────────────
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_price_pro: str = ""
+    stripe_price_enterprise: str = ""
+    api_resend_from_email: str = "jonathan@intake.layer3labs.io"
+
     # ── Distribution: Bluesky (atproto) ────────────────────────────────
     # Bluesky handle (e.g. "cubaninsights.bsky.social") and an app
     # password (NOT the main account password) generated under Settings →

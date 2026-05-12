@@ -394,6 +394,37 @@ class ScrapeLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class ApiTier(str, enum.Enum):
+    FREE = "free"
+    PRO = "pro"
+    ENTERPRISE = "enterprise"
+
+
+class ApiKey(Base):
+    """Issued API keys for the public /api/v1/* surface."""
+
+    __tablename__ = "api_keys"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    key_hash = Column(String(64), nullable=False, unique=True, index=True)
+    key_prefix = Column(String(16), nullable=False)
+    tier = Column(_enum_values(ApiTier), nullable=False, default=ApiTier.FREE)
+
+    owner_email = Column(String(320), nullable=False, index=True)
+    label = Column(String(200), nullable=True)
+
+    stripe_customer_id = Column(String(200), nullable=True, index=True)
+    stripe_subscription_id = Column(String(200), nullable=True)
+
+    active = Column(Boolean, nullable=False, default=True, index=True)
+    requests_today = Column(Integer, nullable=False, default=0)
+    last_request_date = Column(Date, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class FeedbackSubmission(Base):
     """User-submitted product feedback and tool ideas."""
 
@@ -475,6 +506,14 @@ def _ensure_columns() -> None:
                 conn.execute(sa_text(
                     "DO $$ BEGIN "
                     f"ALTER TYPE source_type ADD VALUE IF NOT EXISTS '{safe_value}'; "
+                    "EXCEPTION WHEN duplicate_object THEN NULL; "
+                    "END $$;"
+                ))
+            for value in (e.value for e in ApiTier):
+                safe_value = value.replace("'", "''")
+                conn.execute(sa_text(
+                    "DO $$ BEGIN "
+                    f"ALTER TYPE api_tier ADD VALUE IF NOT EXISTS '{safe_value}'; "
                     "EXCEPTION WHEN duplicate_object THEN NULL; "
                     "END $$;"
                 ))
