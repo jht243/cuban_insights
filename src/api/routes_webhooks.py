@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
+import time
 
 from flask import jsonify, request
 
@@ -13,6 +15,22 @@ from src.config import settings
 from src.models import ApiKey, ApiTier, SessionLocal, init_db
 
 logger = logging.getLogger(__name__)
+
+# Short-lived cache: session_id -> (raw_key, timestamp)
+# Keys expire after 10 minutes. Only used to display on the success page.
+_KEY_CACHE: dict[str, tuple[str, float]] = {}
+_KEY_CACHE_TTL = 600
+
+
+def _to_dict(obj) -> dict:
+    """Safely convert a Stripe object or dict to a plain dict."""
+    if isinstance(obj, dict):
+        return obj
+    if hasattr(obj, "to_dict"):
+        return obj.to_dict()
+    if hasattr(obj, "__dict__"):
+        return obj.__dict__
+    return {}
 
 
 @api_v1.route("/webhooks/stripe", methods=["POST"])
@@ -34,19 +52,18 @@ def stripe_webhook():
         except (ValueError, stripe.SignatureVerificationError):
             logger.warning("Stripe webhook signature verification failed")
             return jsonify({"error": "Invalid signature"}), 400
+        event = _to_dict(event)
     else:
-        import json
         event = json.loads(payload)
 
-    event_type = event.get("type") if isinstance(event, dict) else event.type
-    data_object = (
-        event.get("data", {}).get("object", {})
-        if isinstance(event, dict)
-        else event.data.object
-    )
+    event_type = event.get("type", "")
+    data_object = event.get("data", {}).get("object", {})
+    if not isinstance(data_object, dict) and hasattr(data_object, "to_dict"):
+        data_object = data_object.to_dict()
 
     if event_type == "checkout.session.completed":
-        _handle_checkout_completed(data_object)
+        session_id = data_object.get("id", "")
+        _handle_checkout_completed(data_object, session_id)
     elif event_type == "customer.subscription.deleted":
         _handle_subscription_deleted(data_object)
     else:
@@ -55,21 +72,23 @@ def stripe_webhook():
     return jsonify({"received": True})
 
 
-def _handle_checkout_completed(session) -> None:
-    metadata = session.get("metadata", {}) if isinstance(session, dict) else (session.metadata or {})
+def _handle_checkout_completed(session: dict, session_id: str = "") -> None:
+    metadata = session.get("metadata") or {}
     tier_str = metadata.get("tier", "pro")
-    customer_id = session.get("customer", "") if isinstance(session, dict) else (session.customer or "")
-    subscription_id = session.get("subscription", "") if isinstance(session, dict) else (session.subscription or "")
+    customer_id = session.get("customer", "") or ""
+    subscription_id = session.get("subscription", "") or ""
 
-    email = session.get("customer_email", "") if isinstance(session, dict) else (session.customer_email or "")
+    email = session.get("customer_email", "") or ""
     if not email:
-        cd = session.get("customer_details", {}) if isinstance(session, dict) else (session.customer_details or {})
-        email = cd.get("email", "") if isinstance(cd, dict) else (getattr(cd, "email", "") or "")
+        cd = session.get("customer_details") or {}
+        email = cd.get("email", "") or ""
     if not email:
-        logger.error("Stripe checkout completed but no email found on session")
+        logger.error("Stripe checkout completed but no email found on session: %s",
+                     session.get("id", "unknown"))
         return
 
-    tier = ApiTier.PRO if tier_str == "pro" else ApiTier.ENTERPRISE
+    tier_map = {"pro": ApiTier.PRO, "enterprise": ApiTier.ENTERPRISE}
+    tier = tier_map.get(tier_str, ApiTier.PRO)
 
     init_db()
     db = SessionLocal()
@@ -96,15 +115,22 @@ def _handle_checkout_completed(session) -> None:
         db.add(row)
         db.commit()
 
-        send_api_key_email(to_email=email.lower(), raw_key=raw, tier=tier_str)
-        logger.info("Provisioned %s API key for %s", tier_str, email)
+        if session_id:
+            _KEY_CACHE[session_id] = (raw, time.time())
 
+        send_api_key_email(to_email=email.lower(), raw_key=raw, tier=tier_str)
+        logger.info("Provisioned %s API key for %s (key_prefix=%s, session=%s)",
+                    tier_str, email, row.key_prefix, session_id)
+
+    except Exception:
+        logger.exception("Failed to provision API key for %s", email)
+        db.rollback()
     finally:
         db.close()
 
 
-def _handle_subscription_deleted(subscription) -> None:
-    customer_id = subscription.get("customer", "") if isinstance(subscription, dict) else (subscription.customer or "")
+def _handle_subscription_deleted(subscription: dict) -> None:
+    customer_id = subscription.get("customer", "") or ""
     if not customer_id:
         logger.warning("Subscription deleted but no customer_id found")
         return
@@ -122,5 +148,8 @@ def _handle_subscription_deleted(subscription) -> None:
             send_key_deactivated_email(to_email=key.owner_email, reason="subscription cancelled")
             logger.info("Deactivated API key for %s (subscription cancelled)", key.owner_email)
         db.commit()
+    except Exception:
+        logger.exception("Failed to handle subscription deletion for customer %s", customer_id)
+        db.rollback()
     finally:
         db.close()

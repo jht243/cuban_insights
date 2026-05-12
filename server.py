@@ -4915,6 +4915,30 @@ def explainer_page(slug: str):
         abort(500)
 
 
+@app.route("/developers/success")
+@app.route("/developers/success/")
+def developers_success_page():
+    """Post-checkout success page showing the API key."""
+    try:
+        from src.page_renderer import _env, _base_url, settings as _s
+
+        tpl = _env.get_template("developers_success.html.j2")
+        html = tpl.render(
+            site_url=_s.site_url,
+            seo={
+                "title": "Payment Successful — Cuban Insights API",
+                "description": "Your API key is ready.",
+                "canonical": f"{_base_url()}/developers/success",
+                "og_type": "website",
+                "site_name": _s.site_name,
+            },
+        )
+        return Response(html, content_type="text/html; charset=utf-8")
+    except Exception as exc:
+        logger.exception("developers success page render failed: %s", exc)
+        abort(500)
+
+
 @app.route("/developers")
 @app.route("/developers/")
 def developers_page():

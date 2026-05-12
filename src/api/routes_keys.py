@@ -138,10 +138,33 @@ def keys_checkout():
             payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             metadata={"tier": tier},
-            success_url=f"{settings.site_url}/developers?checkout=success",
+            success_url=f"{settings.site_url}/developers/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.site_url}/developers?checkout=cancel",
         )
         return jsonify({"checkout_url": session.url})
     except Exception as exc:
         logger.exception("Stripe Checkout creation failed")
         return jsonify({"error": str(exc)}), 500
+
+
+@api_v1.route("/keys/retrieve")
+def keys_retrieve():
+    """Retrieve API key by Stripe checkout session ID (success page)."""
+    import time
+    from src.api.routes_webhooks import _KEY_CACHE, _KEY_CACHE_TTL
+
+    session_id = request.args.get("session_id", "").strip()
+    if not session_id:
+        return jsonify({"error": "session_id required"}), 400
+
+    entry = _KEY_CACHE.get(session_id)
+    if entry:
+        raw_key, created_at = entry
+        if time.time() - created_at < _KEY_CACHE_TTL:
+            del _KEY_CACHE[session_id]
+            return jsonify({"api_key": raw_key})
+
+    return jsonify({
+        "error": "API key not ready yet. It may take a few seconds after payment. "
+                 "Check your email — the key was also sent there."
+    }), 202

@@ -1,0 +1,215 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .success-wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 80px 24px 120px;
+    text-align: center;
+  }
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .success-icon svg {
+    width: 44px;
+    height: 44px;
+    stroke: #fff;
+    stroke-width: 3;
+    fill: none;
+  }
+  .success-wrap h1 {
+    font-family: var(--font-serif);
+    color: var(--sr-blue-dark);
+    font-size: 28px;
+    margin: 0 0 8px;
+  }
+  .success-wrap .subtitle {
+    color: var(--sr-gray-text);
+    font-size: 16px;
+    margin: 0 0 32px;
+  }
+  .key-box {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 0 0 16px;
+    position: relative;
+  }
+  .key-box code {
+    color: #a6e3a1;
+    font-size: 15px;
+    word-break: break-all;
+    line-height: 1.5;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #cdd6f4;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.2); }
+  .copy-btn.copied { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .key-label {
+    font-size: 13px;
+    color: var(--sr-gray-text);
+    margin: 0 0 24px;
+    text-align: left;
+  }
+  .next-steps {
+    text-align: left;
+    background: #f8f9fa;
+    border: 1px solid var(--sr-gray-light);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 32px 0;
+  }
+  .next-steps h3 {
+    font-family: var(--font-serif);
+    font-size: 16px;
+    color: var(--sr-blue-dark);
+    margin: 0 0 12px;
+  }
+  .next-steps pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 6px;
+    padding: 14px 16px;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 12px 0 0;
+  }
+  .support-line {
+    font-size: 14px;
+    color: var(--sr-gray-text);
+    margin: 32px 0 0;
+  }
+  .support-line a { color: var(--sr-blue); font-weight: 600; }
+  .loading-state {
+    padding: 60px 0;
+    color: var(--sr-gray-text);
+    font-size: 16px;
+  }
+  .error-state {
+    padding: 40px 0;
+    color: var(--sr-red);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-wrap">
+  <div id="loading" class="loading-state">
+    <p>Retrieving your API key...</p>
+  </div>
+
+  <div id="success" style="display:none;">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <h1>Payment Successful</h1>
+    <p class="subtitle">Your API key is ready. Save it somewhere safe — it won't be shown again.</p>
+
+    <div class="key-box">
+      <code id="api-key-display"></code>
+      <button class="copy-btn" onclick="copyKey()">Copy</button>
+    </div>
+    <p class="key-label">Include this in the <code>X-API-Key</code> header on every request.</p>
+
+    <div class="next-steps">
+      <h3>Try it now</h3>
+      <pre id="curl-example"></pre>
+    </div>
+
+    <p class="support-line">
+      Questions? Reach out at <a href="mailto:support@layer3labs.io">support@layer3labs.io</a>
+    </p>
+  </div>
+
+  <div id="error" class="error-state" style="display:none;">
+    <h2>Something went wrong</h2>
+    <p id="error-msg"></p>
+    <p class="support-line">
+      Contact <a href="mailto:support@layer3labs.io">support@layer3labs.io</a> and we'll sort it out.
+    </p>
+  </div>
+</div>
+
+<script>
+(async function() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  if (!sessionId) {
+    showError('No checkout session found. If you just paid, check your email for the API key.');
+    return;
+  }
+
+  let attempts = 0;
+  const maxAttempts = 10;
+  const delay = 2000;
+
+  async function tryRetrieve() {
+    attempts++;
+    try {
+      const res = await fetch('/api/v1/keys/retrieve?session_id=' + encodeURIComponent(sessionId));
+      const data = await res.json();
+
+      if (res.ok && data.api_key) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('success').style.display = 'block';
+        document.getElementById('api-key-display').textContent = data.api_key;
+        document.getElementById('curl-example').textContent =
+          'curl -H "X-API-Key: ' + data.api_key + '" \\\n  {{ site_url }}/api/v1/briefings/latest';
+        return;
+      }
+
+      if (attempts < maxAttempts) {
+        setTimeout(tryRetrieve, delay);
+      } else {
+        showError('Your API key is being generated. Check your email — it will arrive shortly.');
+      }
+    } catch (e) {
+      if (attempts < maxAttempts) {
+        setTimeout(tryRetrieve, delay);
+      } else {
+        showError('Network error. Your API key was emailed to you. Check your inbox.');
+      }
+    }
+  }
+
+  tryRetrieve();
+})();
+
+function showError(msg) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = 'block';
+  document.getElementById('error-msg').textContent = msg;
+}
+
+function copyKey() {
+  const key = document.getElementById('api-key-display').textContent;
+  navigator.clipboard.writeText(key).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+{% endblock %}
