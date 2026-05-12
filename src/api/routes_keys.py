@@ -124,12 +124,13 @@ def keys_checkout():
     tier = (body.get("tier") or "").strip().lower()
 
     price_map = {
+        "test": settings.stripe_price_test,
         "pro": settings.stripe_price_pro,
         "enterprise": settings.stripe_price_enterprise,
     }
     price_id = price_map.get(tier)
     if not price_id:
-        return jsonify({"error": "tier must be 'pro' or 'enterprise'"}), 400
+        return jsonify({"error": "tier must be 'test', 'pro', or 'enterprise'"}), 400
 
     try:
         session = stripe.checkout.Session.create(

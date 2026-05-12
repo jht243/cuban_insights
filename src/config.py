@@ -242,6 +242,7 @@ class Settings(BaseSettings):
     # ── Public API (monetisation) ──────────────────────────────────────
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""
+    stripe_price_test: str = ""
     stripe_price_pro: str = ""
     stripe_price_enterprise: str = ""
     api_resend_from_email: str = "jonathan@intake.layer3labs.io"
