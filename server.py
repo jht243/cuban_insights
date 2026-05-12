@@ -4922,7 +4922,7 @@ def developers_page():
     try:
         from src.page_renderer import _env, _base_url, settings as _s
 
-        tpl = _env().get_template("developers.html.j2")
+        tpl = _env.get_template("developers.html.j2")
         html = tpl.render(
             site_url=_s.site_url,
             seo={
