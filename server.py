@@ -45,7 +45,7 @@ CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 limiter = Limiter(
     get_remote_address,
     app=app,
-    default_limits=["120 per minute", "20 per second"],
+    default_limits=["10 per minute", "3 per second"],
     storage_uri="memory://",
 )
 
@@ -144,7 +144,7 @@ def _api_discovery_header(response: Response) -> Response:
     hits += 1
     _ip_hit_counter[ip] = (hits, window_start)
 
-    if hits >= 8 and not request.path.startswith("/developers"):
+    if hits >= 4 and not request.path.startswith("/developers"):
         try:
             data = response.get_data(as_text=True)
             if "</body>" in data and "ci-api-banner" not in data:
@@ -395,7 +395,7 @@ def _legacy_redirect_to(target: str, code: int = 301) -> Response:
 
 
 @app.route("/")
-@limiter.limit("30 per minute")
+@limiter.limit("6 per minute")
 def index():
     html = _get_report_html()
     if not html:
@@ -6774,7 +6774,7 @@ def _company_index_letter(name: str) -> str:
 
 @app.route("/companies")
 @app.route("/companies/")
-@limiter.limit("30 per minute")
+@limiter.limit("6 per minute")
 def companies_index_page():
     """A-Z directory of every S&P 500 ticker with a Cuba-exposure page."""
     try:
@@ -6893,7 +6893,7 @@ def companies_index_page():
 
 @app.route("/companies/<slug>")
 @app.route("/companies/<slug>/")
-@limiter.limit("30 per minute")
+@limiter.limit("6 per minute")
 def companies_slug_page(slug: str):
     """Serve the company profile directly (canonical is /companies/<slug>/cuba-exposure).
 
@@ -6905,7 +6905,7 @@ def companies_slug_page(slug: str):
 
 @app.route("/companies/<slug>/cuba-exposure")
 @app.route("/companies/<slug>/cuba-exposure/")
-@limiter.limit("30 per minute")
+@limiter.limit("6 per minute")
 def companies_profile_page(slug: str):
     """Per-company Cuba-exposure landing page."""
     try:
@@ -8120,7 +8120,7 @@ def _legacy_invest_in_venezuela_redirect():
 
 @app.route("/briefing")
 @app.route("/briefing/")
-@limiter.limit("40 per minute")
+@limiter.limit("6 per minute")
 def briefing_index():
     """List all long-form blog posts, newest first."""
     try:
@@ -8210,7 +8210,7 @@ def _briefing_cache_put(slug: str, body: bytes) -> None:
 
 
 @app.route("/briefing/<slug>")
-@limiter.limit("30 per minute")
+@limiter.limit("6 per minute")
 def briefing_post(slug: str):
     """Render a single blog post by slug."""
     cached_body = _briefing_cache_get(slug)
