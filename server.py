@@ -2606,7 +2606,7 @@ def cpal_profile_page(slug: str):
         today_iso = _date.today().isoformat()
         year = _date.today().year
 
-        title = f"{name} — Cuba Hotel Sanctions Status ({year})"[:60]
+        title = f"{name} — Cuba Hotel Sanctions Status ({year})"
         loc_phrase = f" in {province}" if province else ""
         description = (
             f"{name}{loc_phrase} is on the U.S. Cuba Prohibited "
@@ -2768,7 +2768,7 @@ def crl_profile_page(slug: str):
         today_iso = _date.today().isoformat()
         year = _date.today().year
 
-        title = f"{name} — Cuba Sanctions Status ({year})"[:60]
+        title = f"{name} — Cuba Sanctions Status ({year})"
         section_phrase = f" in {section}" if section else ""
         description = (
             f"{name}{section_phrase} is on the U.S. Cuba Restricted "
@@ -2976,16 +2976,28 @@ def tool_cpal_hotel_checker():
                 if slug:
                     m["url_path"] = f"/sanctions/cpal/{slug}"
 
-        seo, jsonld = _tool_seo_jsonld(
-            slug="cuba-prohibited-hotels-checker",
-            title=f"Cuba Prohibited Hotels List ({total_entries} Properties, {_date.today().year}) — Sanctions Checker",
-            description=(
+        if query:
+            tool_title = f"Is {query.title()} on the Cuba Prohibited Hotels List? — CPAL Checker"
+            tool_desc = (
+                f"Check whether {query.title()} is on the U.S. State "
+                f"Department Cuba Prohibited Accommodations List (CPAL). "
+                f"Search all {total_entries} sanctioned properties — "
+                f"hotels, casas particulares, and resorts. Updated daily."
+            )
+        else:
+            tool_title = f"Cuba Prohibited Hotels List ({total_entries} Properties, {_date.today().year}) — Sanctions Checker"
+            tool_desc = (
                 f"Check if your Cuba hotel is sanctioned. Search all "
                 f"{total_entries} properties on the U.S. State Department "
                 f"Prohibited Accommodations List (CPAL) — hotels, casas "
                 f"particulares, and resorts. Filter by name, province, or "
                 f"neighborhood. Updated daily."
-            ),
+            )
+
+        seo, jsonld = _tool_seo_jsonld(
+            slug="cuba-prohibited-hotels-checker",
+            title=tool_title,
+            description=tool_desc,
             keywords=(
                 "Cuba prohibited accommodations list, Cuba prohibited "
                 "accommodations list OFAC 2026, CPAL hotel checker, State "
@@ -5239,6 +5251,12 @@ def _is_us_cuba_diplomacy_row(*parts: str, sectors: list | None = None, source=N
     return "diplomatic" in sector_set and has_cuba and has_us
 
 
+@app.route("/us-cuba-relations-recent-developments-2026")
+@app.route("/us-cuba-relations-recent-developments-2026/")
+def us_cuba_relations_redirect():
+    return redirect("/us-cuba-diplomatic-meeting-recent-developments-2026", code=301)
+
+
 @app.route("/us-cuba-diplomatic-meeting-recent-developments-2026")
 @app.route("/us-cuba-diplomatic-meeting-recent-developments-2026/")
 def us_cuba_diplomatic_developments_tracker():
@@ -5358,16 +5376,19 @@ def us_cuba_diplomatic_developments_tracker():
             generated_at = _dt.utcnow()
             latest_date = events[0]["date_display"] if events else "awaiting first matching scrape"
             seo = {
-                "title": "US-Cuba Diplomatic Meeting Recent Developments 2026 — Live Tracker",
+                "title": "US-Cuba Relations & Diplomatic Developments 2026 — Live Tracker",
                 "description": (
-                    "Live tracker of recent U.S.-Cuba diplomatic developments in 2026: "
-                    "meetings, migration talks, embassy and consular updates, MINREX "
-                    "statements, State Department actions, and investor implications."
+                    "Live tracker of recent U.S.-Cuba relations and diplomatic "
+                    "developments in 2026: meetings, migration talks, embassy "
+                    "updates, MINREX statements, State Department actions, "
+                    "sanctions changes, and investor implications."
                 ),
                 "keywords": (
                     "us cuba diplomatic meeting recent developments 2026, "
+                    "us cuba relations recent developments 2026, "
                     "US Cuba diplomatic talks 2026, US Cuba relations tracker, "
-                    "Cuba diplomacy 2026, MINREX United States, Havana Washington talks"
+                    "Cuba diplomacy 2026, Cuba diplomatic engagement 2026, "
+                    "MINREX United States, Havana Washington talks"
                 ),
                 "canonical": canonical,
                 "site_name": _s.site_name,
