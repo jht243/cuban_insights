@@ -107,16 +107,53 @@ def _gzip_response(response: Response) -> Response:
 
 
 
+_API_BANNER_HTML = """<div id="ci-api-banner" style="position:fixed;bottom:0;left:0;right:0;z-index:9999;
+background:linear-gradient(135deg,#1e3a5f,#0f2744);color:#fff;padding:14px 24px;
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;
+display:flex;align-items:center;justify-content:center;gap:16px;box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
+<span style="font-size:20px;">&#9889;</span>
+<span><strong>Need this data programmatically?</strong> Get structured JSON via the Cuban Insights API &mdash; free tier, no credit card.</span>
+<a href="/developers" style="background:#2563eb;color:#fff;padding:8px 20px;border-radius:6px;
+text-decoration:none;font-weight:600;white-space:nowrap;font-size:13px;">Get API Key &rarr;</a>
+<button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;
+cursor:pointer;font-size:20px;padding:0 4px;margin-left:8px;">&times;</button>
+</div>"""
+
+_ip_hit_counter: dict[str, tuple[int, float]] = {}
+
 @app.after_request
 def _api_discovery_header(response: Response) -> Response:
-    """Advertise API availability on HTML responses, so automated
-    consumers can discover the structured data endpoint."""
-    if (response.mimetype or "").startswith("text/html") and response.status_code == 200:
-        response.headers["X-API-Available"] = f"{settings.site_url}/api/v1"
-        response.headers["Link"] = (
-            f'<{settings.site_url}/developers>; rel="service-doc"; '
-            f'title="Cuban Insights API"'
-        )
+    """Advertise API availability on HTML responses. Injects a sticky
+    bottom banner when the visitor has made many requests in a window."""
+    if not (response.mimetype or "").startswith("text/html"):
+        return response
+    if response.status_code != 200:
+        return response
+
+    response.headers["X-API-Available"] = f"{settings.site_url}/api/v1"
+    response.headers["Link"] = (
+        f'<{settings.site_url}/developers>; rel="service-doc"; '
+        f'title="Cuban Insights API"'
+    )
+
+    ip = get_remote_address()
+    now = time.time()
+    hits, window_start = _ip_hit_counter.get(ip, (0, now))
+    if now - window_start > 300:
+        hits, window_start = 0, now
+    hits += 1
+    _ip_hit_counter[ip] = (hits, window_start)
+
+    if hits >= 8 and not request.path.startswith("/developers"):
+        try:
+            data = response.get_data(as_text=True)
+            if "</body>" in data and "ci-api-banner" not in data:
+                data = data.replace("</body>", _API_BANNER_HTML + "</body>")
+                response.set_data(data)
+                response.headers.pop("Content-Length", None)
+        except Exception:
+            pass
+
     return response
 
 
@@ -126,24 +163,77 @@ def _rate_limited(e):
     accept = request.headers.get("Accept", "")
     if "json" in accept:
         return jsonify({
-            "error": "Too many requests",
-            "message": "Get structured data via our API instead of scraping.",
-            "docs": f"{settings.site_url}/developers",
+            "error": "rate_limit_exceeded",
+            "message": "Too many requests. Use our API for reliable, structured access.",
+            "api_docs": f"{settings.site_url}/developers",
+            "api_base": f"{settings.site_url}/api/v1",
+            "free_tier": "100 requests/day — no credit card required",
+            "signup": f"{settings.site_url}/api/v1/keys/signup",
         }), 429
-    return Response(
-        f"""<!DOCTYPE html>
-<html><head><title>Rate Limited — Cuban Insights</title></head>
-<body style="font-family:sans-serif;max-width:600px;margin:80px auto;padding:0 20px;text-align:center;">
-<h1>Too Many Requests</h1>
-<p>You're making too many requests to this page.</p>
-<p><strong>Need this data programmatically?</strong></p>
-<p><a href="{settings.site_url}/developers" style="color:#002b5e;font-weight:bold;">
-Use the Cuban Insights API &rarr;</a></p>
-<p style="color:#888;font-size:14px;">Structured JSON. 100 free requests/day. No scraping needed.</p>
-</body></html>""",
-        429,
-        {"Content-Type": "text/html; charset=utf-8"},
-    )
+    base = settings.site_url
+    return Response(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rate Limited — Cuban Insights</title>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a1628;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
+.wrap{{max-width:620px;padding:48px 32px;text-align:center}}
+.icon{{font-size:64px;margin-bottom:24px}}
+h1{{font-size:28px;color:#fff;margin-bottom:12px}}
+.sub{{font-size:17px;color:#94a3b8;line-height:1.6;margin-bottom:40px}}
+.card{{background:linear-gradient(135deg,#1e293b,#1a2332);border:1px solid #334155;border-radius:16px;padding:32px;margin-bottom:24px;text-align:left}}
+.card h2{{font-size:20px;color:#38bdf8;margin-bottom:16px}}
+.features{{list-style:none;padding:0}}
+.features li{{padding:8px 0;color:#cbd5e1;font-size:15px;display:flex;align-items:center;gap:10px}}
+.features li::before{{content:"\\2713";color:#22c55e;font-weight:bold;font-size:18px}}
+.cta{{display:inline-block;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;padding:16px 40px;border-radius:10px;text-decoration:none;font-weight:700;font-size:17px;letter-spacing:0.3px;transition:transform 0.15s,box-shadow 0.15s;margin-top:8px}}
+.cta:hover{{transform:translateY(-2px);box-shadow:0 8px 25px rgba(37,99,235,0.4)}}
+.or{{color:#64748b;font-size:14px;margin:20px 0}}
+.code{{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;font-family:"SF Mono",Monaco,Consolas,monospace;font-size:13px;color:#38bdf8;text-align:left;overflow-x:auto;white-space:pre;margin-bottom:24px;line-height:1.6}}
+.code .dim{{color:#475569}}
+.free{{color:#22c55e;font-weight:600;font-size:14px;margin-top:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="icon">&#9889;</div>
+  <h1>You&rsquo;re moving too fast</h1>
+  <p class="sub">We noticed heavy traffic from your IP. Instead of scraping HTML,
+  get the same data&mdash;cleaner, faster, and more reliable&mdash;through our API.</p>
+
+  <div class="card">
+    <h2>Cuban Insights API</h2>
+    <ul class="features">
+      <li>Daily briefings, FX rates, sanctions feed as structured JSON</li>
+      <li>503 S&amp;P 500 company Cuba-exposure profiles</li>
+      <li>Investment climate scorecard</li>
+      <li>OFAC SDN &amp; Federal Register entries</li>
+      <li>No parsing, no breaking changes, no scraping bans</li>
+    </ul>
+    <p class="free">Free tier: 100 requests/day &mdash; no credit card required</p>
+  </div>
+
+  <a class="cta" href="{base}/developers">Get Your Free API Key &rarr;</a>
+
+  <p class="or">or try it right now:</p>
+  <div class="code"><span class="dim"># Sign up (instant, free)</span>
+curl -X POST {base}/api/v1/keys/signup \\
+  -H "Content-Type: application/json" \\
+  -d '{{"email":"you@example.com"}}'
+
+<span class="dim"># Fetch today's briefing</span>
+curl -H "X-API-Key: YOUR_KEY" \\
+  {base}/api/v1/briefings/latest</div>
+
+  <p style="color:#475569;font-size:13px;">
+    Questions? <a href="mailto:support@layer3labs.io" style="color:#38bdf8;">support@layer3labs.io</a>
+  </p>
+</div>
+</body>
+</html>""", 429, {"Content-Type": "text/html; charset=utf-8", "Retry-After": "60"})
 
 
 logger = logging.getLogger(__name__)
