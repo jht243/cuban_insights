@@ -3387,13 +3387,11 @@ def tool_crl_entity_checker():
 
         seo, jsonld = _tool_seo_jsonld(
             slug="cuba-restricted-list-checker",
-            title=f"Cuba Restricted List Checker ({total_entries} Entities, 2026) — CRL Search",
+            title=f"Cuba Restricted List ({total_entries} Entities, 2026) — Free CRL Checker & Search",
             description=(
-                f"Search the Cuba Restricted List (CRL) — all "
-                f"{total_entries} Cuban entities U.S. persons cannot "
-                f"transact with under §515.209, including GAESA, Gaviota, "
-                f"CIMEX, Habaguanex, FINCIMEX, and MINFAR. Updated daily "
-                f"from state.gov. Not the same as the OFAC SDN — check both."
+                f"Search the Cuba Restricted List — all {total_entries} entities "
+                f"banned under §515.209 CACR, including GAESA, Gaviota, CIMEX "
+                f"& Habaguanex. Updated daily from State Dept."
             ),
             keywords=(
                 "OFAC Cuba Restricted List, Cuba Restricted List checker, CRL Cuba lookup, GAESA "
@@ -3401,7 +3399,9 @@ def tool_crl_entity_checker():
                 "restricted, §515.209 CACR, State Department Cuba "
                 "entities, MINFAR sanctions, FINCIMEX prohibited, Lista "
                 "Restringida de Cuba, lista de entidades restringidas de Cuba, "
-                "sanciones de Cuba"
+                "sanciones de Cuba, cuba restricted list 2026, cuba restricted "
+                "entities, state department cuba restricted list, cuba "
+                "restricted list update, CACR §515.209"
             ),
             faq=[
                 {
@@ -3453,6 +3453,45 @@ def tool_crl_entity_checker():
                         "and medical exports), and certain remittances "
                         "and people-to-people educational activities — "
                         "but the carve-outs are narrow and fact-specific."
+                    ),
+                },
+                {
+                    "q": "How many entities are on the Cuba Restricted List in 2026?",
+                    "a": (
+                        "As of May 2026, the Cuba Restricted List contains "
+                        "247 entities and subentities across categories "
+                        "including government ministries (MINFAR, MININT), "
+                        "holding companies (GAESA, CIMEX, Gaviota), hotels, "
+                        "stores, marinas, and defense entities. The list was "
+                        "last expanded on July 14, 2025."
+                    ),
+                },
+                {
+                    "q": "What happens if you transact with a Cuba Restricted List entity?",
+                    "a": (
+                        "U.S. persons who engage in direct financial "
+                        "transactions with CRL-listed entities violate "
+                        "§515.209 of the Cuban Assets Control Regulations "
+                        "(CACR). Penalties can include civil fines up to "
+                        "approximately $350,000 per violation and criminal "
+                        "penalties of up to $1 million and 20 years "
+                        "imprisonment. Additionally, under the new Executive "
+                        "Order 14404 (May 2026), foreign persons face "
+                        "additional sanctions risk for transactions with "
+                        "designated entities like GAESA."
+                    ),
+                },
+                {
+                    "q": "Is the Cuba Restricted List the same as the OFAC SDN list?",
+                    "a": (
+                        "No. The Cuba Restricted List (CRL) is maintained by "
+                        "the State Department under §515.209 CACR, while the "
+                        "SDN list is maintained by OFAC (Treasury). Most CRL "
+                        "entities like GAESA, CIMEX, and Gaviota are NOT on "
+                        "the SDN list. A clean SDN screening does not clear a "
+                        "Cuban counterparty — both lists must be checked "
+                        "independently, along with the Cuba Prohibited "
+                        "Accommodations List (CPAL)."
                     ),
                 },
             ],
@@ -8176,6 +8215,192 @@ def briefing_feed():
         abort(500)
 
 
+@app.route("/briefing/executive-order-14404-cuba-gaesa-sanctions-may-2026")
+@app.route("/briefing/executive-order-14404-cuba-gaesa-sanctions-may-2026/")
+def briefing_eo_14404_gaesa():
+    """E.O. 14404 Cuba sanctions briefing — GAESA, MOA Nickel, GL-1."""
+    try:
+        from src.page_renderer import _env, _base_url, _iso, settings as _s
+        from datetime import date as _date
+        import json as _json
+
+        slug = "executive-order-14404-cuba-gaesa-sanctions-may-2026"
+        base = _base_url()
+        canonical = f"{base}/briefing/{slug}"
+        page_title = "E.O. 14404: Cuba Sanctions Target GAESA & MOA Nickel (2026)"
+        display_title = (
+            "Executive Order 14404: New Cuba Sanctions Target GAESA, "
+            "MOA Nickel \u2014 What Investors Need to Know"
+        )
+        description = (
+            "E.O. 14404 targets GAESA, MOA Nickel across 5 Cuba sectors. "
+            "GL-1 issued, June 5 wind-down deadline. Full investor briefing."
+        )
+
+        seo = {
+            "title": page_title,
+            "description": description,
+            "keywords": (
+                "executive order 14404, EO 14404 cuba, GAESA sanctions, "
+                "GAESA cuba, MOA nickel sanctions, cuba sanctions 2026, "
+                "cuba general license 1, OFAC cuba, CACR, cuban assets "
+                "control regulations, sherritt international cuba, "
+                "gaviota cuba, june 5 2026 wind down, cuba sanctions "
+                "compliance, foreign persons cuba sanctions"
+            ),
+            "news_keywords": (
+                "Executive Order 14404, GAESA, Cuba sanctions, "
+                "MOA Nickel, Sherritt International, OFAC"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "article",
+            "published_iso": "2026-05-13T00:00:00+00:00",
+            "modified_iso": "2026-05-13T00:00:00+00:00",
+            "section": "sanctions",
+            "article_tags": [
+                "Executive Order 14404", "GAESA", "Cuba sanctions",
+                "MOA Nickel", "OFAC", "CACR", "General License 1",
+                "Sherritt International", "wind-down deadline",
+            ],
+        }
+
+        faq_entries = [
+            {
+                "@type": "Question",
+                "name": "What is Executive Order 14404?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "E.O. 14404 is a presidential executive order signed "
+                        "May 1, 2026, creating a new sanctions authority "
+                        "targeting persons operating in five sectors of "
+                        "Cuba\u2019s economy: energy, defense, metals & mining, "
+                        "financial services, and security. It is separate "
+                        "from the Cuban Assets Control Regulations (CACR)."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "Is GAESA already sanctioned under CACR?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "Yes. GAESA has been on both the SDN list and the "
+                        "Cuba Restricted List since December 21, 2020. The "
+                        "E.O. 14404 designation on May 7, 2026 adds a new "
+                        "authority that extends blocking obligations to "
+                        "foreign persons with a wind-down deadline of "
+                        "June 5, 2026."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "What is Cuba General License 1?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "GL-1 authorizes transactions prohibited by "
+                        "E.O. 14404 if those transactions are already "
+                        "authorized or exempt under CACR. It prevents "
+                        "CACR-authorized activity from being disrupted by "
+                        "the new blocking provisions."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": "What happens after June 5, 2026?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "After June 5, 2026, the wind-down period expires. "
+                        "Foreign persons continuing significant transactions "
+                        "with GAESA or other E.O. 14404 designees risk being "
+                        "sanctioned themselves under Section 1(a)(ii)."
+                    ),
+                },
+            },
+            {
+                "@type": "Question",
+                "name": (
+                    "Are all companies in Cuba\u2019s energy or mining "
+                    "sectors automatically sanctioned?"
+                ),
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": (
+                        "No. OFAC FAQ 1254 clarifies that a specific "
+                        "determination by Treasury is required. Operating "
+                        "in a targeted sector alone does not trigger "
+                        "automatic blocking."
+                    ),
+                },
+            },
+        ]
+
+        graph = [
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                    {"@type": "ListItem", "position": 2, "name": "Analysis", "item": f"{base}/briefing"},
+                    {"@type": "ListItem", "position": 3, "name": "Executive Order 14404", "item": canonical},
+                ],
+            },
+            {
+                "@type": "NewsArticle",
+                "@id": f"{canonical}#article",
+                "headline": page_title,
+                "description": description,
+                "url": canonical,
+                "datePublished": "2026-05-13T00:00:00+00:00",
+                "dateModified": "2026-05-13T00:00:00+00:00",
+                "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                "publisher": {
+                    "@type": "Organization",
+                    "name": _s.site_name,
+                    "url": f"{base}/",
+                    "logo": {"@type": "ImageObject", "url": f"{base}/static/og-image.png?v=3"},
+                },
+                "mainEntityOfPage": canonical,
+                "articleSection": "Sanctions",
+                "keywords": [
+                    "Executive Order 14404", "GAESA", "Cuba sanctions",
+                    "MOA Nickel", "OFAC", "CACR", "Sherritt International",
+                ],
+                "image": f"{base}/static/og-image.png?v=3",
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": faq_entries,
+            },
+        ]
+
+        jsonld = _json.dumps({"@context": "https://schema.org", "@graph": graph})
+
+        template = _env.get_template("briefings/eo_14404_gaesa.html.j2")
+        html = template.render(
+            seo=seo,
+            jsonld=jsonld,
+            title=display_title,
+            seo_title=page_title,
+            canonical_url=canonical,
+            current_year=_date.today().year,
+        )
+        return Response(html, mimetype="text/html")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("E.O. 14404 briefing render failed: %s", exc)
+        abort(500)
+
+
 @app.route("/briefing/us-cuba-diplomatic-meeting-2026")
 @app.route("/briefing/us-cuba-diplomatic-meeting-2026/")
 def us_cuba_diplomatic_meeting_2026_redirect():
@@ -8967,6 +9192,180 @@ def health():
         "supabase_storage_write_enabled": supabase_storage_enabled(),
         "report_cached": _REPORT_CACHE["html"] is not None,
     }, 200
+
+
+@app.route("/guides/can-americans-travel-to-cuba-2026")
+@app.route("/guides/can-americans-travel-to-cuba-2026/")
+def guide_can_americans_travel_to_cuba():
+    """Comprehensive guide targeting 'can americans travel to cuba' search cluster."""
+    try:
+        from src.page_renderer import _env, _base_url, _iso, settings as _s
+        from datetime import datetime as _dt
+        import json as _json
+
+        base = _base_url()
+        canonical = f"{base}/guides/can-americans-travel-to-cuba-2026"
+
+        seo = {
+            "title": "Can Americans Travel to Cuba? Yes — Here's How (2026)",
+            "description": (
+                "Americans can travel to Cuba in 2026 under 12 OFAC categories. "
+                "Full guide: documents, flights, hotels, penalties, and FAQs."
+            ),
+            "keywords": (
+                "can americans travel to cuba, can americans travel to cuba 2026, "
+                "can us citizens travel to cuba, is it legal to travel to cuba, "
+                "can I travel to cuba with a US passport, cuba travel restrictions, "
+                "12 OFAC travel categories, support for the cuban people, "
+                "do I need a visa to go to cuba, can americans fly to cuba, "
+                "what happens if americans go to cuba illegally, "
+                "cuba travel requirements 2026, CACR §515.574"
+            ),
+            "canonical": canonical,
+            "site_name": _s.site_name,
+            "site_url": base,
+            "locale": _s.site_locale,
+            "og_image": f"{base}/static/og-image.png?v=3",
+            "og_type": "article",
+            "published_iso": "2026-05-13T00:00:00+00:00",
+            "modified_iso": _iso(_dt.utcnow()),
+            "section": "Travel",
+            "article_tags": [
+                "Cuba travel", "OFAC", "sanctions", "Support for the Cuban People",
+                "Cuba travel guide 2026", "can americans go to cuba",
+            ],
+        }
+
+        faq = [
+            {
+                "q": "Can Americans travel to Cuba in 2026?",
+                "a": (
+                    "Yes. U.S. citizens and permanent residents can legally travel "
+                    "to Cuba in 2026, but only under one of OFAC's 12 authorized "
+                    "travel categories defined in the Cuban Assets Control "
+                    "Regulations (31 CFR Part 515). Pure tourism is not authorized. "
+                    "The most common category for individual travelers is §515.574 "
+                    "'Support for the Cuban People,' which requires a full-time "
+                    "schedule of activities that support Cuba's private sector."
+                ),
+            },
+            {
+                "q": "Is it legal for Americans to visit Cuba?",
+                "a": (
+                    "Yes, it is legal but with conditions. The U.S. embargo does "
+                    "not ban all travel to Cuba. It bans tourist travel. If your "
+                    "trip falls under one of the 12 OFAC-authorized categories "
+                    "(such as family visits, journalism, professional research, "
+                    "religious activities, or support for the Cuban people), you "
+                    "can travel legally under a general license."
+                ),
+            },
+            {
+                "q": "Can US citizens go to Cuba?",
+                "a": (
+                    "Yes. Both U.S. citizens and legal permanent residents "
+                    "(green-card holders) may travel to Cuba under OFAC general "
+                    "licenses. You must qualify under one of the 12 authorized "
+                    "categories. No pre-approval from OFAC is required."
+                ),
+            },
+            {
+                "q": "What are the 12 requirements to travel to Cuba?",
+                "a": (
+                    "They are 12 authorized categories (not requirements): "
+                    "(1) family visits, (2) official U.S. government business, "
+                    "(3) journalistic activity, (4) professional research and "
+                    "meetings, (5) educational activities, (6) religious activities, "
+                    "(7) public performances/clinics/workshops/competitions, "
+                    "(8) support for the Cuban people, (9) humanitarian projects, "
+                    "(10) activities of private foundations or research institutes, "
+                    "(11) export/import of informational materials, and "
+                    "(12) certain authorized export transactions."
+                ),
+            },
+            {
+                "q": "Can I travel to Cuba with a US passport?",
+                "a": (
+                    "Yes. You need a valid U.S. passport with at least 6 months "
+                    "remaining validity. You also need a Cuban Tourist Card "
+                    "(e-Visa, ~$50), Cuban-law travel insurance, and the "
+                    "D'Viajeros online customs declaration."
+                ),
+            },
+            {
+                "q": "Do I need a visa to go to Cuba?",
+                "a": (
+                    "U.S. citizens do not need a traditional visa. Instead, you "
+                    "need a Cuban Tourist Card (sometimes called a 'visa'), which "
+                    "costs approximately $50 and has been required since July 2025. "
+                    "Most airlines provide it during check-in. On the U.S. side, "
+                    "you self-certify your OFAC travel category."
+                ),
+            },
+            {
+                "q": "Can Americans fly directly to Cuba?",
+                "a": (
+                    "Yes. Multiple U.S. airlines operate direct flights to Cuba. "
+                    "American Airlines flies approximately 10 routes daily from "
+                    "Miami. Delta, JetBlue, Southwest, and United also offer "
+                    "service. Flight time Miami–Havana is approximately 1 hour."
+                ),
+            },
+            {
+                "q": "What happens if Americans go to Cuba illegally?",
+                "a": (
+                    "Traveling to Cuba outside the 12 authorized OFAC categories "
+                    "can result in civil penalties of up to approximately $356,579 "
+                    "per violation, criminal fines of up to $1,000,000, and up to "
+                    "20 years imprisonment. OFAC can audit travel records for up "
+                    "to 5 years after a trip."
+                ),
+            },
+        ]
+
+        graph = [
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{base}/"},
+                    {"@type": "ListItem", "position": 2, "name": "Travel", "item": f"{base}/travel"},
+                    {"@type": "ListItem", "position": 3, "name": "Can Americans Travel to Cuba?", "item": canonical},
+                ],
+            },
+            {
+                "@type": "Article",
+                "@id": f"{canonical}#article",
+                "headline": seo["title"],
+                "description": seo["description"],
+                "url": canonical,
+                "datePublished": seo["published_iso"],
+                "dateModified": seo["modified_iso"],
+                "author": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                "publisher": {"@type": "Organization", "name": _s.site_name, "url": f"{base}/"},
+                "mainEntityOfPage": {"@type": "WebPage", "@id": canonical},
+                "articleSection": "Travel",
+                "keywords": seo["keywords"],
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": q["q"],
+                        "acceptedAnswer": {"@type": "Answer", "text": q["a"]},
+                    }
+                    for q in faq
+                ],
+            },
+        ]
+
+        jsonld_str = _json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False)
+
+        template = _env.get_template("guides/can-americans-travel-to-cuba.html.j2")
+        return template.render(seo=seo, jsonld=jsonld_str)
+    except Exception as exc:
+        logger.exception("guide_can_americans_travel_to_cuba failed: %s", exc)
+        abort(500)
 
 
 if __name__ == "__main__":

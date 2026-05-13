@@ -1,0 +1,771 @@
+{% extends "_base.html.j2" %}
+
+{% block head_extra %}
+<style>
+  .guide-hero { background: linear-gradient(180deg, #f6f8fa 0%, var(--white) 100%); padding: 28px 0 16px; margin-bottom: 16px; }
+  .guide-hero .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: #cc0000; font-weight: 700; }
+  .guide-hero h1 { font-family: var(--font-serif); font-size: 34px; color: var(--sr-blue-dark); margin: 8px 0 12px; line-height: 1.2; }
+  .guide-hero p.lead { font-family: var(--font-serif); font-style: italic; color: var(--sr-gray-text); font-size: 18px; max-width: 720px; }
+
+  .toc { background: var(--sr-gray-bg); border-left: 3px solid var(--sr-blue); padding: 18px 22px; margin: 0 0 32px; font-size: 14px; }
+  .toc h3 { font-family: var(--font-serif); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--sr-blue-dark); margin-bottom: 10px; }
+  .toc ol { margin-left: 20px; columns: 2; column-gap: 24px; }
+  .toc li { margin-bottom: 6px; }
+  @media (max-width: 640px) { .toc ol { columns: 1; } }
+
+  .sec { margin: 40px 0 24px; padding-top: 8px; }
+  .sec h2 { font-family: var(--font-serif); font-size: 26px; color: var(--sr-blue-dark); margin-bottom: 8px; }
+  .sec .sec-lead { color: var(--sr-gray-text); margin-bottom: 18px; font-size: 15px; }
+
+  .takeaways { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 18px 22px; border-radius: 4px; margin: 0 0 28px; }
+  .takeaways h3 { font-family: var(--font-serif); font-size: 16px; color: #1b5e20; margin-bottom: 10px; }
+  .takeaways ul { margin-left: 18px; font-size: 15px; line-height: 1.7; color: var(--sr-dark-text); }
+
+  .checklist { list-style: none; margin: 0 0 8px; padding: 0; }
+  .checklist li { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px dotted var(--sr-gray-light); align-items: flex-start; }
+  .checklist li:last-child { border-bottom: 0; }
+  .checklist .marker { flex-shrink: 0; width: 22px; height: 22px; border: 2px solid var(--sr-blue); border-radius: 4px; margin-top: 2px; display: inline-block; }
+  .checklist .marker.warn { border-color: #cc0000; }
+  .checklist .body h4 { font-family: var(--font-sans); font-size: 15px; color: var(--sr-dark-text); margin-bottom: 4px; font-weight: 700; }
+  .checklist .body p { font-size: 14px; color: var(--sr-gray-text); margin: 0; line-height: 1.6; }
+  .checklist .body a { color: var(--sr-blue); }
+
+  .compliance-note { background: #fff8e1; border-left: 4px solid #f5b041; padding: 14px 18px; border-radius: 3px; margin: 14px 0 22px; font-size: 14px; line-height: 1.6; color: var(--sr-dark-text); }
+  .compliance-note strong { color: var(--sr-blue-dark); }
+  .compliance-note a { font-weight: 600; color: var(--sr-blue); }
+
+  .disclaimer { background: #fff8e1; border-left: 4px solid #f5b041; padding: 14px 18px; border-radius: 3px; margin: 20px 0; font-size: 13.5px; line-height: 1.65; color: var(--sr-dark-text); }
+
+  .category-table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
+  .category-table th, .category-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--sr-gray-light); }
+  .category-table th { background: var(--sr-gray-bg); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sr-gray-text); font-weight: 600; }
+  .category-table tr:hover { background: #f4f8fb; }
+  .category-table td.num { font-family: var(--font-sans); font-weight: 600; color: var(--sr-blue); white-space: nowrap; }
+
+  .deep-dive { background: #f4f8fb; border: 1px solid #cfdce8; border-left: 5px solid var(--sr-blue); padding: 22px 24px; border-radius: 4px; margin: 18px 0 28px; }
+  .deep-dive h3 { font-family: var(--font-serif); font-size: 20px; color: var(--sr-blue-dark); margin-bottom: 10px; }
+  .deep-dive p { font-size: 15px; color: var(--sr-dark-text); margin-bottom: 12px; line-height: 1.65; }
+  .deep-dive ul { margin-left: 18px; font-size: 14.5px; line-height: 1.7; color: var(--sr-dark-text); }
+
+  .flight-table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; font-size: 14px; }
+  .flight-table th, .flight-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--sr-gray-light); }
+  .flight-table th { background: var(--sr-gray-bg); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--sr-gray-text); font-weight: 600; }
+  .flight-table tr:hover { background: #f4f8fb; }
+
+  .penalty-box { background: #fdecea; border-left: 4px solid var(--sr-red); padding: 18px 22px; border-radius: 4px; margin: 14px 0 24px; }
+  .penalty-box h3 { font-family: var(--font-serif); font-size: 18px; color: #b71c1c; margin-bottom: 8px; }
+  .penalty-box p { font-size: 14.5px; color: var(--sr-dark-text); line-height: 1.65; margin-bottom: 8px; }
+  .penalty-box ul { margin-left: 18px; font-size: 14px; line-height: 1.7; }
+
+  .faq-section .faq-item { border-bottom: 1px solid var(--sr-gray-light); padding: 18px 0; }
+  .faq-section .faq-item:last-child { border-bottom: 0; }
+  .faq-section .faq-q { font-family: var(--font-serif); font-size: 17px; font-weight: 700; color: var(--sr-blue-dark); margin-bottom: 8px; }
+  .faq-section .faq-a { font-size: 15px; color: var(--sr-dark-text); line-height: 1.7; }
+
+  .sources-list { list-style: disc; margin-left: 20px; font-size: 14px; line-height: 1.8; color: var(--sr-gray-text); }
+  .sources-list a { color: var(--sr-blue); }
+
+  .tools-cta { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 18px 0 28px; }
+  @media (min-width: 720px) { .tools-cta { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1000px) { .tools-cta { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+  .tools-cta a { display: block; padding: 14px 16px; background: var(--white); border: 1px solid var(--sr-gray-light); border-radius: 4px; text-decoration: none; color: var(--sr-dark-text); transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .tools-cta a:hover { border-color: var(--sr-blue); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
+  .tools-cta .label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--sr-gray-text); font-weight: 700; margin-bottom: 3px; }
+  .tools-cta .title { display: block; font-family: var(--font-serif); font-size: 15px; color: var(--sr-blue-dark); font-weight: 700; margin-bottom: 5px; }
+  .tools-cta .text { display: block; font-size: 12.5px; color: var(--sr-gray-text); line-height: 1.45; }
+
+  .page-share-row { display: flex; justify-content: flex-end; margin: 4px 0 -4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<article class="container-wide" itemscope itemtype="https://schema.org/Article">
+
+  <nav class="breadcrumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a><span>/</span>
+    <a href="/travel">Travel</a><span>/</span>
+    <span>Can Americans Travel to Cuba?</span>
+  </nav>
+
+  <div class="page-share-row">
+    {{ share_button(seo.canonical, seo.title) }}
+  </div>
+
+  <header class="guide-hero">
+    <div class="kicker">Guide · Updated May 2026</div>
+    <h1 itemprop="headline">Can Americans Travel to Cuba? Yes &mdash; Here&rsquo;s How (2026 Guide)</h1>
+    <p class="lead">
+      Everything U.S. citizens need to know about legally traveling to Cuba in 2026:
+      the 12 OFAC-authorized categories, required documents, direct flights,
+      hotel rules, penalties for non-compliance, and step-by-step preparation.
+    </p>
+  </header>
+
+  <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin: -4px 0 20px; padding:10px 14px; background: var(--sr-gray-bg); border-left:3px solid var(--sr-blue); font-size:13px; color:var(--sr-gray-text);">
+    <span><strong style="color:var(--sr-dark-text);">Last updated:</strong> May 13, 2026</span>
+    <span><strong style="color:var(--sr-dark-text);">Sources:</strong> OFAC CACR (31 CFR Part 515), U.S. State Department, eCFR, Executive Order 14404</span>
+  </div>
+
+  {# ─── TABLE OF CONTENTS ─── #}
+  <nav class="toc" aria-label="Table of contents">
+    <h3>In This Guide</h3>
+    <ol>
+      <li><a href="#quick-answer">Quick Answer</a></li>
+      <li><a href="#12-categories">The 12 OFAC-Authorized Travel Categories</a></li>
+      <li><a href="#support-deep-dive">"Support for the Cuban People" Deep Dive</a></li>
+      <li><a href="#before-you-fly">What You Need Before You Fly</a></li>
+      <li><a href="#direct-flights">Direct Flights from the US</a></li>
+      <li><a href="#hotels">Hotels &amp; Accommodations</a></li>
+      <li><a href="#restricted-list">The Cuba Restricted List (CRL)</a></li>
+      <li><a href="#eo-14404">New in 2026: Executive Order 14404</a></li>
+      <li><a href="#travel-advisory">Current Travel Advisory</a></li>
+      <li><a href="#penalties">Penalties for Non-Compliance</a></li>
+      <li><a href="#faq">Frequently Asked Questions</a></li>
+      <li><a href="#sources">Sources</a></li>
+    </ol>
+  </nav>
+
+  {# ─── TOOLS CTA ─── #}
+  <div class="tools-cta">
+    <a href="/tools/can-i-travel-to-cuba">
+      <span class="label">Decision tree</span>
+      <span class="title">Can I Travel to Cuba?</span>
+      <span class="text">Interactive OFAC 12-category checker for your specific trip.</span>
+    </a>
+    <a href="/tools/cuba-prohibited-hotels-checker">
+      <span class="label">Hotel check</span>
+      <span class="title">CPAL Hotel Checker</span>
+      <span class="text">Search the 431 prohibited properties before you book.</span>
+    </a>
+    <a href="/tools/cuba-restricted-list-checker">
+      <span class="label">Entity screen</span>
+      <span class="title">CRL Entity Checker</span>
+      <span class="text">Screen vendors, tours, and counterparties against 247 restricted entities.</span>
+    </a>
+    <a href="/tools/ofac-cuba-sanctions-checker">
+      <span class="label">Sanctions</span>
+      <span class="title">OFAC Sanctions Checker</span>
+      <span class="text">Comprehensive Cuba sanctions compliance screening.</span>
+    </a>
+  </div>
+
+  {# ─── 1. QUICK ANSWER ─── #}
+  <section class="sec" id="quick-answer">
+    <h2>1. Quick Answer</h2>
+    <div class="takeaways">
+      <h3>Key Takeaways</h3>
+      <ul>
+        <li><strong>Yes, Americans can travel to Cuba in 2026</strong> &mdash; but <strong>not as tourists.</strong></li>
+        <li>You must qualify under one of <strong>12 OFAC-authorized travel categories</strong> defined in the Cuban Assets Control Regulations (CACR, 31 CFR Part 515).</li>
+        <li>The most common category for individual travelers is <strong>&sect;515.574 &ldquo;Support for the Cuban People.&rdquo;</strong></li>
+        <li>You self-certify your category at airline check-in &mdash; no pre-approval from OFAC is needed for general-license travel.</li>
+        <li>You must keep records of your activities for <strong>5 years</strong> per &sect;515.601.</li>
+      </ul>
+    </div>
+    <p>
+      The U.S. embargo on Cuba, codified in the
+      <a href="https://www.ecfr.gov/current/title-31/subtitle-B/chapter-V/part-515" rel="nofollow" target="_blank">Cuban Assets Control Regulations (CACR)</a>,
+      prohibits ordinary tourism. However, OFAC (the Office of Foreign Assets Control)
+      authorizes travel under 12 specific categories via general licenses &mdash; meaning
+      you do not need individual permission, but you <em>must</em> meet the requirements
+      of at least one category for every day of your trip.
+    </p>
+    <p style="margin-top:12px;">
+      Use our <a href="/tools/can-i-travel-to-cuba">interactive decision-tree tool</a>
+      to determine which category applies to your trip.
+    </p>
+  </section>
+
+  {# ─── 2. THE 12 CATEGORIES ─── #}
+  <section class="sec" id="12-categories">
+    <h2>2. The 12 OFAC-Authorized Travel Categories</h2>
+    <p class="sec-lead">
+      These are the <strong>only</strong> legal bases for U.S. persons to travel to Cuba.
+      Each category is codified in 31 CFR Part 515 of the CACR. Pure &ldquo;tourism&rdquo;
+      is not among them.
+    </p>
+
+    <table class="category-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Category</th>
+          <th>CFR Reference</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td><strong>Family visits</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.561" rel="nofollow" target="_blank">&sect;515.561</a></td>
+          <td>Visit close relatives who are nationals of Cuba. No frequency or duration limit.</td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td><strong>Official U.S. government business</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.562" rel="nofollow" target="_blank">&sect;515.562</a></td>
+          <td>Federal, state, or local government employees on official duty.</td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td><strong>Journalistic activity</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.563" rel="nofollow" target="_blank">&sect;515.563</a></td>
+          <td>Journalists employed by a news organization. Freelancers must have a contract or commission from a media outlet.</td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td><strong>Professional research &amp; professional meetings</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.564" rel="nofollow" target="_blank">&sect;515.564</a></td>
+          <td>Full-time professionals whose research directly relates to their profession. Includes attending professional conferences.</td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td><strong>Educational activities</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.565" rel="nofollow" target="_blank">&sect;515.565</a></td>
+          <td>Must be part of a structured program sponsored by a U.S. academic institution. People-to-people educational trips were suspended in 2019 &mdash; only institutional programs qualify.</td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td><strong>Religious activities</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.566" rel="nofollow" target="_blank">&sect;515.566</a></td>
+          <td>Full-time schedule of religious activities organized by a religious org based in the U.S.</td>
+        </tr>
+        <tr>
+          <td class="num">7</td>
+          <td><strong>Public performances, clinics, workshops, competitions</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.567" rel="nofollow" target="_blank">&sect;515.567</a></td>
+          <td>Athletes, musicians, artists participating in public events. Must be open to the Cuban public.</td>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td><strong>Support for the Cuban people</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.574" rel="nofollow" target="_blank">&sect;515.574</a></td>
+          <td><strong>Most common for individual travelers.</strong> Full-time schedule supporting Cuban private sector. See <a href="#support-deep-dive">detailed section below</a>.</td>
+        </tr>
+        <tr>
+          <td class="num">9</td>
+          <td><strong>Humanitarian projects</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.575" rel="nofollow" target="_blank">&sect;515.575</a></td>
+          <td>Projects addressing human needs (food, medicine, shelter). Must be organized by a qualifying NGO or foundation.</td>
+        </tr>
+        <tr>
+          <td class="num">10</td>
+          <td><strong>Activities of private foundations or research institutes</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.576" rel="nofollow" target="_blank">&sect;515.576</a></td>
+          <td>Foundations and research/educational institutes collecting information for non-commercial purposes.</td>
+        </tr>
+        <tr>
+          <td class="num">11</td>
+          <td><strong>Exportation, importation, or transmission of informational materials</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.577" rel="nofollow" target="_blank">&sect;515.577</a></td>
+          <td>Travel related to creating or distributing informational materials (films, books, recordings, artwork).</td>
+        </tr>
+        <tr>
+          <td class="num">12</td>
+          <td><strong>Certain authorized export transactions</strong></td>
+          <td><a href="https://www.ecfr.gov/current/title-31/section-515.578" rel="nofollow" target="_blank">&sect;515.578</a></td>
+          <td>Travel related to licensed exports or re-exports to Cuba under Commerce Dept. authorization.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      For a detailed walkthrough of each category matched to your trip,
+      use our <a href="/tools/ofac-cuba-general-licenses">OFAC General Licenses Explorer</a>.
+    </p>
+
+    <div class="compliance-note">
+      <strong>Important:</strong> These are <em>general licenses</em> &mdash; you self-certify at
+      airline check-in. OFAC does not issue boarding passes or stamps. But if audited later,
+      you must be able to prove your trip met every requirement of the category you claimed.
+    </div>
+  </section>
+
+  {# ─── 3. SUPPORT FOR THE CUBAN PEOPLE ─── #}
+  <section class="sec" id="support-deep-dive">
+    <h2>3. &ldquo;Support for the Cuban People&rdquo; &mdash; Deep Dive</h2>
+    <p class="sec-lead">
+      <a href="https://www.ecfr.gov/current/title-31/section-515.574" rel="nofollow" target="_blank">&sect;515.574</a>
+      is the category most individual American travelers use.
+      Here is exactly what it requires.
+    </p>
+
+    <div class="deep-dive">
+      <h3>Core Requirements</h3>
+      <ul>
+        <li><strong>Full-time schedule of activities</strong> that result in meaningful interaction with the Cuban people and support for Cuba&rsquo;s private sector.</li>
+        <li><strong>Stay at casas particulares</strong> (private homestays) &mdash; not government-owned hotels. Casas are independently owned Cuban homes licensed to host guests.</li>
+        <li><strong>Eat at paladares</strong> (private restaurants) rather than state-run dining.</li>
+        <li><strong>Engage with MIPYMEs</strong> (micro, small, and medium enterprises) &mdash; privately owned Cuban businesses legalized in 2021.</li>
+        <li><strong>Shop at private-sector vendors</strong> such as artisan markets, independent shops, and private taxi/transport services.</li>
+        <li><strong>No free time at the beach</strong> unless it directly supports a qualifying activity. Lounging at a resort pool does not qualify.</li>
+      </ul>
+    </div>
+
+    <div class="deep-dive">
+      <h3>Record-Keeping (&sect;515.601)</h3>
+      <p>
+        You <strong>must maintain records for 5 years</strong> from the date of your trip.
+        OFAC can request these at any time. Keep:
+      </p>
+      <ul>
+        <li>A day-by-day itinerary showing your full-time schedule of qualifying activities</li>
+        <li>Receipts from casas particulares, paladares, private taxis, and MIPYME purchases</li>
+        <li>Airline confirmation and boarding passes showing the OFAC category you selected</li>
+        <li>Photos, notes, and contact information of Cuban private-sector individuals you interacted with</li>
+        <li>Any contracts, invoices, or correspondence with Cuban private businesses</li>
+      </ul>
+    </div>
+
+    <div class="compliance-note">
+      <strong>Pro tip:</strong> Create a daily travel log (digital or paper) before your trip and
+      fill it in each evening. This is your best defense if OFAC ever audits your travel.
+      Our <a href="/tools/can-i-travel-to-cuba">decision-tree tool</a> can help you confirm your
+      activities qualify.
+    </div>
+  </section>
+
+  {# ─── 4. BEFORE YOU FLY ─── #}
+  <section class="sec" id="before-you-fly">
+    <h2>4. What You Need Before You Fly</h2>
+    <p class="sec-lead">
+      Complete this checklist before departing for Cuba. Missing any item can mean
+      denied boarding, entry refusal, or compliance violations.
+    </p>
+
+    <ul class="checklist">
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>Valid U.S. Passport (6+ months validity)</h4>
+          <p>
+            Your passport must be valid for at least 6 months beyond your planned return date.
+            Cuba will deny entry with an expiring passport.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>Cuban Tourist Card / e-Visa ($50)</h4>
+          <p>
+            Required for all visitors since July 2025. Most airlines selling Cuba routes
+            include the Tourist Card in their check-in process, or you can purchase one online
+            in advance. This is a Cuban-government requirement, separate from OFAC compliance.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>OFAC Category Self-Certification</h4>
+          <p>
+            At airline check-in, you will select which of the 12 authorized travel categories
+            applies to your trip. This is a legal declaration. Choose accurately.
+            Use our <a href="/tools/can-i-travel-to-cuba">decision-tree tool</a> to confirm your category.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>Cuban-Law Travel Insurance (~$25, mandatory)</h4>
+          <p>
+            Cuba requires all visitors to carry health insurance valid in Cuba. Most U.S.
+            health plans do not cover Cuba. Airlines flying Cuba routes typically include
+            Cuban-compliant insurance in the ticket price. Verify with your carrier.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>D&rsquo;Viajeros Online Customs Declaration</h4>
+          <p>
+            Complete Cuba&rsquo;s
+            <a href="https://www.dviajeros.mitrans.gob.cu/" rel="nofollow" target="_blank">D&rsquo;Viajeros</a>
+            online customs form up to 7 days before arrival. This generates a QR code
+            you present at Cuban immigration.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker warn"></span>
+        <div class="body">
+          <h4>Cash in USD or EUR (U.S. cards don&rsquo;t work)</h4>
+          <p>
+            <strong>U.S.-issued credit and debit cards do not work in Cuba</strong> due to the
+            embargo. Bring enough cash (USD or EUR) for your entire trip. There are no ATMs
+            that accept U.S. cards. Budget $100&ndash;$150/day minimum for accommodation, food,
+            and transport.
+          </p>
+        </div>
+      </li>
+      <li>
+        <span class="marker"></span>
+        <div class="body">
+          <h4>STEP Registration with the U.S. Embassy</h4>
+          <p>
+            Enroll in the State Department&rsquo;s
+            <a href="https://step.state.gov/" rel="nofollow" target="_blank">Smart Traveler Enrollment Program (STEP)</a>
+            so the U.S. Embassy in Havana can contact you in an emergency. This is strongly
+            recommended, not legally required.
+          </p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  {# ─── 5. DIRECT FLIGHTS ─── #}
+  <section class="sec" id="direct-flights">
+    <h2>5. Direct Flights from the US to Cuba</h2>
+    <p class="sec-lead">
+      Yes, Americans can fly directly to Cuba. Multiple U.S. airlines operate
+      scheduled service to Havana (HAV) and other Cuban airports.
+    </p>
+
+    <table class="flight-table">
+      <thead>
+        <tr>
+          <th>Airline</th>
+          <th>U.S. Departure Cities</th>
+          <th>Destinations in Cuba</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>American Airlines</strong></td>
+          <td>Miami (MIA)</td>
+          <td>Havana (HAV), Santa Clara (SNU), Holgu&iacute;n (HOG), Camag&uuml;ey (CMW), Santiago de Cuba (SCU)</td>
+          <td>~10 daily flights from Miami. Largest Cuba carrier. MIA&ndash;HAV flight time ~1 hour.</td>
+        </tr>
+        <tr>
+          <td><strong>Southwest Airlines</strong></td>
+          <td>Tampa (TPA), Fort Lauderdale (FLL)</td>
+          <td>Havana (HAV)</td>
+          <td>Seasonal schedules; check current availability.</td>
+        </tr>
+        <tr>
+          <td><strong>Delta Air Lines</strong></td>
+          <td>Atlanta (ATL), Miami (MIA), New York (JFK)</td>
+          <td>Havana (HAV)</td>
+          <td>Multiple daily options via ATL and MIA hubs.</td>
+        </tr>
+        <tr>
+          <td><strong>United Airlines</strong></td>
+          <td>Houston (IAH), Newark (EWR)</td>
+          <td>Havana (HAV)</td>
+          <td>Less frequent; verify schedules before booking.</td>
+        </tr>
+        <tr>
+          <td><strong>JetBlue</strong></td>
+          <td>Fort Lauderdale (FLL)</td>
+          <td>Havana (HAV), Santa Clara (SNU)</td>
+          <td>Competitive fares from South Florida.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="compliance-note">
+      <strong>Charter flights:</strong> Several charter operators (Cuba Travel Services, Havana Air,
+      ABC Charters) run flights from Miami, New York, and other cities. These are often
+      used by Cuban-Americans visiting family. The same OFAC category requirements apply.
+    </div>
+  </section>
+
+  {# ─── 6. HOTELS & ACCOMMODATIONS ─── #}
+  <section class="sec" id="hotels">
+    <h2>6. Hotels &amp; Accommodations</h2>
+    <p class="sec-lead">
+      Where you stay in Cuba is a compliance decision, not just a comfort choice.
+    </p>
+
+    <p>
+      The State Department maintains the
+      <strong>Cuba Prohibited Accommodations List (CPAL)</strong> &mdash; currently listing
+      <strong>431 properties</strong> that U.S. persons may not use. These are primarily
+      hotels, resorts, and bed-and-breakfasts controlled by entities tied to the Cuban
+      military or intelligence services (GAESA, Gaviota, Cubanac&aacute;n).
+    </p>
+
+    <p style="margin-top:12px;">
+      If you are traveling under <strong>&ldquo;Support for the Cuban People&rdquo;</strong>
+      (&sect;515.574), you should stay at <strong>casas particulares</strong> &mdash; privately owned
+      Cuban homestays. This directly supports the Cuban private sector and satisfies the
+      category&rsquo;s requirements.
+    </p>
+
+    <div class="compliance-note">
+      <strong>Before you book:</strong> Search any hotel or accommodation against the CPAL using our
+      <a href="/tools/cuba-prohibited-hotels-checker">Prohibited Hotels Checker</a>.
+      Booking a CPAL property is a sanctionable violation.
+    </div>
+  </section>
+
+  {# ─── 7. CUBA RESTRICTED LIST ─── #}
+  <section class="sec" id="restricted-list">
+    <h2>7. The Cuba Restricted List (CRL)</h2>
+    <p class="sec-lead">
+      Beyond hotels, OFAC prohibits transactions with <strong>247 entities</strong> on the
+      Cuba Restricted List.
+    </p>
+
+    <p>
+      The CRL includes military-controlled conglomerates, tourism operators, retail
+      chains, and other state-linked entities. Key names to avoid:
+    </p>
+    <ul style="margin: 12px 0 18px 20px; font-size: 15px; line-height: 1.7;">
+      <li><strong>GAESA</strong> (Grupo de Administraci&oacute;n Empresarial S.A.) &mdash; the Cuban military&rsquo;s business conglomerate</li>
+      <li><strong>Gaviota</strong> &mdash; military-run tourism group (hotels, tours, car rentals)</li>
+      <li><strong>CIMEX</strong> &mdash; large state-owned retail and financial services company</li>
+      <li><strong>Cubanac&aacute;n</strong> &mdash; state tourism company operating hotels and tours</li>
+      <li><strong>Habaguanex</strong> &mdash; Old Havana hotel and restaurant operator (transferred to GAESA)</li>
+    </ul>
+
+    <p>
+      Screen any Cuban vendor, tour operator, or business partner against the CRL using
+      our <a href="/tools/cuba-restricted-list-checker">CRL Entity Checker</a>.
+    </p>
+  </section>
+
+  {# ─── 8. E.O. 14404 ─── #}
+  <section class="sec" id="eo-14404">
+    <h2>8. New in 2026: Executive Order 14404</h2>
+    <p>
+      In May 2026, the White House issued <strong>Executive Order 14404</strong>, expanding
+      sanctions on Cuba&rsquo;s military and intelligence apparatus. Key impacts for travelers:
+    </p>
+    <ul style="margin: 12px 0 18px 20px; font-size: 15px; line-height: 1.7;">
+      <li>Additional GAESA subsidiaries designated under the CRL</li>
+      <li>Stricter enforcement posture signaled by OFAC</li>
+      <li>No change to the 12 authorized travel categories themselves &mdash; the legal framework remains the same</li>
+    </ul>
+    <p>
+      Track ongoing developments on our <a href="/sanctions-tracker">Sanctions Tracker</a>.
+    </p>
+  </section>
+
+  {# ─── 9. TRAVEL ADVISORY ─── #}
+  <section class="sec" id="travel-advisory">
+    <h2>9. Current Travel Advisory</h2>
+    <p>
+      The U.S. State Department currently rates Cuba as
+      <strong>Level 2: Exercise Increased Caution</strong>. Key risk factors cited:
+    </p>
+    <ul style="margin: 12px 0 18px 20px; font-size: 15px; line-height: 1.7;">
+      <li><strong>Power crisis:</strong> Ongoing nationwide electricity shortages cause frequent multi-hour blackouts (&ldquo;apagones&rdquo;) affecting elevators, air conditioning, refrigeration, and communications.</li>
+      <li><strong>Crime:</strong> Petty crime (pickpocketing, bag snatching) has risen in tourist areas. Violent crime against foreigners remains rare but increasing.</li>
+      <li><strong>Medical care:</strong> Cuban hospitals face severe shortages of medication, supplies, and equipment. Carry a personal first-aid kit and any prescription medications you need.</li>
+      <li><strong>Limited U.S. consular services:</strong> The U.S. Embassy in Havana has reduced staffing since 2017.</li>
+    </ul>
+    <p>
+      See our <a href="/tools/cuba-travel-advisory">Cuba Travel Advisory dashboard</a>
+      for the latest level and detailed breakdown.
+    </p>
+  </section>
+
+  {# ─── 10. PENALTIES ─── #}
+  <section class="sec" id="penalties">
+    <h2>10. Penalties for Non-Compliance</h2>
+    <p class="sec-lead">
+      Traveling to Cuba outside the 12 authorized categories &mdash; or failing to maintain
+      adequate records &mdash; is a federal violation with serious consequences.
+    </p>
+
+    <div class="penalty-box">
+      <h3>OFAC Enforcement Penalties</h3>
+      <ul>
+        <li><strong>Civil penalties:</strong> Up to approximately <strong>$356,579 per violation</strong> (adjusted annually for inflation under the Federal Civil Penalties Inflation Adjustment Act).</li>
+        <li><strong>Criminal penalties:</strong> Up to <strong>$1,000,000 in fines</strong> and <strong>20 years imprisonment</strong> under the Trading With the Enemy Act (TWEA) and International Emergency Economic Powers Act (IEEPA).</li>
+        <li><strong>Referred cases:</strong> OFAC can refer cases to the Department of Justice for criminal prosecution.</li>
+      </ul>
+      <p>
+        In practice, most individual enforcement actions result in civil penalties
+        or settlement agreements. However, OFAC has increased enforcement actions
+        in recent years, and &ldquo;I didn&rsquo;t know&rdquo; is not a valid defense.
+      </p>
+    </div>
+
+    <p>
+      Check your overall compliance posture with our
+      <a href="/tools/ofac-cuba-sanctions-checker">OFAC Sanctions Checker</a>.
+    </p>
+  </section>
+
+  {# ─── 11. FAQ ─── #}
+  <section class="sec faq-section" id="faq">
+    <h2>11. Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <p class="faq-q">Can Americans travel to Cuba in 2026?</p>
+      <p class="faq-a">
+        Yes. U.S. citizens and permanent residents can legally travel to Cuba in 2026,
+        but only under one of OFAC&rsquo;s 12 authorized travel categories defined in the
+        Cuban Assets Control Regulations (31 CFR Part 515). Pure tourism is not
+        authorized. The most common category for individual travelers is &sect;515.574
+        &ldquo;Support for the Cuban People,&rdquo; which requires a full-time schedule of
+        activities that support Cuba&rsquo;s private sector.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Is it legal for Americans to visit Cuba?</p>
+      <p class="faq-a">
+        Yes, it is legal &mdash; but with conditions. The U.S. embargo does not ban
+        all travel to Cuba. It bans <em>tourist</em> travel. If your trip falls under one of
+        the 12 OFAC-authorized categories (such as family visits, journalism,
+        professional research, religious activities, or support for the Cuban people),
+        you can travel legally under a general license. You self-certify your category
+        at airline check-in and must keep records for 5 years.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Can US citizens go to Cuba?</p>
+      <p class="faq-a">
+        Yes. Both U.S. citizens and legal permanent residents (green-card holders)
+        may travel to Cuba under OFAC general licenses. You must qualify under one
+        of the 12 authorized categories. No pre-approval from OFAC is required for
+        general-license travel &mdash; you select your category when checking in for
+        your flight.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">What are the 12 requirements to travel to Cuba?</p>
+      <p class="faq-a">
+        They are 12 <em>authorized categories</em> (not requirements). The categories are:
+        (1) family visits, (2) official U.S. government business, (3) journalistic
+        activity, (4) professional research and meetings, (5) educational activities,
+        (6) religious activities, (7) public performances/clinics/workshops/competitions,
+        (8) support for the Cuban people, (9) humanitarian projects,
+        (10) activities of private foundations or research institutes,
+        (11) export/import of informational materials, and
+        (12) certain authorized export transactions. You must qualify under at
+        least one category. See the
+        <a href="#12-categories">full breakdown above</a>.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Can I travel to Cuba with a US passport?</p>
+      <p class="faq-a">
+        Yes. You need a valid U.S. passport with at least 6 months remaining validity.
+        In addition to your passport, you need a Cuban Tourist Card (e-Visa, ~$50),
+        Cuban-law travel insurance, and the D&rsquo;Viajeros online customs declaration.
+        Your U.S. passport is sufficient for entry into Cuba &mdash; no Cuban visa stamp
+        is placed in your passport (the Tourist Card serves as your entry document).
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Do I need a visa to go to Cuba?</p>
+      <p class="faq-a">
+        U.S. citizens do not need a traditional visa. Instead, you need a
+        <strong>Cuban Tourist Card</strong> (sometimes called a &ldquo;visa&rdquo;), which costs
+        approximately $50 and has been required since July 2025. Most airlines
+        selling Cuba routes provide the Tourist Card as part of the check-in process.
+        On the U.S. side, you self-certify your OFAC travel category &mdash; no U.S. visa
+        or OFAC license application is required for general-license travel.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">Can Americans fly directly to Cuba?</p>
+      <p class="faq-a">
+        Yes. Multiple U.S. airlines operate direct, scheduled flights to Cuba.
+        American Airlines flies approximately 10 routes daily from Miami to Havana
+        and other Cuban cities. Delta, JetBlue, Southwest, and United also offer
+        service from various U.S. cities. Flight time from Miami to Havana is
+        approximately 1 hour. All passengers must still select an OFAC-authorized
+        travel category at check-in.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">What happens if Americans go to Cuba illegally?</p>
+      <p class="faq-a">
+        Traveling to Cuba outside the 12 authorized OFAC categories can result in
+        civil penalties of up to approximately $356,579 per violation, criminal
+        fines of up to $1,000,000, and up to 20 years imprisonment. In practice,
+        most first-time individual violations result in civil enforcement actions
+        and monetary penalties. OFAC can audit your travel records for up to 5 years
+        after your trip. Traveling through a third country (e.g., Mexico or Canada)
+        to avoid detection does not make the trip legal and can increase penalties.
+      </p>
+    </div>
+  </section>
+
+  {# ─── 12. SOURCES ─── #}
+  <section class="sec" id="sources">
+    <h2>12. Sources</h2>
+    <ul class="sources-list">
+      <li><a href="https://www.ecfr.gov/current/title-31/subtitle-B/chapter-V/part-515" rel="nofollow" target="_blank">Cuban Assets Control Regulations (CACR), 31 CFR Part 515</a> &mdash; eCFR (current version)</li>
+      <li><a href="https://ofac.treasury.gov/sanctions-programs-and-country-information/cuba-sanctions" rel="nofollow" target="_blank">OFAC Cuba Sanctions Program</a> &mdash; U.S. Department of the Treasury</li>
+      <li><a href="https://www.state.gov/cuba-prohibited-accommodations-list/" rel="nofollow" target="_blank">Cuba Prohibited Accommodations List (CPAL)</a> &mdash; U.S. Department of State</li>
+      <li><a href="https://www.state.gov/cuba-restricted-list/" rel="nofollow" target="_blank">Cuba Restricted List (CRL)</a> &mdash; U.S. Department of State</li>
+      <li><a href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cuba-travel-advisory.html" rel="nofollow" target="_blank">Cuba Travel Advisory</a> &mdash; U.S. Department of State</li>
+      <li><a href="https://www.ecfr.gov/current/title-31/section-515.574" rel="nofollow" target="_blank">&sect;515.574 Support for the Cuban People</a> &mdash; eCFR</li>
+      <li><a href="https://www.ecfr.gov/current/title-31/section-515.601" rel="nofollow" target="_blank">&sect;515.601 Records and Reports</a> &mdash; eCFR</li>
+    </ul>
+  </section>
+
+  {# ─── DISCLAIMER ─── #}
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> This guide is for informational purposes only and does not
+    constitute legal advice. Cuba sanctions regulations are complex and subject to change.
+    Consult a qualified sanctions attorney before making travel decisions. Cuban Insights
+    is not affiliated with OFAC, the U.S. State Department, or the Cuban government.
+  </div>
+
+  {# ─── INTERNAL LINKS FOOTER ─── #}
+  <div style="margin: 32px 0 16px; padding: 20px 22px; background: var(--sr-gray-bg); border-radius: 4px;">
+    <h3 style="font-family: var(--font-serif); font-size: 17px; color: var(--sr-blue-dark); margin-bottom: 12px;">Related Tools &amp; Resources</h3>
+    <div class="tools-cta">
+      <a href="/tools/can-i-travel-to-cuba">
+        <span class="label">Tool</span>
+        <span class="title">OFAC Travel Decision Tree</span>
+        <span class="text">Find your authorized category step-by-step.</span>
+      </a>
+      <a href="/tools/cuba-prohibited-hotels-checker">
+        <span class="label">Tool</span>
+        <span class="title">CPAL Hotel Checker</span>
+        <span class="text">Search 431 prohibited accommodations.</span>
+      </a>
+      <a href="/tools/cuba-restricted-list-checker">
+        <span class="label">Tool</span>
+        <span class="title">CRL Entity Checker</span>
+        <span class="text">Screen 247 restricted Cuban entities.</span>
+      </a>
+      <a href="/tools/ofac-cuba-general-licenses">
+        <span class="label">Tool</span>
+        <span class="title">General Licenses Explorer</span>
+        <span class="text">Browse all OFAC Cuba general licenses.</span>
+      </a>
+      <a href="/tools/ofac-cuba-sanctions-checker">
+        <span class="label">Tool</span>
+        <span class="title">Sanctions Checker</span>
+        <span class="text">Full Cuba sanctions compliance screening.</span>
+      </a>
+      <a href="/tools/cuba-travel-advisory">
+        <span class="label">Tool</span>
+        <span class="title">Travel Advisory Dashboard</span>
+        <span class="text">Live State Department advisory level and risks.</span>
+      </a>
+      <a href="/travel">
+        <span class="label">Hub</span>
+        <span class="title">Cuba Travel Hub</span>
+        <span class="text">Hotels, safety, embassies, transport, and more.</span>
+      </a>
+      <a href="/sanctions-tracker">
+        <span class="label">Tracker</span>
+        <span class="title">Sanctions Tracker</span>
+        <span class="text">Latest Cuba sanctions developments and updates.</span>
+      </a>
+    </div>
+  </div>
+
+</article>
+{% endblock %}
