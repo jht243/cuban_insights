@@ -112,9 +112,9 @@ background:linear-gradient(135deg,#1e3a5f,#0f2744);color:#fff;padding:14px 24px;
 font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;
 display:flex;align-items:center;justify-content:center;gap:16px;box-shadow:0 -4px 20px rgba(0,0,0,0.3);">
 <span style="font-size:20px;">&#9889;</span>
-<span><strong>Need this data programmatically?</strong> Get structured JSON via the Cuban Insights API &mdash; free tier, no credit card.</span>
+<span><strong>Need this data programmatically?</strong> Our <strong style="color:#22c55e;">FREE API</strong> gives you structured JSON &mdash; 100 req/day, no credit card, instant signup.</span>
 <a href="/developers" style="background:#2563eb;color:#fff;padding:8px 20px;border-radius:6px;
-text-decoration:none;font-weight:600;white-space:nowrap;font-size:13px;">Get API Key &rarr;</a>
+text-decoration:none;font-weight:600;white-space:nowrap;font-size:13px;">Get Free API Key &rarr;</a>
 <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#94a3b8;
 cursor:pointer;font-size:20px;padding:0 4px;margin-left:8px;">&times;</button>
 </div>"""
@@ -164,11 +164,12 @@ def _rate_limited(e):
     if "json" in accept:
         return jsonify({
             "error": "rate_limit_exceeded",
-            "message": "Too many requests. Use our API for reliable, structured access.",
+            "message": "Too many requests. Switch to our FREE API for reliable, structured JSON access.",
+            "free_api": "100 requests/day — no credit card, no account, instant key",
             "api_docs": f"{settings.site_url}/developers",
             "api_base": f"{settings.site_url}/api/v1",
-            "free_tier": "100 requests/day — no credit card required",
             "signup": f"{settings.site_url}/api/v1/keys/signup",
+            "signup_example": "curl -X POST {}/api/v1/keys/signup -H 'Content-Type: application/json' -d '{{\"email\":\"you@example.com\"}}'".format(settings.site_url),
         }), 429
     base = settings.site_url
     return Response(f"""<!DOCTYPE html>
@@ -202,7 +203,8 @@ h1{{font-size:28px;color:#fff;margin-bottom:12px}}
   <div class="icon">&#9889;</div>
   <h1>You&rsquo;re moving too fast</h1>
   <p class="sub">We noticed heavy traffic from your IP. Instead of scraping HTML,
-  get the same data&mdash;cleaner, faster, and more reliable&mdash;through our API.</p>
+  get the same data&mdash;cleaner, faster, and more reliable&mdash;through our
+  <strong style="color:#22c55e;">free API</strong>.</p>
 
   <div class="card">
     <h2>Cuban Insights API</h2>
@@ -213,12 +215,12 @@ h1{{font-size:28px;color:#fff;margin-bottom:12px}}
       <li>OFAC SDN &amp; Federal Register entries</li>
       <li>No parsing, no breaking changes, no scraping bans</li>
     </ul>
-    <p class="free">Free tier: 100 requests/day &mdash; no credit card required</p>
+    <p class="free">&#10003; FREE &mdash; 100 requests/day, no credit card, instant signup</p>
   </div>
 
-  <a class="cta" href="{base}/developers">Get Your Free API Key &rarr;</a>
+  <a class="cta" href="{base}/developers">Get Your Free API Key &rarr; It&rsquo;s Free</a>
 
-  <p class="or">or try it right now:</p>
+  <p class="or">or try it right now &mdash; completely free:</p>
   <div class="code"><span class="dim"># Sign up (instant, free)</span>
 curl -X POST {base}/api/v1/keys/signup \\
   -H "Content-Type: application/json" \\
