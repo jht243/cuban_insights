@@ -257,8 +257,8 @@ VISA_REQUIREMENTS: list[dict] = [
         "advisory_summary": "Chinese government maintains full strategic and economic relations as part of Cuba's Belt and Road Initiative participation.",
         "advisory_url": "http://cu.china-embassy.gov.cn/",
         "investor_note": (
-            "China is Cuba's second-largest trading partner after "
-            "Venezuela and the largest creditor on the island. Chinese "
+            "China is one of Cuba's largest trading partners and the "
+            "largest creditor on the island. Chinese "
             "infrastructure investment is concentrated in "
             "telecommunications (Huawei is ETECSA's primary network "
             "vendor), the Mariel ZED port and logistics zone, and "
@@ -281,8 +281,7 @@ VISA_REQUIREMENTS: list[dict] = [
         "advisory_url": "https://cuba.mid.ru/",
         "investor_note": (
             "Russia is a strategic but secondary economic partner — "
-            "active in oil supply (since 2023, partially replacing "
-            "lapsed Venezuelan crude shipments), sovereign-debt "
+            "active in oil supply, sovereign-debt "
             "rescheduling, and military-technical cooperation. "
             "Secondary-sanctions risk for any non-Russian co-investor "
             "is acute given OFAC's expanded Russia-program "

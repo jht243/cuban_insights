@@ -388,14 +388,6 @@ def _store_nav_page_cache(response: Response) -> Response:
     return response
 
 
-def _legacy_redirect_to(target: str, code: int = 301) -> Response:
-    """Build a 301 redirect to `target`, preserving any query string."""
-    qs = request.query_string.decode()
-    if qs:
-        return redirect(f"{target}?{qs}", code=code)
-    return redirect(target, code=code)
-
-
 @app.route("/")
 @limiter.limit("6 per minute")
 def index():
@@ -1691,12 +1683,6 @@ def tool_cuba_visa_requirements():
         abort(500)
 
 
-@app.route("/tools/venezuela-visa-requirements")
-@app.route("/tools/venezuela-visa-requirements/")
-def _legacy_visa_requirements_redirect():
-    return _legacy_redirect_to("/tools/cuba-visa-requirements")
-
-
 @app.route("/tools/cuba-investment-roi-calculator")
 @app.route("/tools/cuba-investment-roi-calculator/")
 def tool_roi_calculator():
@@ -1799,12 +1785,6 @@ def tool_roi_calculator():
     except Exception as exc:
         logger.exception("ROI calculator render failed: %s", exc)
         abort(500)
-
-
-@app.route("/tools/venezuela-investment-roi-calculator")
-@app.route("/tools/venezuela-investment-roi-calculator/")
-def _legacy_roi_calculator_redirect():
-    return _legacy_redirect_to("/tools/cuba-investment-roi-calculator")
 
 
 @app.route("/tools/eltoque-trmi-rate")
@@ -1983,12 +1963,6 @@ def tool_eltoque_trmi():
     except Exception as exc:
         logger.exception("elTOQUE TRMI tool render failed: %s", exc)
         abort(500)
-
-
-@app.route("/tools/bolivar-usd-exchange-rate")
-@app.route("/tools/bolivar-usd-exchange-rate/")
-def _legacy_bolivar_usd_redirect():
-    return _legacy_redirect_to("/tools/eltoque-trmi-rate")
 
 
 def _sdn_normalize_type(raw: str) -> str:
@@ -2232,12 +2206,6 @@ def tool_ofac_sanctions_checker():
         abort(500)
 
 
-@app.route("/tools/ofac-venezuela-sanctions-checker")
-@app.route("/tools/ofac-venezuela-sanctions-checker/")
-def _legacy_ofac_sanctions_checker_redirect():
-    return _legacy_redirect_to("/tools/ofac-cuba-sanctions-checker")
-
-
 # Canonical Cuban tourist neighborhood / zone names mapped to the
 # regex patterns we'll search for inside CPAL address strings. Each
 # canonical key may have multiple variant spellings (with/without
@@ -2320,7 +2288,7 @@ def _load_state_dept_snapshot(prefix: str) -> tuple[dict, str]:
     State Department snapshot whose filename starts with ``prefix``
     (``"cpal"`` or ``"crl"``).
 
-    Resolution order (Venezuela-style Supabase bridge):
+    Resolution order:
 
     1. **Local disk** — ``storage/state_dept_snapshots/{prefix}_*.json``,
        written by the daily cron and by step 2 below. Fast path.
@@ -4546,12 +4514,6 @@ def tool_helms_burton_explainer():
         abort(500)
 
 
-@app.route("/tools/ofac-venezuela-general-licenses")
-@app.route("/tools/ofac-venezuela-general-licenses/")
-def _legacy_ofac_general_licenses_redirect():
-    return _legacy_redirect_to("/tools/ofac-cuba-general-licenses")
-
-
 @app.route("/tools/sec-edgar-cuba-impairment-search")
 @app.route("/tools/sec-edgar-cuba-impairment-search/")
 def tool_sec_edgar_cuba_search():
@@ -4672,12 +4634,6 @@ def tool_sec_edgar_cuba_search():
     except Exception as exc:
         logger.exception("tool render failed: %s", exc)
         abort(500)
-
-
-@app.route("/tools/sec-edgar-venezuela-impairment-search")
-@app.route("/tools/sec-edgar-venezuela-impairment-search/")
-def _legacy_sec_edgar_redirect():
-    return _legacy_redirect_to("/tools/sec-edgar-cuba-impairment-search")
 
 
 @app.route("/tools")
@@ -7151,13 +7107,6 @@ def companies_profile_page(slug: str):
         abort(500)
 
 
-@app.route("/companies/<slug>/venezuela-exposure")
-@app.route("/companies/<slug>/venezuela-exposure/")
-def _company_venezuela_exposure_page(slug: str):
-    """Serve the company profile directly (canonical is /companies/<slug>/cuba-exposure)."""
-    return companies_profile_page(slug)
-
-
 @app.route("/tools/public-company-cuba-exposure-check")
 @app.route("/tools/public-company-cuba-exposure-check/")
 def tool_public_company_exposure_check():
@@ -7376,12 +7325,6 @@ def tool_public_company_exposure_check():
     except Exception as exc:
         logger.exception("public company exposure tool render failed: %s", exc)
         abort(500)
-
-
-@app.route("/tools/public-company-venezuela-exposure-check")
-@app.route("/tools/public-company-venezuela-exposure-check/")
-def _legacy_public_company_exposure_redirect():
-    return _legacy_redirect_to("/tools/public-company-cuba-exposure-check")
 
 
 @app.route("/calendar")
@@ -7617,18 +7560,6 @@ _VENEZUELA_TOPICS: dict[str, dict] = {
         ],
     },
 }
-
-
-@app.route("/venezuela")
-@app.route("/venezuela/")
-def _venezuela_index_redirect():
-    return _legacy_redirect_to("/venezuela/transport")
-
-
-@app.route("/tools/caracas-safety-by-neighborhood")
-@app.route("/tools/caracas-safety-by-neighborhood/")
-def _caracas_safety_redirect():
-    return _legacy_redirect_to("/tools/havana-safety-by-neighborhood")
 
 
 @app.route("/venezuela/<slug>")
@@ -8151,12 +8082,6 @@ def pillar_invest_in_cuba():
     except Exception as exc:
         logger.exception("pillar render failed: %s", exc)
         abort(500)
-
-
-@app.route("/invest-in-venezuela")
-@app.route("/invest-in-venezuela/")
-def _legacy_invest_in_venezuela_redirect():
-    return _legacy_redirect_to("/invest-in-cuba")
 
 
 @app.route("/briefing")

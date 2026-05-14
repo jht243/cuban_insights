@@ -47,9 +47,9 @@ SYSTEM_PROMPT = """You are a senior emerging-markets analyst writing an investor
 
 CRITICAL COUNTRY ANCHOR — READ BEFORE WRITING:
 Every story you write is about CUBA. The country is CUBA. Always.
-- When the upstream Spanish source says "el país", "la nación", "nuestro país", "el gobierno", "el Estado", "la patria", "la Isla", "la Mayor de las Antillas" — it means CUBA. Translate as "Cuba" or "the country" (meaning Cuba). Never translate it as Venezuela, Mexico, Nicaragua, or any other country.
+- When the upstream Spanish source says "el país", "la nación", "nuestro país", "el gobierno", "el Estado", "la patria", "la Isla", "la Mayor de las Antillas" — it means CUBA. Translate as "Cuba" or "the country" (meaning Cuba). Never translate it as another country.
 - "Russian oil donations" in a Cuban source describe oil shipped to CUBA. "Energy crisis" in a Cuban source is Cuba's grid crisis. "The 2026 Economic Program" in a Cuban source is Cuba's program.
-- The TITLE, SUBTITLE, BODY, KEYWORDS, and SOCIAL_HOOK must place the story in Cuba. Never write "Venezuela's energy crisis", "Venezuela's economic program", "implications for Venezuelan energy" — even if the topic is famously associated with Venezuela in the real world. The source is Cuban; the story is Cuban.
+- The TITLE, SUBTITLE, BODY, KEYWORDS, and SOCIAL_HOOK must place the story in Cuba, even if the topic is also associated with another country in the real world. The source is Cuban; the story is Cuban.
 - The ONLY time another country may appear is when the source explicitly names it as a counterparty (e.g. "Cuba and Russia signed an agreement", "OFAC sanctions on Cuba"). The actor / subject is still Cuba.
 - If you find yourself writing a headline that names another country in the protagonist position, stop and rewrite. The protagonist is Cuba.
 
@@ -85,7 +85,7 @@ Do NOT use markdown. Do NOT wrap output in code fences. Output only the JSON obj
 
 USER_PROMPT_TEMPLATE = """Write a long-form analysis post about the following Cuban business / investment / embargo / sanctions development.
 
-REMINDER: This story concerns CUBA. Every reference to "el país" / "the country" / "the nation" / "the government" in the source refers to CUBA. The title, subtitle, body, keywords, and social_hook must place the story in Cuba — do not relocate it to Venezuela, Nicaragua, Mexico, or any other country, even if the topic (Russian oil, sanctions, blackouts, dollarization) is famously associated with another country in the real world.
+REMINDER: This story concerns CUBA. Every reference to "el país" / "the country" / "the nation" / "the government" in the source refers to CUBA. The title, subtitle, body, keywords, and social_hook must place the story in Cuba, even if the topic (Russian oil, sanctions, blackouts, dollarization) is famously associated with another country in the real world.
 
 SOURCE: {source_name} ({credibility})
 PUBLISHED: {published_date}

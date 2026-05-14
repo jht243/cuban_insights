@@ -1209,8 +1209,8 @@ _add(Person(
         "Rogelio Polanco Fuentes is a member of the PCC Secretariat "
         "responsible for the Party's ideology portfolio — state "
         "media, propaganda, political education, and the ideological "
-        "formation of cadres. He is a former Cuban ambassador to "
-        "Venezuela.",
+        "formation of cadres. He is a former Cuban ambassador in "
+        "Caracas.",
     ),
     sector_path="/sectors/governance",
     related=("miguel-diaz-canel", "roberto-morales-ojeda"),

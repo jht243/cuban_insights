@@ -67,17 +67,7 @@ EXCLUDE_EXACT = frozenset({
     "/briefing/us-cuba-diplomatic-meeting-2026",
     "/sanctions/hotel-san-alejandro",
     "/sanctions/hotel-san-fernando",
-    "/invest-in-venezuela",
-    "/tools/bolivar-usd-exchange-rate",
-    "/tools/ofac-venezuela-general-licenses",
-    "/tools/ofac-venezuela-sanctions-checker",
-    "/tools/public-company-venezuela-exposure-check",
-    "/tools/sec-edgar-venezuela-impairment-search",
-    "/tools/venezuela-investment-roi-calculator",
-    "/tools/venezuela-visa-requirements",
     "/travel/cuba-prohibited-accommodations-list",
-    "/venezuela",
-    "/tools/caracas-safety-by-neighborhood",
 })
 EXCLUDE_CONTAINS = ("noindex", "debug", "test")
 

@@ -50,30 +50,17 @@ def _enum_values(enum_cls):
 
 
 class SourceType(str, enum.Enum):
-    # ── Legacy Venezuela-era source codes ─────────────────────────────
-    # Kept around so the existing scraper modules keep importing while
-    # the Cuban Insights migration is in progress. They will be removed
-    # once each scraper is repointed at its Cuban equivalent and any
-    # remaining historical rows are either migrated or wiped. See
-    # MIGRATION.md for the exact retirement plan.
-    GACETA_OFICIAL = "gaceta_oficial"
-    TU_GACETA = "tu_gaceta"
-    ASAMBLEA_NACIONAL = "asamblea_nacional"
-    TSJ = "tsj"
-    BCV_RATES = "bcv_rates"
-
-    # ── Cuba sources (active going forward) ───────────────────────────
+    # ── Cuba sources ──────────────────────────────────────────────────
     # Cuban official gazette — Gaceta Oficial de la República de Cuba
-    # (gacetaoficial.gob.cu). Replaces GACETA_OFICIAL/TU_GACETA.
+    # (gacetaoficial.gob.cu).
     GACETA_OFICIAL_CU = "gaceta_oficial_cu"
     # Asamblea Nacional del Poder Popular (parlamentocubano.gob.cu) and
-    # Granma legislative coverage. Replaces ASAMBLEA_NACIONAL.
+    # Granma legislative coverage.
     ASAMBLEA_NACIONAL_CU = "asamblea_nacional_cu"
-    # Banco Central de Cuba — official CUP/USD reference rate. Replaces
-    # BCV_RATES for the official side.
+    # Banco Central de Cuba — official CUP/USD reference rate.
     BCC_RATES = "bcc_rates"
     # El Toque informal/parallel CUP/MLC/USD rate — the most-watched FX
-    # number on the island. New surface area, no Venezuela analog.
+    # number on the island.
     ELTOQUE_RATE = "eltoque_rate"
     # MINREX (Ministerio de Relaciones Exteriores) press releases.
     MINREX = "minrex"

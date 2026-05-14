@@ -40,11 +40,11 @@ from typing import Optional
 # regulation URL. Cuba is governed primarily by the Cuban Assets Control
 # Regulations (CACR, 31 CFR Part 515), authorised by the Trading With
 # the Enemy Act and reinforced by the Helms-Burton Act (LIBERTAD, 1996).
-# Unlike the Venezuela program, there is no single "Cuba EO" because the
-# Cuba sanctions framework predates the EO-based sanctions architecture —
-# but Trump-era and Biden-era policy memoranda (NSPM-5, NSPM-44) and the
-# 2017 / 2021 Cuba Restricted List (the "Section 515.209 list") are the
-# operative supplements. Anything not in CACR has been filtered out
+# There is no single "Cuba EO" because the Cuba sanctions framework
+# predates the modern EO-based sanctions architecture. Trump-era and
+# Biden-era policy memoranda (NSPM-5, NSPM-44) and the 2017 / 2021 Cuba
+# Restricted List (the "Section 515.209 list") are the operative
+# supplements. Anything not in CACR has been filtered out
 # upstream by src/scraper/ofac_sdn.py.
 PROGRAM_LABELS: dict[str, str] = {
     "CUBA": "Cuba (Cuban Assets Control Regulations, 31 CFR 515)",
@@ -105,7 +105,7 @@ _BUCKET_SINGULAR: dict[str, str] = {
 # Vessels and aircraft go to "economic" by default — under the Cuba
 # program they are almost always GAESA / Gaviota / CIMEX-linked
 # tourism, shipping, or charter assets, or Cuba-flagged crude tankers
-# servicing the Venezuela-Cuba oil corridor. The few exceptions are
+# servicing regional oil corridors. The few exceptions are
 # small enough that misclassification noise is acceptable.
 
 # Canonical sector keys. Order is meaningful for navigation and
@@ -337,8 +337,8 @@ def _classify_sector(
 
     Vessels and aircraft are forced to "economic" — under the Cuba
     program these are GAESA/Gaviota/CIMEX commercial assets or
-    sanctions-evasion infrastructure attached to the Venezuela-Cuba oil
-    corridor in every observed case.
+    sanctions-evasion infrastructure attached to regional oil corridors
+    in every observed case.
     """
     if bucket in ("vessels", "aircraft"):
         return "economic"

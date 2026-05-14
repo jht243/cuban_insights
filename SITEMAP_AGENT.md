@@ -29,9 +29,8 @@ The main list of hand-curated static URLs lives in `_core_static_urls()` in
 `server.py` (approx lines 7892–7965). This is what the sync script
 auto-patches.
 
-**Insertion anchor** (where new entries are spliced): the last entry before
-the closing `]` is the `/tools/public-company-venezuela-exposure-check` line.
-The sync script looks for this exact string in `INSERTION_ANCHOR`.
+**Insertion anchor** (where new entries are spliced): the sync script appends
+new hardcoded URLs immediately before the closing `]` of `_core_static_urls()`.
 
 ### Route-existence guard
 

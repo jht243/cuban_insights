@@ -5,11 +5,10 @@ lets us assert "Carnival settled a Helms-Burton Title III claim over its
 use of the Havana cruise terminal" instead of relying on string-match
 heuristics alone.
 
-Cuba's investor-exposure footprint among US-listed companies is
-materially smaller than Venezuela's, because the US embargo (Cuban
-Assets Control Regulations, 31 CFR Part 515) prohibits most US-person
-dealings with Cuba. The handful of S&P 500 names with real exposure
-mostly fall into one of these buckets:
+Cuba's investor-exposure footprint among US-listed companies is narrow
+because the US embargo (Cuban Assets Control Regulations, 31 CFR Part
+515) prohibits most US-person dealings with Cuba. The handful of S&P 500
+names with real exposure mostly fall into one of these buckets:
 
   1. Telecom carriers operating direct-dial / roaming agreements with
      ETECSA under the OFAC General License at 31 CFR §515.542

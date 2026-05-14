@@ -58,8 +58,8 @@ PRIMARY_SOURCES = frozenset({
 _MIN_INVESTOR_SCORE = 6
 
 _SYSTEM_PROMPT = """\
-You are a senior intelligence editor at a specialized geopolitical research firm focused on Cuba,
-Venezuela, and Latin America. Your task is to decide whether a single intelligence item has genuine
+You are a senior intelligence editor at a specialized geopolitical research firm focused on Cuba
+and Latin America. Your task is to decide whether a single intelligence item has genuine
 press-release or research-alert potential — meaning it would attract a reporter, investor, or
 compliance professional who has NOT yet seen this finding through mainstream channels.
 
@@ -117,7 +117,7 @@ The item must meet at least THREE of these 8 criteria:
       or policymakers in a concrete, actionable way
   [3] Has a clear "why now" reason tied to a recent triggering event
   [4] Reveals a trend or development not yet widely covered
-  [5] Connects Cuba or Venezuela to broader Latin America, U.S. policy, sanctions,
+  [5] Connects Cuba to broader Latin America, U.S. policy, sanctions,
       energy, migration, trade, or capital flows
   [6] Can support a clear standalone headline that a wire editor would publish
   [7] Can be independently verified with the provided source URL

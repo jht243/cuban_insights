@@ -2,7 +2,7 @@
 
 Daily investor briefing for Cuba. Scrapes official Cuban government sources, the OFAC SDN list, the US Federal Register (CACR notices), El Toque's parallel-rate feed, and curated international press; runs an LLM analyst pass; and publishes evergreen landing pages plus a single static daily `report.html` to a public site.
 
-> **Status:** Cuba-native. The architecture, distribution machinery, SEO topology, and DB schema were forked from the predecessor `Caracas Research` (Venezuela Investment Journal) project; all source coverage, curated content, scrapers, prompts, and SEO surface area now point at Cuba. The `MIGRATION.md` file records what was repointed and what was retired.
+> **Status:** Cuba-native. The architecture, distribution machinery, SEO topology, and DB schema were forked from a predecessor research project; all source coverage, curated content, scrapers, prompts, and SEO surface area now point at Cuba. The `MIGRATION.md` file records what was repointed and what was retired.
 
 > **Live site:** the Render web service serves the latest generated `report.html` from Supabase Storage.
 > **Refresh schedule:** twice daily via two Render cron jobs (see §8).
@@ -25,7 +25,7 @@ If the live site looks empty, it is **almost always** because the scrapers found
 
 ## 2. Data Sources (Cuba)
 
-Every active scraper points at a Cuban source. The legacy Venezuelan modules (`bcv.py`, `gazette.py`, `assembly.py`) remain on disk as pure backstops for historical-redirect routes only — they are not wired into the daily pipeline or the backfill script.
+Every active scraper points at a Cuban source. Venezuela-related website surface area is limited to intentional static search-demand pages such as `/venezuela/transport`; legacy tool, company, and investment aliases are not kept in the app.
 
 | Source | Type | Module | Notes |
 |--------|------|--------|-------|

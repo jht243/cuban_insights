@@ -325,11 +325,6 @@ def _section_rule() -> Table:
 
 def _kpi_row(ticker_items: list[dict], styles) -> Table:
     """4-cell KPI strip: BCC, elTOQUE TRMI, Spread %, Travel Advisory."""
-    # TODO(human-review): confirm src.report_generator._build_ticker emits
-    # ticker entries with label="BCC Official" and label="elTOQUE TRMI".
-    # As of this rebrand the ticker emitter still produced "BCV Official"
-    # / "USD Parallel" labels; once that is migrated these lookups will
-    # start resolving.
     cells = []
     bcc_official = next(
         (t for t in ticker_items if t.get("label") == "BCC Official"), None

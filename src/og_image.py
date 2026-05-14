@@ -444,7 +444,3 @@ def latest_eltoque_usd() -> Optional[float]:
         logger.warning("og_image: latest_eltoque_usd failed: %s", exc)
         return None
 
-
-# Backwards-compatible alias so any older imports keep working
-# during the phased migration. Remove after Phase 3 cleanup.
-latest_bcv_usd = latest_eltoque_usd

@@ -101,14 +101,12 @@ Every article you receive concerns CUBA. The country is CUBA. Always.
 - When the Spanish source says "el país", "la nación", "nuestro país",
   "el pueblo", "el gobierno", "el Estado", "la patria", "la Isla",
   "la Mayor de las Antillas" — it means CUBA. Translate to "Cuba" or
-  "the country" (meaning Cuba), never to "Venezuela", "Mexico",
-  "Nicaragua", or any other country.
+  "the country" (meaning Cuba), never to any other country.
 - "Russian oil donations" mentioned in a Cuban source describe oil
-  shipped to CUBA, not Venezuela. "Energy crisis" in a Cuban source
-  is Cuba's grid crisis, not Venezuela's. "The 2026 Economic Program"
-  in a Cuban source is Cuba's program, not Venezuela's.
+  shipped to CUBA. "Energy crisis" in a Cuban source is Cuba's grid
+  crisis. "The 2026 Economic Program" in a Cuban source is Cuba's program.
 - Never write a headline, takeaway, or sector tag that puts the story
-  in Venezuela, Mexico, Nicaragua, or any country other than Cuba —
+  in any country other than Cuba —
   even if the topic (Russian oil, sanctions, dollarization, electrical
   blackouts) is also famously associated with another country.
 - The ONLY time you mention another country is when the Cuban source
@@ -195,8 +193,7 @@ USER_PROMPT_TEMPLATE = """Analyze this article for Cuba investment relevance.
 
 REMINDER: This article concerns CUBA. Every reference to "el país",
 "the country", "the nation", "the government", "the State" in the
-source refers to CUBA. Do not relocate the story to Venezuela,
-Nicaragua, Mexico, or any other country.
+source refers to CUBA. Do not relocate the story to any other country.
 
 SOURCE: {source_name} ({credibility})
 DATE: {published_date}

@@ -16,9 +16,7 @@ Authoritative source for everything below:
     parallel Cuba Restricted List of blocked entities
 
 Cuba-specific framing:
-  Unlike the Venezuela sanctions program (which is mostly built on
-  Executive Orders + numbered specific licenses), the Cuba sanctions
-  program is primarily REGULATORY. The CACR itself contains broad
+  The Cuba sanctions program is primarily REGULATORY. The CACR itself contains broad
   blanket "general licenses" embedded as named sections (515.530 etc.)
   rather than the standalone GL-NN-numbered documents OFAC issues for
   newer programs. We list both: the CACR-section-style GLs that
@@ -250,7 +248,7 @@ GENERAL_LICENSES: list[dict] = [
     {
         "number": "Cuba GL 1",
         "title": "Authorising Certain Transactions Related to a Vessel Owned by a Blocked Cuban Entity",
-        "summary": "Periodically issued narrow GLs authorising specific wind-down or maintenance transactions involving Cuban-owned blocked vessels (oil tankers servicing the Venezuela-Cuba corridor, GAESA-owned commercial assets).",
+        "summary": "Periodically issued narrow GLs authorising specific wind-down or maintenance transactions involving Cuban-owned blocked vessels (oil tankers servicing regional corridors, GAESA-owned commercial assets).",
         "expires": "Time-limited (typically 30-90 days from issuance)",
         "scope": ["maritime", "wind-down", "vessels"],
         "ofac_url": "https://ofac.treasury.gov/recent-actions",
