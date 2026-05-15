@@ -107,6 +107,14 @@
     </div>
   </article>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba sanctions change",
+      subtext="SDN additions, removals, and sector-level program changes — delivered the same day OFAC publishes them.",
+      tag="sanctions-changes",
+      notes="Signed up from sanctions by-sector page"
+  ) }}
+
   {{ cluster_nav(cluster_ctx) }}
 </div>
 {% endblock %}

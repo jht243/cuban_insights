@@ -400,4 +400,12 @@
   }
 })();
 </script>
+
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get notified when CPAL lodging rules change",
+      subtext="Cuba Prohibited Accommodations List updates — know immediately when properties are added or removed.",
+      tag="cpal-updates",
+      notes="Signed up from CPAL hotel checker"
+  ) }}
 {% endblock %}

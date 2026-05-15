@@ -403,6 +403,14 @@
     })();
   </script>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba travel rules change",
+      subtext="Travel advisory level changes, safety updates, and CACR general license shifts — delivered as they happen.",
+      tag="travel-rule-changes",
+      notes="Signed up from safety map"
+  ) }}
+
   {% from "_related_tools.html.j2" import related_tools_nav %}
   {{ related_tools_nav(related_tools_ctx) }}
 

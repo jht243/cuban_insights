@@ -179,6 +179,14 @@
     <p>This product uses International Trade Administration data and Trade.gov content but is not endorsed or certified by the International Trade Administration.</p>
   </section>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get notified of new Cuba export opportunities",
+      subtext="Trade leads, ITA updates, and export-control changes for Cuba — delivered as they're published.",
+      tag="export-opportunities",
+      notes="Signed up from ITA export page"
+  ) }}
+
   {{ related_tools_nav(related_tools_ctx) }}
   {{ cluster_nav(cluster_ctx) }}
 </section>

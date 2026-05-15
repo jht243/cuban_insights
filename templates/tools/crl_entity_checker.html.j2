@@ -346,4 +346,12 @@
   }
 })();
 </script>
+
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get notified when the Cuba Restricted List is updated",
+      subtext="State Department CRL additions and removals — delivered the same day they're published.",
+      tag="crl-updates",
+      notes="Signed up from CRL entity checker"
+  ) }}
 {% endblock %}

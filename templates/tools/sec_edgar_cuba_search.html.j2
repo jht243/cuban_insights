@@ -278,6 +278,14 @@
   </section>
   {% endif %}
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get notified when new Cuba-related SEC filings appear",
+      subtext="Helms-Burton disclosures, impairment charges, and Cuba-exposure filings — delivered as they're published.",
+      tag="sec-cuba-filings",
+      notes="Signed up from SEC EDGAR Cuba search"
+  ) }}
+
   {{ related_tools_nav(related_tools_ctx) }}
 
   {{ cluster_nav(cluster_ctx) }}

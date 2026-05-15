@@ -257,6 +257,14 @@
   {% from "_related_tools.html.j2" import related_tools_nav %}
   {{ related_tools_nav(related_tools_ctx) }}
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba sanctions change",
+      subtext="Embargo policy shifts, OFAC actions, and new authorizations — delivered the day they're published.",
+      tag="sanctions-changes",
+      notes="Signed up from Cuba embargo explainer"
+  ) }}
+
   {% from "_cluster_nav.html.j2" import cluster_nav %}
   {{ cluster_nav(cluster_ctx) }}
 

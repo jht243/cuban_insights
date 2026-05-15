@@ -145,6 +145,14 @@
     </div>
   </details>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get the daily briefing in your inbox",
+      subtext="Cuba exchange rates, macro data, and sanctions analysis — delivered every morning before markets open.",
+      tag="daily-briefing",
+      notes="Signed up from El Toque TRMI tool"
+  ) }}
+
   {% from "_related_tools.html.j2" import related_tools_nav %}
   {{ related_tools_nav(related_tools_ctx) }}
 

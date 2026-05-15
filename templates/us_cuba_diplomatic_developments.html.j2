@@ -90,5 +90,13 @@
     and analyzed items about migration, embassy operations, talks, and
     sanctions-adjacent diplomatic activity.
   </section>
+
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get notified of new U.S.–Cuba diplomatic updates",
+      subtext="Embassy moves, bilateral talks, migration policy shifts — delivered when they happen.",
+      tag="diplomatic-updates",
+      notes="Signed up from diplomatic developments tracker"
+  ) }}
 </section>
 {% endblock %}

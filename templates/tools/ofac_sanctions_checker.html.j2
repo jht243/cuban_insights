@@ -308,4 +308,12 @@
   }
 })();
 </script>
+
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted to new OFAC actions on Cuba",
+      subtext="SDN additions, removals, and general license changes — delivered the same day they hit the Federal Register.",
+      tag="ofac-actions",
+      notes="Signed up from OFAC sanctions checker"
+  ) }}
 {% endblock %}

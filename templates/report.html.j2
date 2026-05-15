@@ -723,7 +723,7 @@ function handleSignup(e) {
   fetch('/api/subscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email })
+    body: JSON.stringify({ email: email, tags: ['daily-briefing'], notes: 'Signed up from homepage', source_page: window.location.pathname })
   })
   .then(r => r.json())
   .then(data => {

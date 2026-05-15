@@ -101,6 +101,14 @@
         </ul>
       </section>
     </div>
+
+    {% from "_notify_cta.html.j2" import notify_cta %}
+    {{ notify_cta(
+        heading="Get notified when the Cuba Restricted List is updated",
+        subtext="CRL additions and removals — delivered the same day the State Department publishes them.",
+        tag="crl-updates",
+        notes="Signed up from CRL profile"
+    ) }}
   </article>
 </div>
 {% endblock %}

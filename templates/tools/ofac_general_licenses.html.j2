@@ -201,6 +201,14 @@
   {% from "_related_tools.html.j2" import related_tools_nav %}
   {{ related_tools_nav(related_tools_ctx) }}
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted to new OFAC actions on Cuba",
+      subtext="General license renewals, revocations, and new authorizations — delivered the day they're published.",
+      tag="ofac-actions",
+      notes="Signed up from OFAC general licenses"
+  ) }}
+
   {% from "_cluster_nav.html.j2" import cluster_nav %}
   {{ cluster_nav(cluster_ctx) }}
 

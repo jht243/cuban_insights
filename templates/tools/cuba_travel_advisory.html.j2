@@ -172,6 +172,14 @@
     <strong>Important:</strong> Travel advisories change without notice. Always check the current advisory at <a href="https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories/cuba-travel-advisory.html" rel="nofollow noopener" target="_blank">travel.state.gov</a> before departure. This page is not affiliated with the U.S. Department of State and is not legal or travel advice.
   </div>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba travel rules change",
+      subtext="Travel advisory level changes, embassy updates, and CACR general license shifts — delivered as they happen.",
+      tag="travel-rule-changes",
+      notes="Signed up from Cuba travel advisory"
+  ) }}
+
   {% from "_related_tools.html.j2" import related_tools_nav %}
   {{ related_tools_nav(related_tools_ctx) }}
 

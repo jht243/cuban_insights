@@ -402,6 +402,20 @@ def index():
     return Response(html, mimetype="text/html")
 
 
+VALID_SUBSCRIBE_TAGS = frozenset({
+    "daily-briefing",
+    "sanctions-changes",
+    "crl-updates",
+    "cpal-updates",
+    "ofac-actions",
+    "diplomatic-updates",
+    "travel-rule-changes",
+    "export-opportunities",
+    "sec-cuba-filings",
+    "entity-status-changes",
+})
+
+
 @app.route("/api/subscribe", methods=["POST"])
 def subscribe():
     data = request.get_json(silent=True) or {}
@@ -409,6 +423,13 @@ def subscribe():
 
     if not email or "@" not in email:
         return jsonify({"ok": False, "error": "Valid email required"}), 400
+
+    tags = data.get("tags", [])
+    if isinstance(tags, str):
+        tags = [tags]
+    tags = [t for t in tags if t in VALID_SUBSCRIBE_TAGS]
+
+    notes = data.get("notes", "").strip()[:200]
 
     api_key = settings.buttondown_api_key
     if not api_key:
@@ -419,28 +440,46 @@ def subscribe():
     if subscriber_ip and "," in subscriber_ip:
         subscriber_ip = subscriber_ip.split(",")[0].strip()
 
+    source_page = data.get("source_page", "").strip()[:200]
+
+    metadata = {
+        "source": "cubaninsights.com",
+        "interests": ", ".join(tags) if tags else "daily-briefing",
+    }
+    if source_page:
+        metadata["signup_page"] = source_page
+
+    payload = {
+        "email_address": email,
+        "type": "regular",
+        "ip_address": subscriber_ip,
+        "metadata": metadata,
+    }
+    if tags:
+        payload["tags"] = tags
+    if notes:
+        payload["notes"] = notes
+    bd_headers = {"Authorization": f"Token {api_key}"}
+
     try:
         resp = httpx.post(
             BUTTONDOWN_API_URL,
-            json={
-                "email_address": email,
-                "type": "regular",
-                "ip_address": subscriber_ip,
-            },
-            headers={
-                "Authorization": f"Token {api_key}",
-            },
+            json=payload,
+            headers=bd_headers,
             timeout=15,
         )
 
         if resp.status_code in (200, 201):
-            logger.info("Buttondown subscriber added: %s", email)
+            logger.info("Buttondown subscriber added: %s (tags=%s)", email, tags)
+            _send_subscribe_emails(email, tags, source_page, notes)
             return jsonify({"ok": True})
 
         body = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
         code = body.get("code", "")
 
         if resp.status_code == 409 or code == "email_already_exists":
+            if tags:
+                _buttondown_add_tags(email, tags, bd_headers)
             return jsonify({"ok": True, "note": "Already subscribed"})
 
         if code == "email_invalid":
@@ -448,21 +487,22 @@ def subscribe():
 
         if code == "subscriber_blocked":
             logger.warning("Buttondown firewall blocked %s, retrying with bypass", email)
+            bypass_headers = {**bd_headers, "X-Buttondown-Bypass-Firewall": "true"}
             resp2 = httpx.post(
                 BUTTONDOWN_API_URL,
-                json={"email_address": email, "type": "regular"},
-                headers={
-                    "Authorization": f"Token {api_key}",
-                    "X-Buttondown-Bypass-Firewall": "true",
-                },
+                json=payload,
+                headers=bypass_headers,
                 timeout=15,
             )
             body2 = resp2.json() if resp2.headers.get("content-type", "").startswith("application/json") else {}
             code2 = body2.get("code", "")
             if resp2.status_code in (200, 201):
                 logger.info("Buttondown subscriber added (bypass): %s", email)
+                _send_subscribe_emails(email, tags, source_page, notes)
                 return jsonify({"ok": True})
             if resp2.status_code == 409 or code2 == "email_already_exists":
+                if tags:
+                    _buttondown_add_tags(email, tags, bd_headers)
                 return jsonify({"ok": True, "note": "Already subscribed"})
             logger.error("Buttondown bypass also failed %d: %s", resp2.status_code, resp2.text)
 
@@ -472,6 +512,35 @@ def subscribe():
     except Exception as e:
         logger.error("Buttondown request failed: %s", e)
         return jsonify({"ok": False, "error": "Service unavailable"}), 503
+
+
+def _send_subscribe_emails(email: str, tags: list[str], source_page: str, notes: str) -> None:
+    """Best-effort: send welcome email to subscriber + internal notification."""
+    try:
+        from src.api.email import send_subscriber_welcome_email, send_new_subscriber_notification
+        send_subscriber_welcome_email(to_email=email, tags=tags)
+        send_new_subscriber_notification(
+            subscriber_email=email, tags=tags, source_page=source_page, notes=notes,
+        )
+    except Exception as e:
+        logger.warning("Subscribe email send failed for %s: %s", email, e)
+
+
+def _buttondown_add_tags(email: str, tags: list[str], headers: dict) -> None:
+    """Best-effort: PATCH existing subscriber to add tags."""
+    try:
+        resp = httpx.patch(
+            f"{BUTTONDOWN_API_URL}/{email}",
+            json={"tags": tags},
+            headers=headers,
+            timeout=10,
+        )
+        if resp.status_code in (200, 201, 204):
+            logger.info("Buttondown tags updated for %s: %s", email, tags)
+        else:
+            logger.warning("Buttondown tag update failed for %s: %d", email, resp.status_code)
+    except Exception as e:
+        logger.warning("Buttondown tag update error for %s: %s", email, e)
 
 
 def _valid_optional_email(email: str) -> bool:

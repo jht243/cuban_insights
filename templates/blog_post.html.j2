@@ -55,6 +55,14 @@
     {{ share_button('https://cubaninsights.com/briefing/' ~ post.slug, post_display_title, label='Share analysis') }}
   </div>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get the next briefing in your inbox",
+      subtext="Daily Cuba business intelligence — sanctions, regulatory shifts, and sector analysis before markets open.",
+      tag="daily-briefing",
+      notes="Signed up from blog post"
+  ) }}
+
   {% if related %}
   <section class="related" aria-label="Related analysis">
     <h3>More on this sector</h3>

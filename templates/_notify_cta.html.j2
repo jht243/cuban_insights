@@ -1,0 +1,46 @@
+{#
+  Contextual email signup CTA — inline version for tool/content pages.
+
+  Usage:
+    {% from "_notify_cta.html.j2" import notify_cta %}
+    {{ notify_cta(
+        heading="Get alerted when Cuba sanctions change",
+        subtext="We monitor OFAC, the CRL, and CPAL daily. Be the first to know.",
+        tag="sanctions-changes",
+        notes="Signed up from sanctions tracker"
+    ) }}
+#}
+
+{% macro notify_cta_css() %}
+<style>
+  .notify-cta { background: #f0f4fa; border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-blue); border-radius: 3px; padding: 24px 28px; margin: 32px 0; }
+  .notify-cta h3 { font-family: var(--font-serif); font-size: 18px; color: var(--sr-blue-dark); margin: 0 0 4px; font-weight: 700; }
+  .notify-cta p { font-size: 14px; color: var(--sr-gray-text); margin: 0 0 14px; }
+  .notify-cta .notify-form { display: flex; gap: 0; max-width: 480px; }
+  .notify-cta .notify-form input { flex: 1; padding: 12px 16px; border: 2px solid var(--sr-gray-light); border-right: none; border-radius: 3px 0 0 3px; font-size: 14px; font-family: var(--font-sans); outline: none; }
+  .notify-cta .notify-form input:focus { border-color: var(--sr-blue); }
+  .notify-cta .notify-form button { padding: 12px 22px; background: var(--sr-blue); color: var(--white); border: none; border-radius: 0 3px 3px 0; font-family: var(--font-sans); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+  .notify-cta .notify-form button:hover { background: var(--sr-blue-dark); }
+  .notify-cta .notify-form button:disabled { opacity: 0.7; cursor: default; }
+  .notify-cta .notify-fine { font-size: 11px; color: var(--sr-gray-text); margin-top: 8px; }
+  .notify-cta .notify-success { color: #166534; font-weight: 700; font-size: 14px; padding: 12px 0; }
+  @media (max-width: 540px) {
+    .notify-cta .notify-form { flex-direction: column; gap: 8px; }
+    .notify-cta .notify-form input { border-right: 2px solid var(--sr-gray-light); border-radius: 3px; }
+    .notify-cta .notify-form input:focus { border-color: var(--sr-blue); }
+    .notify-cta .notify-form button { border-radius: 3px; }
+  }
+</style>
+{% endmacro %}
+
+{% macro notify_cta(heading, subtext, tag, notes="") %}
+<div class="notify-cta" data-notify-tag="{{ tag }}" data-notify-notes="{{ notes }}">
+  <h3>{{ heading }}</h3>
+  <p>{{ subtext }}</p>
+  <form class="notify-form" onsubmit="handleNotify(event, this)">
+    <input type="email" placeholder="you@company.com" required autocomplete="email">
+    <button type="submit">Notify Me</button>
+  </form>
+  <div class="notify-fine">Free. Unsubscribe anytime. No spam.</div>
+</div>
+{% endmacro %}

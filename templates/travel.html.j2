@@ -705,4 +705,12 @@
   window.addEventListener('hashchange', expandFromHash);
 })();
 </script>
+
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba travel rules change",
+      subtext="CACR general license updates, travel advisory changes, and embassy status shifts — know before you book.",
+      tag="travel-rule-changes",
+      notes="Signed up from travel guide"
+  ) }}
 {% endblock %}

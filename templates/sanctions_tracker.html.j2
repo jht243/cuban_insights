@@ -220,5 +220,13 @@
     })();
   </script>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted when Cuba sanctions change",
+      subtext="We monitor OFAC, the Cuba Restricted List, and CPAL daily. Be the first to know when designations are added or removed.",
+      tag="sanctions-changes",
+      notes="Signed up from sanctions tracker"
+  ) }}
+
 </section>
 {% endblock %}

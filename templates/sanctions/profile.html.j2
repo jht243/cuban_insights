@@ -217,6 +217,14 @@
     </div>
   </article>
 
+  {% from "_notify_cta.html.j2" import notify_cta %}
+  {{ notify_cta(
+      heading="Get alerted if this entity's status changes",
+      subtext="OFAC SDN updates for Cuba-sanctioned entities — delivered the same day designations change.",
+      tag="entity-status-changes",
+      notes="Signed up from SDN profile"
+  ) }}
+
   {{ cluster_nav(cluster_ctx) }}
 </div>
 {% endblock %}
