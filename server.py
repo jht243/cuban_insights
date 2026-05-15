@@ -341,6 +341,20 @@ def _normalize_cache_path(path: str) -> str:
 
 
 @app.before_request
+def _redirect_trailing_slash():
+    """301-redirect ``/path/`` → ``/path`` so Google indexes one URL."""
+    if request.method != "GET":
+        return None
+    path = request.path
+    if path != "/" and path.endswith("/"):
+        target = path.rstrip("/")
+        if request.query_string:
+            target = f"{target}?{request.query_string.decode('utf-8')}"
+        return redirect(target, code=301)
+    return None
+
+
+@app.before_request
 def _serve_nav_page_cache():
     """Return cached HTML for top-nav pages when still fresh."""
     if request.method != "GET":
