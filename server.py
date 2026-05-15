@@ -2813,22 +2813,52 @@ def cpal_profile_page(slug: str):
                 "addressCountry": "CU",
                 "streetAddress": address or province or "Cuba",
             }
+        total_cpal = len(index["by_slug"])
+        province_count = len(siblings) + 1 if siblings else 1
+        marker_detail = ""
+        if marker:
+            if "*" in marker:
+                marker_detail = (
+                    f" The State Department flags {name} with an asterisk (*), "
+                    f"indicating the property is marketed as a private casa "
+                    f"particular but is actually state-owned or state-controlled."
+                )
+            elif "^" in marker:
+                marker_detail = (
+                    f" The State Department flags {name} with a caret (^), "
+                    f"indicating it is a genuinely private casa particular "
+                    f"that nevertheless meets the CPAL inclusion criteria."
+                )
+
         is_q = f"Is {name} on the Cuba Prohibited Accommodations List?"
         is_a = (
             f"Yes. As of {today_human}, {name}{loc_phrase} is on the U.S. "
             f"State Department Cuba Prohibited Accommodations List (CPAL) "
-            f"under §515.210 of the Cuban Assets Control Regulations. U.S. "
-            f"persons are prohibited from lodging or paying for lodging at "
+            f"under §515.210 of the Cuban Assets Control Regulations. "
+            f"It is one of {total_cpal} properties currently on the list"
+            f"{f', including {province_count} in {province}' if province and province_count > 1 else ''}. "
+            f"U.S. persons are prohibited from lodging or paying for lodging at "
             f"this property, regardless of whether the booking is made "
             f"through a U.S., Cuban, or third-country travel agent or platform."
+            f"{marker_detail}"
         )
         why_q = f"Why is {name} on the CPAL?"
         why_a = (
-            "The State Department adds properties to the CPAL when they are "
-            "owned or controlled by a Cuban government entity, party "
-            "official, or other prohibited party. Inclusion is a "
-            "compliance determination made by State, separate from the "
-            "OFAC SDN list and the State Department Cuba Restricted List."
+            f"The State Department adds properties to the CPAL when they are "
+            f"owned or controlled by a Cuban government entity, party "
+            f"official, or other prohibited party.{marker_detail} "
+            f"Inclusion is a compliance determination made by State, separate "
+            f"from the OFAC SDN list and the State Department Cuba Restricted "
+            f"List. {name} has been on the CPAL since at least the most recent "
+            f"list publication verified by Cuban Insights ({today_human})."
+        )
+        alt_q = f"Can I stay at {name} if I book through a third-country site?"
+        alt_a = (
+            f"No. The §515.210 prohibition follows the U.S. person, not the "
+            f"booking channel. Whether you book {name} through Booking.com, "
+            f"Airbnb, Expedia, a Cuban travel agency, or a third-country "
+            f"intermediary, the restriction still applies. U.S. persons should "
+            f"verify any Cuba accommodation against the full CPAL before booking."
         )
         faq_node = {
             "@type": "FAQPage",
@@ -2836,6 +2866,7 @@ def cpal_profile_page(slug: str):
             "mainEntity": [
                 {"@type": "Question", "name": is_q, "acceptedAnswer": {"@type": "Answer", "text": is_a[:500]}},
                 {"@type": "Question", "name": why_q, "acceptedAnswer": {"@type": "Answer", "text": why_a[:500]}},
+                {"@type": "Question", "name": alt_q, "acceptedAnswer": {"@type": "Answer", "text": alt_a[:500]}},
             ],
         }
 
@@ -2858,7 +2889,9 @@ def cpal_profile_page(slug: str):
             today_iso=today_iso,
             year=year,
             refreshed_on=index.get("refreshed_on", ""),
-            faq=[{"q": is_q, "a": is_a}, {"q": why_q, "a": why_a}],
+            faq=[{"q": is_q, "a": is_a}, {"q": why_q, "a": why_a}, {"q": alt_q, "a": alt_a}],
+            total_cpal=total_cpal,
+            province_count=province_count,
         )
         return Response(html, mimetype="text/html")
     except HTTPException:

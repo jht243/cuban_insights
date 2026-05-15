@@ -91,18 +91,6 @@
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://cubaninsights.com/tearsheet/latest.pdf</loc>
-    <lastmod>2026-05-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://cubaninsights.com/briefing/feed.xml</loc>
-    <lastmod>2026-05-06</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://cubaninsights.com/sanctions/by-sector</loc>
     <lastmod>2026-05-06</lastmod>
     <changefreq>daily</changefreq>

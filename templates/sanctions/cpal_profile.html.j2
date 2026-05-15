@@ -58,26 +58,41 @@
       <section>
         <h2>What this means for U.S. travelers</h2>
         <p>
-          Because <strong>{{ name }}</strong> is on the State Department Cuba
-          Prohibited Accommodations List, U.S. persons are prohibited from
-          lodging at this property under §515.210 of the Cuban Assets Control
-          Regulations. The prohibition follows the U.S. person, not the booking
-          channel — booking through Booking.com, Airbnb, Expedia, or a Cuban or
-          third-country travel agent does not change the answer.
+          <strong>{{ name }}</strong> is one of {{ total_cpal }} properties on the
+          State Department Cuba Prohibited Accommodations List as of {{ today_human }}.
+          {% if province and province_count > 1 %}{{ province }} alone has {{ province_count }}
+          CPAL-listed properties{% if siblings %}, including
+          {{ siblings[:3]|map(attribute='name')|list|join(', ') }}{% if siblings|length > 3 %}
+          and {{ siblings|length - 3 }} others{% endif %}{% endif %}.{% endif %}
+          Under §515.210 of the Cuban Assets Control Regulations, U.S. persons
+          are prohibited from lodging at this property. The prohibition follows
+          the U.S. person, not the booking channel — booking through Booking.com,
+          Airbnb, Expedia, or a Cuban or third-country travel agent does not
+          change the answer.
         </p>
+        {% if marker %}
+        <p>
+          {% if "*" in marker %}
+          <strong>Note:</strong> The State Department flags {{ name }} with an
+          asterisk (*), indicating this property is marketed as a private casa
+          particular but is actually state-owned or state-controlled. Travelers
+          who believe they are booking a private homestay should verify the
+          property is not on the CPAL before completing their reservation.
+          {% elif "^" in marker %}
+          <strong>Note:</strong> The State Department flags {{ name }} with a
+          caret (^), indicating it is a genuinely private casa particular that
+          nevertheless meets the CPAL inclusion criteria. Even privately owned
+          accommodations can be prohibited if they meet State Department
+          thresholds for government ties.
+          {% endif %}
+        </p>
+        {% endif %}
         <p>
           The CPAL is separate from both the OFAC Specially Designated Nationals
           (SDN) list and the State Department Cuba Restricted List (CRL,
           §515.209). A property may appear on CPAL because its operator is on
           the CRL or SDN, but the lists are structurally distinct and U.S.
           travelers and their compliance teams should check all three.
-        </p>
-        <p>
-          Spanish-language travelers may search for this lodging restriction as
-          the <em>Lista de Alojamientos Prohibidos de Cuba</em>,
-          <em>hoteles prohibidos en Cuba</em>, or <em>alojamientos prohibidos
-          Cuba</em>. This page uses the official English CPAL terminology while
-          preserving the property name exactly as listed.
         </p>
       </section>
 
