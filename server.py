@@ -5181,11 +5181,18 @@ def developers_page():
         html = tpl.render(
             site_url=_s.site_url,
             seo={
-                "title": "API for Developers — Cuban Insights",
-                "description": "Structured Cuba sanctions, investment, and FX data via a clean JSON API. Free tier available.",
+                "title": "Cuba Sanctions & FX Data API for Developers — Cuban Insights",
+                "description": (
+                    "JSON API for Cuba sanctions screening, informal FX rates "
+                    "(elTOQUE TRMI), S&P 500 company exposure profiles, OFAC SDN "
+                    "feeds, and daily briefings. Free tier: 100 req/day, no credit card."
+                ),
                 "canonical": f"{_base_url()}/developers",
                 "og_type": "website",
                 "site_name": _s.site_name,
+                "site_url": _s.site_url,
+                "locale": _s.site_locale,
+                "og_image": f"{_base_url()}/static/og-image.png?v=3",
             },
         )
         return Response(html, content_type="text/html; charset=utf-8")

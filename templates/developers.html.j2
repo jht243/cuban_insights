@@ -35,6 +35,18 @@
     border-top: 2px solid var(--sr-gray-light);
   }
   .dev-wrap h2:first-child { border-top: none; margin-top: 0; }
+  .dev-wrap h3 {
+    font-family: var(--font-serif);
+    color: var(--sr-blue-dark);
+    font-size: 19px;
+    margin: 32px 0 8px;
+  }
+  .dev-wrap h3 + p {
+    color: var(--sr-dark-text);
+    font-size: 15px;
+    line-height: 1.65;
+    margin: 0 0 16px;
+  }
 
   /* Pricing cards */
   .tier-grid {
@@ -264,6 +276,18 @@
 
   <h2 id="endpoints">Endpoints</h2>
 
+  <h3 id="briefings-api">Daily Briefings</h3>
+  <p>
+    Cuban Insights publishes a daily briefing that synthesizes news from
+    state media (Granma, Cubadebate, Prensa Latina), U.S. government
+    sources (Federal Register, OFAC, State Department), and independent
+    outlets into a single structured summary. The briefings API gives you
+    each post's title, publication date, primary sector tag (sanctions,
+    travel, energy, telecom, agriculture, etc.), word count, and reading
+    time. The free tier returns the latest summary; Pro keys unlock the
+    full archive with HTML bodies for embedding in dashboards or
+    compliance feeds.
+  </p>
   <table class="ep-table">
     <thead>
       <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
@@ -271,47 +295,120 @@
     <tbody>
       <tr>
         <td><code>GET /api/v1/briefings/latest</code></td>
-        <td>Latest daily Cuba briefing</td>
+        <td>Latest daily Cuba briefing (summary, sector, date)</td>
         <td><span class="tier-badge-sm">Free</span></td>
       </tr>
       <tr>
         <td><code>GET /api/v1/briefings</code></td>
-        <td>Paginated briefing list (title, date, sector)</td>
+        <td>Paginated briefing list with sector filters</td>
         <td><span class="tier-badge-sm">Free</span></td>
       </tr>
       <tr>
         <td><code>GET /api/v1/briefings/{slug}</code></td>
-        <td>Full briefing by slug (HTML body)</td>
+        <td>Full briefing by slug including HTML body</td>
         <td><span class="tier-badge-sm pro">Pro</span></td>
       </tr>
+    </tbody>
+  </table>
+
+  <h3 id="fx-api">FX Rates</h3>
+  <p>
+    Cuba operates multiple exchange rates simultaneously. The official
+    rate (1 USD = 24 CUP) is set by the Banco Central de Cuba, but the
+    informal street rate — tracked by elTOQUE's TRMI index — routinely
+    trades at multiples of that. This API returns the latest informal
+    rates for USD&nbsp;→&nbsp;CUP, MLC&nbsp;→&nbsp;CUP, and
+    USDT&nbsp;→&nbsp;CUP, sourced from elTOQUE. Pro keys unlock the
+    historical rate series for charting trends and detecting volatility
+    spikes that often precede policy changes.
+  </p>
+  <table class="ep-table">
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
+    </thead>
+    <tbody>
       <tr>
         <td><code>GET /api/v1/fx/rates</code></td>
-        <td>Latest elTOQUE informal CUP rates (USD, MLC, USDT)</td>
+        <td>Latest informal CUP rates (USD, MLC, USDT via elTOQUE)</td>
         <td><span class="tier-badge-sm">Free</span></td>
       </tr>
       <tr>
         <td><code>GET /api/v1/fx/rates/history</code></td>
-        <td>Historical FX rate series</td>
+        <td>Historical FX rate time series</td>
         <td><span class="tier-badge-sm pro">Pro</span></td>
       </tr>
+    </tbody>
+  </table>
+
+  <h3 id="companies-api">S&amp;P 500 Company Exposure</h3>
+  <p>
+    Cuban Insights tracks every S&amp;P 500 company for Cuba-related
+    sanctions exposure by cross-referencing OFAC SDN designations, the
+    State Department Cuba Restricted List, SEC EDGAR 10-K/10-Q/20-F
+    filings that mention Cuba, and our own curated research. The list
+    endpoint returns all tracked companies with their sector and ticker.
+    Per-company exposure profiles (Pro) include the exposure
+    classification (direct, indirect, historical, or none), SDN matches,
+    CRL cross-references, and the evidence trail from SEC filings.
+  </p>
+  <table class="ep-table">
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
+    </thead>
+    <tbody>
       <tr>
         <td><code>GET /api/v1/companies</code></td>
-        <td>S&amp;P 500 companies tracked</td>
+        <td>All tracked S&amp;P 500 companies (ticker, sector, slug)</td>
         <td><span class="tier-badge-sm">Free</span></td>
       </tr>
       <tr>
         <td><code>GET /api/v1/companies/{ticker}/exposure</code></td>
-        <td>Cuba sanctions exposure profile</td>
+        <td>Full Cuba sanctions exposure profile for one company</td>
         <td><span class="tier-badge-sm pro">Pro</span></td>
       </tr>
+    </tbody>
+  </table>
+
+  <h3 id="sanctions-api">Sanctions Feed</h3>
+  <p>
+    The sanctions feed aggregates OFAC Specially Designated Nationals
+    (SDN) entries tagged with the CUBA program, Federal Register notices
+    affecting Cuba sanctions policy, and State Department CRL/CPAL
+    updates into a single chronological stream. Each entry includes the
+    designation type, effective date, source agency, and affected parties.
+    Useful for compliance automation, KYC screening enrichment, and
+    regulatory-change alerting.
+  </p>
+  <table class="ep-table">
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
+    </thead>
+    <tbody>
       <tr>
         <td><code>GET /api/v1/sanctions/feed</code></td>
-        <td>OFAC SDN + Federal Register sanctions feed</td>
+        <td>OFAC SDN + Federal Register + CRL/CPAL sanctions stream</td>
         <td><span class="tier-badge-sm pro">Pro</span></td>
       </tr>
+    </tbody>
+  </table>
+
+  <h3 id="climate-api">Investment Climate Scorecard</h3>
+  <p>
+    A composite scorecard that rates Cuba's current investment
+    environment across dimensions including regulatory openness, FDI
+    inflows, currency stability, infrastructure readiness, and political
+    risk. The scorecard is updated as conditions change and is designed
+    for investors, fund managers, and analysts evaluating Cuba market
+    entry or ongoing exposure.
+  </p>
+  <table class="ep-table">
+    <thead>
+      <tr><th>Endpoint</th><th>Description</th><th>Tier</th></tr>
+    </thead>
+    <tbody>
       <tr>
         <td><code>GET /api/v1/climate</code></td>
-        <td>Investment climate scorecard</td>
+        <td>Investment climate scorecard with dimension breakdowns</td>
         <td><span class="tier-badge-sm">Free</span></td>
       </tr>
     </tbody>
