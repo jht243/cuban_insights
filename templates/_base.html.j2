@@ -194,6 +194,30 @@
     /* Toast — bottom-center floating pill, ~1.6s. */
     .share-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--sr-blue-dark); color: var(--white); padding: 10px 20px; border-radius: 999px; font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: 0.3px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease; z-index: 9999; }
     .share-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Header notify button — pill matching share-btn style */
+    .notify-pill { background: var(--sr-blue); border: 1px solid var(--sr-blue); border-radius: 999px; padding: 6px 14px; font-family: var(--font-sans); font-size: 12px; font-weight: 600; color: var(--white); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; line-height: 1; transition: background 0.15s ease, border-color 0.15s ease; text-decoration: none; margin-left: 6px; }
+    .notify-pill:hover { background: var(--sr-blue-dark); border-color: var(--sr-blue-dark); }
+    .notify-pill:active { transform: scale(0.97); }
+    .notify-pill svg { display: block; }
+
+    /* Notify modal overlay */
+    .notify-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 10000; align-items: center; justify-content: center; }
+    .notify-modal-overlay.is-open { display: flex; }
+    .notify-modal { background: var(--white); border-radius: 6px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); max-width: 440px; width: calc(100% - 40px); padding: 28px 28px 24px; position: relative; animation: notifySlideIn 0.2s ease; }
+    @keyframes notifySlideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .notify-modal-close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--sr-gray-text); font-size: 22px; cursor: pointer; padding: 2px 6px; line-height: 1; }
+    .notify-modal-close:hover { color: var(--sr-blue-dark); }
+    .notify-modal h3 { font-family: var(--font-serif); font-size: 20px; color: var(--sr-blue-dark); margin: 0 24px 6px 0; font-weight: 700; }
+    .notify-modal p { font-size: 14px; color: var(--sr-gray-text); margin: 0 0 18px; }
+    .notify-modal .notify-modal-fields { display: grid; gap: 10px; }
+    .notify-modal .notify-modal-fields input { width: 100%; padding: 12px 14px; border: 2px solid var(--sr-gray-light); border-radius: 3px; font-size: 14px; font-family: var(--font-sans); outline: none; }
+    .notify-modal .notify-modal-fields input:focus { border-color: var(--sr-blue); }
+    .notify-modal .notify-modal-submit { width: 100%; margin-top: 4px; padding: 13px 20px; background: var(--sr-blue); color: var(--white); border: none; border-radius: 3px; font-family: var(--font-sans); font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; transition: background 0.15s; }
+    .notify-modal .notify-modal-submit:hover { background: var(--sr-blue-dark); }
+    .notify-modal .notify-modal-submit:disabled { opacity: 0.7; cursor: default; }
+    .notify-modal .notify-modal-fine { font-size: 11px; color: var(--sr-gray-text); margin-top: 10px; text-align: center; }
+    .notify-modal .notify-modal-success { color: #166534; font-weight: 700; font-size: 15px; text-align: center; padding: 20px 0; }
     .feedback-widget { position: fixed; left: 20px; bottom: 20px; z-index: 9998; font-family: var(--font-sans); }
     .feedback-pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(0,43,94,0.16); background: var(--sr-blue); color: var(--white); border-radius: 999px; padding: 10px 15px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 22px rgba(15,23,42,0.18); transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease; }
     .feedback-pill:hover { background: var(--sr-blue-dark); box-shadow: 0 10px 26px rgba(15,23,42,0.24); }
@@ -335,6 +359,20 @@
 
 {% block content %}{% endblock %}
 
+<div class="notify-modal-overlay" id="notify-modal-overlay">
+  <div class="notify-modal">
+    <button type="button" class="notify-modal-close" id="notify-modal-close" aria-label="Close">&times;</button>
+    <h3 id="notify-modal-heading"></h3>
+    <p id="notify-modal-subtext"></p>
+    <form id="notify-modal-form" class="notify-modal-fields">
+      <input type="text" name="name" placeholder="Name (optional)" autocomplete="name">
+      <input type="email" name="email" placeholder="you@company.com" required autocomplete="email">
+      <button type="submit" class="notify-modal-submit">Notify Me</button>
+    </form>
+    <div class="notify-modal-fine">Free. Unsubscribe anytime. No spam.</div>
+  </div>
+</div>
+
 <div class="feedback-widget" data-feedback-widget>
   <button type="button" class="feedback-pill" data-feedback-open aria-haspopup="dialog" aria-controls="feedback-panel">
     Share Your Ideas
@@ -420,6 +458,106 @@
       '<line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>' +
       '</svg><span class="share-btn-label">Share</span>';
     crumbs.appendChild(btn);
+  });
+})();
+
+// Auto-inject a Notify Me button into breadcrumbs when an inline .notify-cta
+// exists on the page. Clicking opens the notify modal pre-filled with the
+// contextual heading and tag from the inline CTA.
+(function autoInjectNotifyPill() {
+  var cta = document.querySelector('.notify-cta');
+  if (!cta) return;
+  var tag = cta.getAttribute('data-notify-tag') || '';
+  var heading = cta.querySelector('h3');
+  var headingText = heading ? heading.textContent : 'Get notified';
+  var subtext = cta.querySelector('p');
+  var subtextText = subtext ? subtext.textContent : '';
+  var notes = cta.getAttribute('data-notify-notes') || '';
+
+  document.querySelectorAll('nav.breadcrumbs').forEach(function(crumbs) {
+    if (crumbs.querySelector('.notify-pill')) return;
+    var pill = document.createElement('button');
+    pill.type = 'button';
+    pill.className = 'notify-pill';
+    pill.setAttribute('aria-label', 'Get notified');
+    pill.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>' +
+      '<path d="M13.73 21a2 2 0 0 1-3.46 0"/>' +
+      '</svg><span>Notify Me</span>';
+    pill.addEventListener('click', function() {
+      openNotifyModal(headingText, subtextText, tag, notes);
+    });
+    crumbs.appendChild(pill);
+  });
+})();
+
+function openNotifyModal(heading, subtext, tag, notes) {
+  var overlay = document.getElementById('notify-modal-overlay');
+  var headingEl = document.getElementById('notify-modal-heading');
+  var subtextEl = document.getElementById('notify-modal-subtext');
+  var form = document.getElementById('notify-modal-form');
+  headingEl.textContent = heading;
+  subtextEl.textContent = subtext;
+  form.setAttribute('data-notify-tag', tag);
+  form.setAttribute('data-notify-notes', notes);
+  overlay.classList.add('is-open');
+  setTimeout(function() { form.querySelector('input[name="email"]').focus(); }, 50);
+}
+
+(function initNotifyModal() {
+  var overlay = document.getElementById('notify-modal-overlay');
+  var closeBtn = document.getElementById('notify-modal-close');
+  var form = document.getElementById('notify-modal-form');
+  if (!overlay || !form) return;
+
+  function close() { overlay.classList.remove('is-open'); }
+  closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var emailInput = form.querySelector('input[name="email"]');
+    var nameInput = form.querySelector('input[name="name"]');
+    var btn = form.querySelector('.notify-modal-submit');
+    var email = emailInput.value.trim();
+    if (!email) return;
+
+    var tag = form.getAttribute('data-notify-tag') || '';
+    var notes = form.getAttribute('data-notify-notes') || '';
+    var name = nameInput ? nameInput.value.trim() : '';
+    if (name) notes = name + ' — ' + notes;
+
+    btn.disabled = true;
+    btn.textContent = 'Subscribing…';
+
+    var payload = { email: email, source_page: window.location.pathname };
+    if (tag) payload.tags = [tag];
+    if (notes) payload.notes = notes;
+
+    fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        if (typeof gtag === 'function') {
+          gtag('event', 'notify_subscribe', { tag: tag, page: window.location.pathname, method: 'modal' });
+        }
+        form.innerHTML = '<div class="notify-modal-success">\u2713 You\'re in. We\'ll notify you.</div>';
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Notify Me';
+        alert(data.error || 'Something went wrong. Please try again.');
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Notify Me';
+      alert('Network error. Please try again.');
+    });
   });
 })();
 
