@@ -2,10 +2,11 @@
 
 {% block head_extra %}
 <style>
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
-  .stat-card { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 14px 18px; border-radius: 3px; text-align: center; }
-  .stat-card .num { font-family: var(--font-serif); font-size: 26px; color: #cc0000; font-weight: 700; }
-  .stat-card .label { font-size: 12px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 20px 0; }
+  .stat-card { background: var(--sr-gray-bg); border-left: 4px solid var(--sr-blue); padding: 12px 14px; border-radius: 3px; text-align: center; }
+  .stat-card .num { font-family: var(--font-serif); font-size: 22px; color: #cc0000; font-weight: 700; }
+  .stat-card .label { font-size: 11px; color: var(--sr-gray-text); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+  @media (max-width: 540px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 
   .program-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 16px 0 28px; }
   .program-card { border: 1px solid var(--sr-gray-light); border-left: 4px solid var(--sr-blue); padding: 14px 18px; border-radius: 3px; background: var(--white); }
