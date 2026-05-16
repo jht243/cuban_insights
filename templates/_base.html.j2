@@ -360,7 +360,7 @@
 
 {% block footer_cta %}
 {% from "_notify_cta.html.j2" import notify_cta %}
-<div style="max-width: 760px; margin: 0 auto; padding: 0 24px;">
+<div class="footer-notify-cta" style="max-width: 760px; margin: 0 auto; padding: 0 24px;">
   {{ notify_cta(
       heading="Get the daily briefing in your inbox",
       subtext="Cuba business intelligence — sanctions, regulatory, sector analysis — delivered every morning.",
@@ -587,6 +587,15 @@
       submit.textContent = 'Send feedback';
     });
   });
+})();
+
+// Hide footer CTA if an inline notify CTA already exists on the page
+(function() {
+  var inlineCtas = document.querySelectorAll('.notify-cta');
+  var footerCta = document.querySelector('.footer-notify-cta');
+  if (footerCta && inlineCtas.length > 1) {
+    footerCta.style.display = 'none';
+  }
 })();
 
 function handleNotify(e, form) {
