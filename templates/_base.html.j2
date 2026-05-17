@@ -39,9 +39,17 @@
   {% if _seo.news_keywords %}<meta name="news_keywords" content="{{ _seo.news_keywords }}">{% endif %}
   <meta name="author" content="{{ _seo.site_name|default('Cuban Insights') }}">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <meta name="application-name" content="{{ _seo.site_name|default('Cuban Insights') }}">
+  <meta name="apple-mobile-web-app-title" content="{{ _seo.site_name|default('Cuban Insights') }}">
   <link rel="canonical" href="{{ _canonical }}">
   <link rel="alternate" hreflang="en" href="{{ _canonical }}">
   <link rel="alternate" hreflang="x-default" href="{{ _canonical }}">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/static/site-icon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
   {% if _seo.locale_alternate %}<link rel="alternate" hreflang="es" href="{{ _canonical }}">
   <meta property="og:locale:alternate" content="{{ _seo.locale_alternate }}">{% endif %}
 

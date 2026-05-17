@@ -1274,12 +1274,13 @@ def _build_jsonld(entries: list[dict], seo: dict, generated_at: datetime) -> str
         "@type": "Organization",
         "@id": f"{base}/#organization",
         "name": settings.site_name,
+        "legalName": settings.site_owner_org,
         "url": f"{base}/",
         "logo": {
             "@type": "ImageObject",
-            "url": f"{base}/static/og-image.png?v=3",
-            "width": 1200,
-            "height": 630,
+            "url": f"{base}/static/site-icon.png",
+            "width": 512,
+            "height": 512,
         },
     }
 
@@ -1288,6 +1289,7 @@ def _build_jsonld(entries: list[dict], seo: dict, generated_at: datetime) -> str
         "@id": f"{base}/#website",
         "url": f"{base}/",
         "name": settings.site_name,
+        "alternateName": "Cuban Insights",
         "description": seo.get("description", ""),
         "inLanguage": "en-US",
         "publisher": {"@id": f"{base}/#organization"},

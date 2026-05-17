@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Cuban Insights">
+  <defs>
+    <clipPath id="circle">
+      <circle cx="256" cy="256" r="208"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="238" fill="#ffffff"/>
+  <circle cx="256" cy="256" r="224" fill="#001f44"/>
+  <g clip-path="url(#circle)">
+    <rect x="48" y="48" width="416" height="83.2" fill="#002a8f"/>
+    <rect x="48" y="131.2" width="416" height="83.2" fill="#ffffff"/>
+    <rect x="48" y="214.4" width="416" height="83.2" fill="#002a8f"/>
+    <rect x="48" y="297.6" width="416" height="83.2" fill="#ffffff"/>
+    <rect x="48" y="380.8" width="416" height="83.2" fill="#002a8f"/>
+    <polygon points="48,48 256,256 48,464" fill="#cf142b"/>
+    <polygon points="122,204 136,244 179,244 144,269 158,309 122,284 87,309 100,269 66,244 108,244" fill="#ffffff"/>
+  </g>
+  <circle cx="256" cy="256" r="208" fill="none" stroke="#ffffff" stroke-width="12"/>
+</svg>

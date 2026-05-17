@@ -1,0 +1,19 @@
+{
+  "name": "Cuban Insights",
+  "short_name": "Cuban Insights",
+  "icons": [
+    {
+      "src": "/static/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/site-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#002b5e",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}

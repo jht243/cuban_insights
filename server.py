@@ -39,6 +39,11 @@ app = Flask(
     static_url_path="/static",
 )
 
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(_STATIC_DIR, "favicon.ico", mimetype="image/vnd.microsoft.icon")
+
 # CORS for the public API — allow any origin on /api/v1/* endpoints.
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
@@ -178,6 +183,14 @@ def _rate_limited(e):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rate Limited — Cuban Insights</title>
+<meta name="application-name" content="Cuban Insights">
+<meta name="apple-mobile-web-app-title" content="Cuban Insights">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/static/site-icon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+<link rel="manifest" href="/static/site.webmanifest">
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
 body{{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a1628;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
@@ -247,6 +260,14 @@ def _handle_404(exc):
         '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>Page Not Found — Cuban Insights</title>'
+        '<meta name="application-name" content="Cuban Insights">'
+        '<meta name="apple-mobile-web-app-title" content="Cuban Insights">'
+        '<link rel="icon" href="/favicon.ico" sizes="any">'
+        '<link rel="icon" type="image/svg+xml" href="/static/site-icon.svg">'
+        '<link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">'
+        '<link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">'
+        '<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">'
+        '<link rel="manifest" href="/static/site.webmanifest">'
         '<style>'
         'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;'
         'background:#f8f9fa;color:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh}'
@@ -272,6 +293,14 @@ def _handle_500(exc):
         '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<title>Server Error — Cuban Insights</title>'
+        '<meta name="application-name" content="Cuban Insights">'
+        '<meta name="apple-mobile-web-app-title" content="Cuban Insights">'
+        '<link rel="icon" href="/favicon.ico" sizes="any">'
+        '<link rel="icon" type="image/svg+xml" href="/static/site-icon.svg">'
+        '<link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">'
+        '<link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">'
+        '<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">'
+        '<link rel="manifest" href="/static/site.webmanifest">'
         '<style>'
         'body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;'
         'background:#f8f9fa;color:#1a1a2e;display:flex;align-items:center;justify-content:center;min-height:100vh}'
@@ -298,6 +327,16 @@ FEEDBACK_MAX_MESSAGE_CHARS = 2000
 _REPORT_CACHE: dict = {"html": None, "fetched_at": 0.0}
 _REPORT_CACHE_TTL_SECONDS = 60
 
+_BRAND_HEAD_TAGS = """  <meta name="application-name" content="Cuban Insights">
+  <meta name="apple-mobile-web-app-title" content="Cuban Insights">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/static/site-icon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="/static/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+"""
+
 _NAV_CACHE_PATHS = frozenset({
     "/briefing",
     "/invest-in-cuba",
@@ -312,6 +351,15 @@ _NAV_PAGE_CACHE: dict[str, dict] = {}
 _NAV_PAGE_CACHE_TTL_SECONDS = 90
 
 
+def _ensure_brand_head_tags(html_text: str) -> str:
+    """Patch older cached/generated pages with the current site name/icon tags."""
+    if "/static/site-icon.svg" in html_text:
+        return html_text
+    if "</head>" not in html_text:
+        return html_text
+    return html_text.replace("</head>", f"{_BRAND_HEAD_TAGS}</head>", 1)
+
+
 def _get_report_html() -> str | None:
     """Return rendered report HTML from Supabase Storage (cached) or local disk."""
     if supabase_storage_read_enabled():
@@ -320,6 +368,7 @@ def _get_report_html() -> str | None:
             return _REPORT_CACHE["html"]
         html = fetch_report_html()
         if html:
+            html = _ensure_brand_head_tags(html)
             _REPORT_CACHE["html"] = html
             _REPORT_CACHE["fetched_at"] = now
             return html
@@ -328,7 +377,7 @@ def _get_report_html() -> str | None:
 
     report = OUTPUT_DIR / "report.html"
     if report.exists():
-        return report.read_text(encoding="utf-8")
+        return _ensure_brand_head_tags(report.read_text(encoding="utf-8"))
     return None
 
 
@@ -7130,7 +7179,12 @@ def companies_profile_page(slug: str):
                 "@type": "Organization",
                 "name": _s.site_name,
                 "url": f"{base}/",
-                "logo": {"@type": "ImageObject", "url": f"{base}/static/og-image.png?v=3"},
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": f"{base}/static/site-icon.png",
+                    "width": 512,
+                    "height": 512,
+                },
             },
             "about": {
                 "@type": "Organization",
@@ -7986,7 +8040,9 @@ def travel_page():
                     "url": base + "/",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": f"{base}/static/og-image.png?v=3",
+                        "url": f"{base}/static/site-icon.png",
+                        "width": 512,
+                        "height": 512,
                     },
                 },
                 "mainEntityOfPage": {"@type": "WebPage", "@id": canonical, "name": title},
@@ -8414,7 +8470,12 @@ def briefing_eo_14404_gaesa():
                     "@type": "Organization",
                     "name": _s.site_name,
                     "url": f"{base}/",
-                    "logo": {"@type": "ImageObject", "url": f"{base}/static/og-image.png?v=3"},
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": f"{base}/static/site-icon.png",
+                        "width": 512,
+                        "height": 512,
+                    },
                 },
                 "mainEntityOfPage": canonical,
                 "articleSection": "Sanctions",
